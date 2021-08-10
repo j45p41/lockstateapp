@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "284838840885",
+    "project_id": "lockstate-e72fc",
+    "storage_bucket": "lockstate-e72fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:284838840885:android:ac24b11b919cecab7a3f7c",
+        "android_client_info": {
+          "package_name": "com.example.lockstate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "284838840885-qobt67p8r01dnfk6qliot084ineba05g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lockstate",
+            "certificate_hash": "ab61d488ea30a764c756d23bd2f0c519023f1a0e"
+          }
+        },
+        {
+          "client_id": "284838840885-59aqt64q70b17akor7i1tar3qggelk96.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDK9Wb-tix2fZN2fiG-C6PUR410JnVkb5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "284838840885-59aqt64q70b17akor7i1tar3qggelk96.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
