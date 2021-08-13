@@ -1,3 +1,5 @@
+import 'package:lockstate/authentication/authentication.controller.dart';
+import 'package:lockstate/authentication/authentication.model.dart';
 import 'package:lockstate/model/account.dart';
 import 'package:momentum/momentum.dart';
 
