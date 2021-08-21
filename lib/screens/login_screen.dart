@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lockstate/authentication/authentication.controller.dart';
+import 'package:lockstate/screens/signup_screen.dart';
+import 'package:momentum/momentum.dart';
+
+import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -10,7 +15,15 @@ class _LoginScreenState extends State<LoginScreen> {
   String password = '';
   final _formKey = GlobalKey<FormState>();
   login() {
-    if (_formKey.currentState!.validate()) {}
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final authController =
+          Momentum.controller<AuthenticationController>(context);
+      authController.login(email, password);
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => Authenticate(),
+      ));
+    }
   }
 
   @override
@@ -18,6 +31,15 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Login"),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => SignupScreen(),
+                ));
+              },
+              child: Text("Signup"))
+        ],
       ),
       body: Form(
         key: _formKey,

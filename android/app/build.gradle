@@ -38,6 +38,7 @@ android {
         applicationId "com.example.lockstate"
         minSdkVersion 20
         targetSdkVersion 30
+        multiDexEnabled = true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -61,5 +62,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation("androidx.multidex:multidex:2.0.1")
     
 }

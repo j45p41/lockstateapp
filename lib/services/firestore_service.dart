@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase/firebase.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:lockstate/main.dart';
 import 'package:lockstate/model/account.dart';
 import 'package:lockstate/services/auth_service.dart';
 import 'package:momentum/momentum.dart';
@@ -7,11 +9,13 @@ import 'package:momentum/momentum.dart';
 class FirestoreService extends MomentumService {
   final firestore = FirebaseFirestore.instance;
 
-  Account get currentAccount => getCurrentAccount();
-
   createUserInFirestore(String uid, String email, String username) async {
-    await firestore.collection('users').doc(uid).set(
-        {'uid': uid, 'email': email, 'username': username}).whenComplete(() {
+    await firestore.collection('users').doc(uid).set({
+      'uid': uid,
+      'email': email,
+      'username': username,
+      'fcmId': fcmId
+    }).whenComplete(() {
       print('Created user on firestore');
     });
   }
@@ -28,10 +32,11 @@ class FirestoreService extends MomentumService {
       'userId': userId,
       'deviceName': deviceName,
       'isIndoor': isIndoor,
-      'lockState': '',
-      'doorState': '',
-      'applicationId': '',
-      'dev_eui': '',
+      'fcmIds': [fcmId],
+      // 'lockState': '',
+      // 'doorState': '',
+      // 'applicationId': '',
+      // 'dev_eui': '',
     });
     await firestore
         .collection('users')
@@ -43,18 +48,26 @@ class FirestoreService extends MomentumService {
       'userId': userId,
       'deviceName': deviceName,
       'isIndoor': isIndoor,
-      'lockState': '',
-      'doorState': '',
-      'applicationId': '',
-      'dev_eui': '',
+      'fcmIds': [fcmId],
+      // 'lockState': '',
+      // 'doorState': '',
+      // 'applicationId': '',
+      // 'dev_eui': '',
     });
   }
 
   getCurrentAccount() async {
-    if (AuthService().auth.currentUser != null) {
-      DocumentSnapshot doc = await firestore.collection('users').doc().get();
-      return Account.fromDocument(doc);
-    }
+    // if (AuthService().auth.currentUser != null) {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get();
+    print("get current user doc : " + doc.data().toString());
+    Account account = Account.fromDocument(doc);
+    print("get current user account : " + account.email.toString());
+    return account;
+    // }
+    // return null;
   }
 
   getAccountDevices() async* {}

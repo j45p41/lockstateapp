@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lockstate/authentication/index.dart';
+import 'package:lockstate/main.dart';
+import 'package:momentum/momentum.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -11,7 +14,16 @@ class _SignupScreenState extends State<SignupScreen> {
   String username = '';
   final _formKey = GlobalKey<FormState>();
   signup() {
-    if (_formKey.currentState!.validate()) {}
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final authController =
+          Momentum.controller<AuthenticationController>(context);
+      print("signup screen " + email + " " + password + " " + username);
+      authController.signup(email, password, username);
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => Authenticate(),
+      ));
+    }
   }
 
   @override
