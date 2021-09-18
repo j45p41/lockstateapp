@@ -11,6 +11,19 @@ class DevicePairedScreen extends StatefulWidget {
 class _DevicePairedScreenState extends State<DevicePairedScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Center(
+              child: Text("DeviceName " + widget.device.name.toString()),
+            ),
+            Center(
+              child: Text("DeviceId" + widget.device.id.id.toString()),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

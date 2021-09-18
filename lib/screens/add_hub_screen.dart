@@ -67,21 +67,6 @@ class _AddHubScreenState extends State<AddHubScreen> {
       data: Theme.of(context),
       child: Scaffold(
         appBar: AppBar(
-          actions: [],
-          leadingWidth: mq.width * 0.2,
-          leading: Row(
-            children: [
-              Expanded(child: Container(), flex: 1),
-              Expanded(
-                flex: 3,
-                child: Image.asset(
-                  'assets/small-wetrics@2x.png',
-                ),
-              ),
-            ],
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-          ),
           title: Text(
             !isScanned ? "Set up your device" : "Available Devices",
             style:
