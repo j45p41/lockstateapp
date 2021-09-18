@@ -14,16 +14,19 @@ class History {
     required this.deviceName,
     required this.fcmIds,
     required this.message,
+    required this.roomId,
   });
 
   String deviceId;
   String deviceName;
   List<dynamic> fcmIds;
   Message message;
+  String roomId;
 
   factory History.fromJson(Map<String, dynamic> json) => History(
         deviceId: json["deviceId"] == null ? "" : json["deviceId"],
         deviceName: json["deviceName"] == null ? "" : json["deviceName"],
+        roomId: json["roomId"] == null ? "" : json["roomId"],
         fcmIds: List<dynamic>.from(json["fcmIds"].map((x) => x)),
         message: Message.fromJson(json["message"]),
       );

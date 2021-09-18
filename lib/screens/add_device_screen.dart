@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/data/index.dart';
+import 'package:lockstate/model/room.dart';
 import 'package:momentum/momentum.dart';
 
 import '../main.dart';
@@ -73,6 +74,8 @@ import '../main.dart';
 // }
 
 class AddDeviceScreen extends StatefulWidget {
+  final Room room;
+  AddDeviceScreen(this.room);
   @override
   _AddDeviceScreenState createState() => _AddDeviceScreenState();
 }
@@ -88,7 +91,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
       final dataController = Momentum.controller<DataController>(context);
 
       dataController.addDevice(deviceId, FirebaseAuth.instance.currentUser!.uid,
-          deviceName, isIndoor);
+          deviceName, isIndoor,widget.room.roomId);
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => Authenticate(),
       ));

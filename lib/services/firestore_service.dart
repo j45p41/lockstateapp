@@ -20,12 +20,34 @@ class FirestoreService extends MomentumService {
     });
   }
 
+  addRoom(String userId, String roomName) async {
+    await firestore.collection('rooms').add({
+      'userId': userId,
+      'name': roomName,
+
+      // 'lockState': '',
+      // 'doorState': '',
+      // 'applicationId': '',
+      // 'dev_eui': '',
+    }).then((doc) {
+      firestore.collection('rooms').doc(doc.id).update({
+        'roomId': doc.id,
+
+        // 'lockState': '',
+        // 'doorState': '',
+        // 'applicationId': '',
+        // 'dev_eui': '',
+      });
+    });
+  }
+
   //add remaining fields
   addDevice(
     String deviceId,
     String userId,
     String deviceName,
     bool isIndoor,
+    String roomId,
   ) async {
     await firestore.collection('devices').doc(deviceId).set({
       'deviceId': deviceId,
@@ -33,6 +55,7 @@ class FirestoreService extends MomentumService {
       'deviceName': deviceName,
       'isIndoor': isIndoor,
       'fcmIds': [fcmId],
+      'roomId': roomId,
       // 'lockState': '',
       // 'doorState': '',
       // 'applicationId': '',
@@ -49,6 +72,7 @@ class FirestoreService extends MomentumService {
       'deviceName': deviceName,
       'isIndoor': isIndoor,
       'fcmIds': [fcmId],
+      'roomId': roomId,
       // 'lockState': '',
       // 'doorState': '',
       // 'applicationId': '',

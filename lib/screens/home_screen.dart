@@ -6,8 +6,13 @@ import 'package:lockstate/authentication/index.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/model/account.dart';
 import 'package:lockstate/model/device.dart';
+import 'package:lockstate/model/room.dart';
 import 'package:lockstate/screens/add_device_screen.dart';
+import 'package:lockstate/screens/add_room_screen.dart';
 import 'package:lockstate/screens/device_detail_screen.dart';
+import 'package:lockstate/screens/notifications_screen.dart';
+import 'package:lockstate/screens/room_detail_screen.dart';
+import 'package:lockstate/screens/settings_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 
@@ -18,36 +23,80 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Account? currentAccount;
+  late PageController pageController;
+  int currentIndex = 0;
+
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    pageController = PageController();
+    super.initState();
+  }
+
+  buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
+      onTap: (int index) {
+        setState(() {
+          currentIndex = index;
+        });
+        pageController.animateToPage(
+          index,
+          duration: Duration(milliseconds: 100),
+          curve: Curves.bounceIn,
+        );
+      },
+      items: [
+        BottomNavigationBarItem(
+          // backgroundColor: Color(ColorUtils.color1),
+          icon: Icon(
+            Icons.home,
+            color: Colors.grey,
+            size: 30,
+          ),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          // backgroundColor: Color(ColorUtils.color1),
+          icon: Icon(
+            Icons.notifications,
+            color: Colors.grey,
+            size: 30,
+          ),
+          label: 'Notifications',
+        ),
+        BottomNavigationBarItem(
+          // backgroundColor: Color(ColorUtils.color1),
+          icon: Icon(
+            Icons.settings,
+            color: Colors.grey,
+            size: 30,
+          ),
+          label: 'Settings',
+        ),
+      ],
+      backgroundColor: Colors.white,
+    );
+  }
+
+  buildRoomsPage() {
     return MomentumBuilder(
         controllers: [
           DataController,
           AuthenticationController,
         ],
         builder: (context, snapshot) {
-          var dataModel = snapshot<DataModel>();
-          var dataController = dataModel.controller;
+          // var dataModel = snapshot<DataModel>();
+          // // var dataController = dataModel.controller;
           var authModel = snapshot<AuthenticationModel>();
           var authController = authModel.controller;
-          final devices = dataModel.devicesSnapshot?.docs ?? [];
+          // final devices = dataModel.devicesSnapshot?.docs ?? [];
 
-          print("devices" + devices.toString());
-          currentAccount = dataModel.account;
+          // print("devices" + devices.toString());
+          // currentAccount = dataModel.account;
           // print("home dataModel : " + currentAccount!.uid);
 
           return Scaffold(
-            backgroundColor: Theme.of(context).backgroundColor,
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AddDeviceScreen(),
-                  ),
-                );
-              },
-            ),
-            drawer: Drawer(),
+            backgroundColor: Colors.transparent,
             appBar: AppBar(
               title: Text(
                 'Lockstate',
@@ -82,12 +131,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   flex: 10,
                   child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                       stream: FirebaseFirestore.instance
-                          .collection('devices')
+                          .collection('rooms')
                           .where("userId",
                               isEqualTo: FirebaseAuth.instance.currentUser!.uid)
                           .snapshots(),
                       builder: (context, snapshot) {
                         var data = snapshot.data;
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (snapshot.data == null) {
+                          return Center(
+                            child: Text("No Rooms Registered"),
+                          );
+                        }
 
                         return GridView.builder(
                           padding: EdgeInsets.all(
@@ -100,17 +160,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 20,
                           ),
-                          scrollDirection: Axis.horizontal,
+                          scrollDirection: Axis.vertical,
                           itemCount: data!.docs.length,
                           itemBuilder: (context, index) {
                             var doc = data.docs[index];
-                            var device = Device.fromDocument(doc);
-                            print("home device name ${device.deviceName}");
+                            var room = Room.fromDocument(doc);
+                            // print("home room name ${room.name}");
                             return GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) {
-                                    return DeviceDetailScreen(device: device);
+                                    return RoomDetailScreen(room: room);
                                   },
                                 ));
                               },
@@ -138,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       height: 10,
                                     ),
                                     Text(
-                                      device.deviceName,
+                                      room.name,
                                       style: TextStyle(
                                         color: Color(ColorUtils.color3),
                                         fontSize: 20,
@@ -162,46 +222,69 @@ class _HomeScreenState extends State<HomeScreen> {
                     ColorUtils.color3,
                   ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Center(
-                    child: Text(
-                      "Security Level",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: NumberStepper(
-                      lineColor: Color(ColorUtils.color3),
-                      activeStepColor: Theme.of(context).accentColor,
-                      activeStepBorderColor: Colors.white,
-                      stepColor: Color(
-                        ColorUtils.color3,
-                      ),
-                      lineDotRadius: 3,
-                      activeStepBorderWidth: 3,
-                      lineLength: 60,
-                      numbers: [
-                        1,
-                        2,
-                        3,
-                        4,
-                      ]),
-                  flex: 1,
-                ),
-                Expanded(
-                  child: Container(),
-                  flex: 1,
-                ),
+                // Expanded(
+                //   flex: 1,
+                //   child: Center(
+                //     child: Text(
+                //       "Security Level",
+                //       style: TextStyle(
+                //         fontSize: 20,
+                //         fontWeight: FontWeight.w700,
+                //         color: Colors.white70,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // Expanded(
+                //   child: NumberStepper(
+                //       lineColor: Color(ColorUtils.color3),
+                //       activeStepColor: Theme.of(context).accentColor,
+                //       activeStepBorderColor: Colors.white,
+                //       stepColor: Color(
+                //         ColorUtils.color3,
+                //       ),
+                //       lineDotRadius: 3,
+                //       activeStepBorderWidth: 3,
+                //       lineLength: 60,
+                //       numbers: [
+                //         1,
+                //         2,
+                //         3,
+                //         4,
+                //       ]),
+                //   flex: 1,
+                // ),
               ],
             ),
           );
         });
+  }
+
+  buildPageView() {
+    return PageView(
+      controller: pageController,
+      onPageChanged: onPageChanged,
+      children: [
+        buildRoomsPage(),
+        NotificationsScreen(),
+        SettingsScreen(),
+      ],
+    );
+  }
+
+  onPageChanged(int page) {
+    setState(() {
+      currentIndex = page;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
+      body: buildPageView(),
+      bottomNavigationBar: buildBottomNavigationBar(),
+    );
   }
 }
 

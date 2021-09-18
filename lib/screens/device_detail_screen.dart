@@ -26,11 +26,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             .collection('history')
             .snapshots(),
         builder: (context, snapshot) {
-          var length = snapshot.data!.docs.length;
-          var data = snapshot.data!.docs;
-          print("data " + data[length - 1].data().toString());
-          var latestDocData =
-              historyFromJson(json.encode(data[length - 1].data()));
+          print("snapshot " + snapshot.toString());
+          if (snapshot.data == null || snapshot.data!.docs.length == 0) {
+            return Scaffold(
+              body: Center(
+                child: Text("No history"),
+              ),
+            );
+          }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(
               body: Center(
@@ -38,6 +41,12 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               ),
             );
           }
+          var length = snapshot.data!.docs.length;
+          var data = snapshot.data!.docs;
+          // print("data " + data[length - 1].data().toString());
+          var latestDocData =
+              historyFromJson(json.encode(data[length - 1].data()));
+
           // print(latestDocData.toString());
           return Scaffold(
             appBar: AppBar(

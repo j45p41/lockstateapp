@@ -62,7 +62,16 @@ exports.mqttFunction = functions.https.onRequest
             var userId = doc.data()["userId"];
             var fcmIds = doc.data()["fcmIds"];
             var deviceName = doc.data()["deviceName"];
-            var body = { "message": parsedMessage, "deviceId": parsedMessage.end_device_ids.device_id, "userId": userId, "fcmIds": fcmIds, "deviceName": deviceName, }
+            var roomId = doc.data()["roomId"];
+
+            var body = {
+                "message": parsedMessage,
+                "deviceId": parsedMessage.end_device_ids.device_id,
+                "userId": userId,
+                "fcmIds": fcmIds,
+                "deviceName": deviceName,
+                "roomId": roomId,
+            }
             functions.logger.log("Body deviceId " + body.deviceId);
             functions.logger.log("Body device name " + body.deviceName);
             functions.logger.log("Body fcm " + body.fcmIds);
@@ -71,7 +80,10 @@ exports.mqttFunction = functions.https.onRequest
 
 
             await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).collection('history').add(body).catch((e) => {
-                functions.logger.log("write doc error " + e);
+                functions.logger.log("write doc devices error " + e);
+            });
+            await db.collection('notifications').add(body).catch((e) => {
+                functions.logger.log("write doc notifications error " + e);
             });
 
         });

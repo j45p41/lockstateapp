@@ -6,6 +6,7 @@ import 'package:momentum/momentum.dart';
 class FcmService extends MomentumService {
   FirebaseMessaging fcm = FirebaseMessaging.instance;
   Future<void> startFCMService(BuildContext context) async {
+    print("Fcm service started");
     try {
       RemoteMessage? initialMessage = await fcm.getInitialMessage();
       if (initialMessage != null) {}
@@ -15,10 +16,6 @@ class FcmService extends MomentumService {
 
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         print("Notification data " + message.notification!.title.toString());
-      });
-
-      FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
-        print("Notification data " + message.notification!.body.toString());
       });
     } catch (e, stack) {
       print("e = $e");

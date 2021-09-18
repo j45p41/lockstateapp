@@ -14,9 +14,14 @@ import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 
 String? fcmId;
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("background message " + message.data.toString());
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await Firebase.initializeApp();
   runApp(momentum());
 
@@ -58,8 +63,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Authenticate extends StatelessWidget {
+class Authenticate extends StatefulWidget {
   const Authenticate({Key? key}) : super(key: key);
+
+  @override
+  _AuthenticateState createState() => _AuthenticateState();
+}
+
+class _AuthenticateState extends State<Authenticate> {
+  @override
+  void initState() {
+    FcmService().startFCMService(context);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
