@@ -29,8 +29,25 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           print("snapshot " + snapshot.toString());
           if (snapshot.data == null || snapshot.data!.docs.length == 0) {
             return Scaffold(
+              backgroundColor: Theme.of(context).backgroundColor,
+              appBar: AppBar(
+                elevation: 0,
+                centerTitle: false,
+                title: Text(
+                  widget.device.deviceName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    // fontWeight: FontWeight.w700,
+                  ),
+                ),
+                backgroundColor: Theme.of(context).backgroundColor,
+              ),
               body: Center(
-                child: Text("No history"),
+                child: Text(
+                  "No history",
+                  style: TextStyle(color: Color(ColorUtils.color4)),
+                ),
               ),
             );
           }
@@ -51,18 +68,24 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
+              centerTitle: false,
               title: Text(
-                "Bedroom",
+                widget.device.deviceName,
                 style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  fontSize: 20,
+                  // fontWeight: FontWeight.w700,
                 ),
               ),
               backgroundColor: Theme.of(context).backgroundColor,
-              leading: Icon(
-                Icons.arrow_back,
-                color: Colors.white70,
+              leading: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.white,
+                ),
               ),
             ),
             backgroundColor: Theme.of(context).backgroundColor,
@@ -81,7 +104,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                             clipBehavior: Clip.none,
                             children: [
                               Icon(
-                                Icons.king_bed,
+                                Icons.sensors,
                                 size: 300,
                                 color: isOn
                                     ? Colors.white

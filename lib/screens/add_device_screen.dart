@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/model/room.dart';
+import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 
 import '../main.dart';
@@ -91,7 +92,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
       final dataController = Momentum.controller<DataController>(context);
 
       dataController.addDevice(deviceId, FirebaseAuth.instance.currentUser!.uid,
-          deviceName, isIndoor,widget.room.roomId);
+          deviceName, isIndoor, widget.room.roomId);
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => Authenticate(),
       ));
@@ -101,10 +102,13 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).backgroundColor,
         title: Text(
           "Add Device",
         ),
+        centerTitle: false,
       ),
       body: Form(
         key: _formKey,
@@ -112,34 +116,92 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
           child: Column(
             children: [
+              SizedBox(
+                height: 40,
+              ),
               TextFormField(
+                style: TextStyle(color: Color(ColorUtils.color4)),
                 decoration: InputDecoration(
+                  fillColor: Color(ColorUtils.color2),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  hintText: "Device name",
+                  hintText: "Enter Device name",
+                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
                 ),
                 onSaved: (newValue) => deviceName = newValue!,
               ),
+              SizedBox(
+                height: 5,
+              ),
               TextFormField(
+                style: TextStyle(color: Color(ColorUtils.color4)),
                 decoration: InputDecoration(
+                  fillColor: Color(ColorUtils.color2),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  hintText: "Device Id",
+                  hintText: "Enter Device Id",
+                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
                 ),
                 onSaved: (newValue) => deviceId = newValue!,
               ),
-              CupertinoSwitch(
-                  value: isIndoor,
-                  onChanged: (value) {
-                    setState(() {
-                      isIndoor = value;
-                    });
-                  }),
-              ElevatedButton(
-                onPressed: addDevice,
-                child: Text("Add Device"),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  isIndoor
+                      ? Text(
+                          "Indoor  ",
+                          style: TextStyle(
+                            color: Color(
+                              ColorUtils.color4,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          "Outdoor  ",
+                          style: TextStyle(
+                            color: Color(
+                              ColorUtils.color4,
+                            ),
+                          ),
+                        ),
+                  CupertinoSwitch(
+                      value: isIndoor,
+                      onChanged: (value) {
+                        setState(() {
+                          isIndoor = value;
+                        });
+                      }),
+                ],
+              ),
+              SizedBox(
+                height: 40,
+              ),
+              GestureDetector(
+                onTap: addDevice,
+                child: Container(
+                  child: Center(
+                    child: Text(
+                      "Add Device",
+                      style: TextStyle(
+                        color: Color(
+                          ColorUtils.color4,
+                        ),
+                      ),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(10),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                      color: Color(ColorUtils.color3),
+                      borderRadius: BorderRadius.circular(10)),
+                ),
               ),
             ],
           ),

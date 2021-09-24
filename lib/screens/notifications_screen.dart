@@ -21,6 +21,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
         title: Text("Notifications"),
+        backgroundColor: Theme.of(context).backgroundColor,
+        elevation: 0,
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance

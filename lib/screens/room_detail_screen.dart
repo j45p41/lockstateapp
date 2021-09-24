@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/model/device.dart';
@@ -21,19 +22,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
-        floatingActionButton: FloatingActionButton(
-            child: Icon(
-              Icons.add,
-            ),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return AddDeviceScreen(widget.room);
-                },
-              ));
-            }),
         appBar: AppBar(
           title: Text(widget.room.name),
+          backgroundColor: Theme.of(context).backgroundColor,
+          elevation: 0,
+          centerTitle: false,
         ),
         body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
@@ -68,8 +61,73 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   mainAxisSpacing: 20,
                 ),
                 scrollDirection: Axis.vertical,
-                itemCount: data!.docs.length,
+                itemCount: data!.docs.length + 1,
                 itemBuilder: (context, index) {
+                  if (index == data.docs.length) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) {
+                            return AddDeviceScreen(widget.room);
+                          },
+                        ));
+                      },
+                      child: DottedBorder(
+                        color: Color(ColorUtils.color3),
+                        borderType: BorderType.RRect,
+                        // padding: EdgeInsets.all(10),
+                        radius: Radius.circular(20),
+                        strokeWidth: 3,
+
+                        dashPattern: [10, 5],
+                        strokeCap: StrokeCap.butt,
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).backgroundColor,
+                              // borderRadius: BorderRadius.circular(20),
+                              // boxShadow: [
+                              //   BoxShadow(
+                              //       blurRadius: 4,
+                              //       color: Theme.of(context).accentColor)
+                              // ],
+                              // border: Border.all(
+                              //     color: Theme.of(context).accentColor),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Color(ColorUtils.color2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 40,
+                                      color: Color(ColorUtils.color3),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  "Add Device",
+                                  style: TextStyle(
+                                    color: Color(ColorUtils.color3),
+                                    fontSize: 20,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                   var doc = data.docs[index];
                   var device = Device.fromDocument(doc);
                   return GestureDetector(
@@ -82,23 +140,33 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).backgroundColor,
+                        color: Color.fromRGBO(123, 128, 128, 0.06),
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                              blurRadius: 4,
-                              color: Theme.of(context).accentColor)
-                        ],
-                        border:
-                            Border.all(color: Theme.of(context).accentColor),
+
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //       blurRadius: 4,
+                        //       color: Theme.of(context).accentColor)
+                        // ],
+                        // border: Border.all(
+                        //     color: Theme.of(context).accentColor),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.home,
-                            size: 60,
-                            color: Color(ColorUtils.color3),
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Color(ColorUtils.color2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.door_front_door_outlined,
+                                size: 40,
+                                color: Color(ColorUtils.color3),
+                              ),
+                            ),
                           ),
                           SizedBox(
                             height: 10,
@@ -106,8 +174,8 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                           Text(
                             device.deviceName,
                             style: TextStyle(
-                              color: Color(ColorUtils.color3),
-                              fontSize: 20,
+                              color: Color(ColorUtils.color4),
+                              fontSize: 14,
                             ),
                           )
                         ],
