@@ -16,6 +16,8 @@ import 'package:lockstate/screens/settings_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 
+import 'package:dotted_border/dotted_border.dart';
+
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -34,7 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   buildBottomNavigationBar() {
     return BottomNavigationBar(
+      selectedItemColor: Colors.blue,
       currentIndex: currentIndex,
+      unselectedItemColor: Colors.grey,
       onTap: (int index) {
         setState(() {
           currentIndex = index;
@@ -48,33 +52,35 @@ class _HomeScreenState extends State<HomeScreen> {
       items: [
         BottomNavigationBarItem(
           // backgroundColor: Color(ColorUtils.color1),
+
           icon: Icon(
             Icons.home,
-            color: Colors.grey,
+            // color: Colors.grey,
             size: 30,
           ),
+
           label: 'Home',
         ),
         BottomNavigationBarItem(
           // backgroundColor: Color(ColorUtils.color1),
           icon: Icon(
             Icons.notifications,
-            color: Colors.grey,
+            // color: Colors.grey,
             size: 30,
           ),
-          label: 'Notifications',
+          label: 'Notificactions',
         ),
         BottomNavigationBarItem(
           // backgroundColor: Color(ColorUtils.color1),
           icon: Icon(
             Icons.settings,
-            color: Colors.grey,
+            // color: Colors.grey,
             size: 30,
           ),
           label: 'Settings',
         ),
       ],
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromRGBO(123, 128, 128, 0.1),
     );
   }
 
@@ -98,18 +104,18 @@ class _HomeScreenState extends State<HomeScreen> {
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
               title: Text(
                 'Lockstate',
-                style: TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    authController.logout();
-                  },
-                  child: Text("Logout"),
+                style: TextStyle(
+                  wordSpacing: 3,
+                  fontSize: 30,
+                  color: Color(
+                    ColorUtils.color4,
+                  ),
                 ),
-              ],
+              ),
               centerTitle: false,
             ),
             body: Column(
@@ -118,11 +124,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   flex: 1,
                   child: Center(
                     child: Text(
-                      "Welcome to Lockstate",
+                      "Doors",
                       style: TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.w700,
-                        color: Theme.of(context).accentColor,
+                        color: Color(ColorUtils.color4),
                       ),
                     ),
                   ),
@@ -161,11 +167,78 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSpacing: 20,
                           ),
                           scrollDirection: Axis.vertical,
-                          itemCount: data!.docs.length,
+                          itemCount: data!.docs.length + 1,
                           itemBuilder: (context, index) {
+                            // print("home room name ${room.name}");
+                            if (index == data.docs.length) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) {
+                                      return AddRoomScreen();
+                                    },
+                                  ));
+                                },
+                                child: DottedBorder(
+                                  color: Color(ColorUtils.color3),
+                                  borderType: BorderType.RRect,
+                                  // padding: EdgeInsets.all(10),
+                                  radius: Radius.circular(20),
+                                  strokeWidth: 3,
+
+                                  dashPattern: [10, 5],
+                                  strokeCap: StrokeCap.butt,
+                                  child: Center(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Theme.of(context).backgroundColor,
+                                        // borderRadius: BorderRadius.circular(20),
+                                        // boxShadow: [
+                                        //   BoxShadow(
+                                        //       blurRadius: 4,
+                                        //       color: Theme.of(context).accentColor)
+                                        // ],
+                                        // border: Border.all(
+                                        //     color: Theme.of(context).accentColor),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: Color(ColorUtils.color2),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.add,
+                                                size: 40,
+                                                color: Color(ColorUtils.color3),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text(
+                                            "Add Door",
+                                            style: TextStyle(
+                                              color: Color(ColorUtils.color3),
+                                              fontSize: 20,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                             var doc = data.docs[index];
                             var room = Room.fromDocument(doc);
-                            // print("home room name ${room.name}");
                             return GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
@@ -176,23 +249,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).backgroundColor,
+                                  color: Color.fromRGBO(123, 128, 128, 0.06),
                                   borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        blurRadius: 4,
-                                        color: Theme.of(context).accentColor)
-                                  ],
-                                  border: Border.all(
-                                      color: Theme.of(context).accentColor),
+
+                                  // boxShadow: [
+                                  //   BoxShadow(
+                                  //       blurRadius: 4,
+                                  //       color: Theme.of(context).accentColor)
+                                  // ],
+                                  // border: Border.all(
+                                  //     color: Theme.of(context).accentColor),
                                 ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.home,
-                                      size: 60,
-                                      color: Color(ColorUtils.color3),
+                                    Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Color(ColorUtils.color2),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.door_front_door_outlined,
+                                          size: 40,
+                                          color: Color(ColorUtils.color3),
+                                        ),
+                                      ),
                                     ),
                                     SizedBox(
                                       height: 10,
@@ -200,8 +283,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       room.name,
                                       style: TextStyle(
-                                        color: Color(ColorUtils.color3),
-                                        fontSize: 20,
+                                        color: Color(ColorUtils.color4),
+                                        fontSize: 14,
                                       ),
                                     )
                                   ],
@@ -216,12 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 //   child: Container(),
                 //   flex: 1,
                 // ),
-                Divider(
-                  thickness: 1,
-                  color: Color(
-                    ColorUtils.color3,
-                  ),
-                ),
+
                 // Expanded(
                 //   flex: 1,
                 //   child: Center(

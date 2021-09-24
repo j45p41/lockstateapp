@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lockstate/authentication/authentication.controller.dart';
 import 'package:lockstate/screens/signup_screen.dart';
+import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 
 import '../main.dart';
@@ -29,45 +30,113 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
-        title: Text("Login"),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => SignupScreen(),
-                ));
-              },
-              child: Text("Signup"))
-        ],
+        backgroundColor: Theme.of(context).backgroundColor,
+        elevation: 0,
       ),
       body: Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              SizedBox(
+                height: 30,
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Log in",
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 3,
+                    color: Color(
+                      ColorUtils.color4,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
               TextFormField(
+                style: TextStyle(color: Color(ColorUtils.color4)),
                 decoration: InputDecoration(
+                  fillColor: Color(ColorUtils.color2),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  hintText: "Email",
+                  hintText: "Enter your email address",
+                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
+
                 ),
                 onSaved: (newValue) => email = newValue!,
               ),
+              SizedBox(
+                height: 5,
+              ),
               TextFormField(
+                style: TextStyle(color: Color(ColorUtils.color4)),
                 decoration: InputDecoration(
+                  fillColor: Color(ColorUtils.color2),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  hintText: "Password",
+                  hintText: "Enter you password",
+                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
                 ),
                 onSaved: (newValue) => password = newValue!,
               ),
-              ElevatedButton(
-                onPressed: login,
-                child: Text("Login"),
+              SizedBox(
+                height: 40,
+              ),
+              GestureDetector(
+                onTap: login,
+                child: Container(
+                  child: Center(
+                    child: Text(
+                      "Log in",
+                      style: TextStyle(
+                        color: Color(
+                          ColorUtils.color4,
+                        ),
+                      ),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(10),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                      color: Color(ColorUtils.color3),
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Dont have an account?",
+                    style: TextStyle(
+                      color: Color(
+                        ColorUtils.color4,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => SignupScreen(),
+                      ));
+                    },
+                    child: Text(
+                      "Signup",
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lockstate/model/account.dart';
 import 'package:momentum/momentum.dart';
-
 import 'index.dart';
 
 class DataModel extends MomentumModel<DataController> {
