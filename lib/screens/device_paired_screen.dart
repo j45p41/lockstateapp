@@ -49,9 +49,10 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 
   writeData(String data) async {
     if (targetCharacteristic == null) return;
-
+    print("write data");
     List<int> bytes = utf8.encode(data);
-    await targetCharacteristic.write(bytes);
+    var res = await targetCharacteristic.write(bytes);
+    print(res);
   }
 
   submitAction() {
