@@ -23,6 +23,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
   @override
   void initState() {
     super.initState();
+    discoverServices();
   }
 
   discoverServices() async {
@@ -94,7 +95,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                       padding: const EdgeInsets.all(16),
                       child: ElevatedButton(
                         onPressed: submitAction,
-                      child: Text('Submit'),
+                        child: Text('Submit'),
                       ),
                     )
                   ],
