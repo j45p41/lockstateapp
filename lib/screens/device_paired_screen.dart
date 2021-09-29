@@ -16,7 +16,8 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
         body: Column(
           children: [
             Center(
-              child: Text("DeviceName " + widget.device.name.toString()),
+              child:
+                  Text("DeviceName sdfsdfdsf" + widget.device.name.toString()),
             ),
             Center(
               child: Text("DeviceId" + widget.device.id.id.toString()),
