@@ -30,14 +30,15 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
     if (widget.device == null) {
       return;
     }
+    print("running discover services");
 
     List<BluetoothService> services = await widget.device.discoverServices();
     services.forEach((service) {
       if (service.uuid.toString() == SERVICE_UUID) {
         service.characteristics.forEach((characteristics) {
           if (characteristics.uuid.toString() == CHARACTERISTIC_UUID) {
-            targetCharacteristic = characteristics;
             setState(() {
+              targetCharacteristic = characteristics;
               connectionText = "All Ready with ${widget.device.name}";
             });
           }
