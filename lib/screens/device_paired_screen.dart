@@ -141,51 +141,52 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 setState(() {
                                   readData = utf8.decode(res);
                                 });
-                                List roomsIds = readData.split(',').toList();
-                                roomsIds.forEach((element) {
-                                  element =
-                                      element.toString().trim().substring(1);
+                              List temp = readData.split(',').toList();
+                                List temp1 = [];
+                                temp.forEach((element) {
+                                  temp1.add(element.toString().substring(1));
                                 });
-                                print(roomsIds);
-                                roomsIds.toSet().toList();
+
+                                print(temp1);
+                                List roomsIds = [];
+                                roomsIds = temp1.toSet().toList();
                                 print("after set " + roomsIds.toString());
+                                roomsIds.forEach((element) {
+                                  FirebaseFirestore.instance
+                                      .collection('rooms')
+                                      .add({
+                                    'name': "room$element",
+                                    'userId':
+                                        FirebaseAuth.instance.currentUser!.uid
+                                  }).then((doc) {
+                                    FirebaseFirestore.instance
+                                        .collection('rooms')
+                                        .doc(doc.id)
+                                        .update({'roomId': doc.id});
 
-                                // roomsIds.forEach((element) {
-                                //   FirebaseFirestore.instance
-                                //       .collection('rooms')
-                                //       .add({
-                                //     'name': "room$element",
-                                //     'userId':
-                                //         FirebaseAuth.instance.currentUser!.uid
-                                //   }).then((doc) {
-                                //     FirebaseFirestore.instance
-                                //         .collection('rooms')
-                                //         .doc(doc.id)
-                                //         .update({'roomId': doc.id});
-
-                                //     dataController.addDevice(
-                                //         "O" + element,
-                                //         FirebaseAuth.instance.currentUser!.uid,
-                                //         "O" + element,
-                                //         false,
-                                //         doc.id);
-                                //     dataController.addDevice(
-                                //         "I" + element,
-                                //         FirebaseAuth.instance.currentUser!.uid,
-                                //         "I" + element,
-                                //         true,
-                                //         doc.id);
-                                //     setState(() {
-                                //       isLoading = false;
-                                //     });
-                                //     Navigator.of(context)
-                                //         .pushReplacement(MaterialPageRoute(
-                                //       builder: (context) {
-                                //         return Authenticate();
-                                //       },
-                                //     ));
-                                //   });
-                                // });
+                                    dataController.addDevice(
+                                        "O" + element,
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        "O" + element,
+                                        false,
+                                        doc.id);
+                                    dataController.addDevice(
+                                        "I" + element,
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        "I" + element,
+                                        true,
+                                        doc.id);
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    Navigator.of(context)
+                                        .pushReplacement(MaterialPageRoute(
+                                      builder: (context) {
+                                        return Authenticate();
+                                      },
+                                    ));
+                                  });
+                                });
                               },
                               child: Text("Press to read"))
                         ],
