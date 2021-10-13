@@ -1,7 +1,12 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:lockstate/data/data.controller.dart';
+import 'package:lockstate/main.dart';
+import 'package:momentum/momentum.dart';
 
 class DevicePairedScreen extends StatefulWidget {
   final BluetoothDevice device;
@@ -64,70 +69,124 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
   TextEditingController wifiNameController = TextEditingController();
   TextEditingController wifiPasswordController = TextEditingController();
   String readData = '';
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(connectionText),
       ),
-      body: Container(
-          child: targetCharacteristic == null
-              ? Center(
-                  child: Text(
-                    "Waiting...",
-                    style: TextStyle(fontSize: 34, color: Colors.red),
-                  ),
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: TextField(
-                          controller: wifiNameController,
-                          decoration: InputDecoration(labelText: 'Wifi Name'),
-                        ),
+      body: isLoading
+          ? Center(
+              child: Text("Creating rooms and doors please wait..."),
+            )
+          : Container(
+              child: targetCharacteristic == null
+                  ? Center(
+                      child: Text(
+                        "Waiting...",
+                        style: TextStyle(fontSize: 34, color: Colors.red),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: TextField(
-                          controller: wifiPasswordController,
-                          decoration:
-                              InputDecoration(labelText: 'Wifi Password'),
-                        ),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: TextField(
+                              controller: wifiNameController,
+                              decoration:
+                                  InputDecoration(labelText: 'Wifi Name'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: TextField(
+                              controller: wifiPasswordController,
+                              decoration:
+                                  InputDecoration(labelText: 'Wifi Password'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: ElevatedButton(
+                              onPressed: submitAction,
+                              child: Text('Submit'),
+                            ),
+                          ),
+                          StreamBuilder(
+                            stream: targetCharacteristic.value,
+                            builder: (context, snapshot) {
+                              return Text(snapshot.toString());
+                            },
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(readData.toString()),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          ElevatedButton(
+                              onPressed: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                var res = await targetCharacteristic.read();
+                                final dataController =
+                                    Momentum.controller<DataController>(
+                                        context);
+
+                                print(res.toString());
+                                setState(() {
+                                  readData = utf8.decode(res);
+                                });
+                                List roomsIds = readData.split(',').toList();
+                                roomsIds.forEach((element) {
+                                  element = element.substring(1);
+                                });
+                                roomsIds.toSet().toList();
+                                roomsIds.forEach((element) {
+                                  FirebaseFirestore.instance
+                                      .collection('rooms')
+                                      .add({
+                                    'name': "room$element",
+                                    'userId':
+                                        FirebaseAuth.instance.currentUser!.uid
+                                  }).then((doc) {
+                                    FirebaseFirestore.instance
+                                        .collection('rooms')
+                                        .doc(doc.id)
+                                        .update({'roomId': doc.id});
+
+                                    dataController.addDevice(
+                                        "O" + element,
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        "O" + element,
+                                        false,
+                                        doc.id);
+                                    dataController.addDevice(
+                                        "I" + element,
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        "I" + element,
+                                        true,
+                                        doc.id);
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    Navigator.of(context)
+                                        .pushReplacement(MaterialPageRoute(
+                                      builder: (context) {
+                                        return Authenticate();
+                                      },
+                                    ));
+                                  });
+                                });
+                              },
+                              child: Text("Press to read"))
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ElevatedButton(
-                          onPressed: submitAction,
-                          child: Text('Submit'),
-                        ),
-                      ),
-                      StreamBuilder(
-                        stream: targetCharacteristic.value,
-                        builder: (context, snapshot) {
-                          return Text(snapshot.toString());
-                        },
-                      ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Text(readData.toString()),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      ElevatedButton(
-                          onPressed: () async {
-                            var res = await targetCharacteristic.read();
-                            print(res.toString());
-                            setState(() {
-                              readData = utf8.decode(res);
-                            });
-                          },
-                          child: Text("Press to read"))
-                    ],
-                  ),
-                )),
+                    )),
     );
   }
 }

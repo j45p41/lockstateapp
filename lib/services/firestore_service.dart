@@ -39,6 +39,7 @@ class FirestoreService extends MomentumService {
         // 'dev_eui': '',
       });
     });
+    
   }
 
   //add remaining fields
