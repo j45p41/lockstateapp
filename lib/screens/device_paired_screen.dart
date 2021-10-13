@@ -143,45 +143,48 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 });
                                 List roomsIds = readData.split(',').toList();
                                 roomsIds.forEach((element) {
-                                  element = element.substring(1);
+                                  element = element.trim().substring(1);
                                 });
+                                print(roomsIds);
                                 roomsIds.toSet().toList();
-                                roomsIds.forEach((element) {
-                                  FirebaseFirestore.instance
-                                      .collection('rooms')
-                                      .add({
-                                    'name': "room$element",
-                                    'userId':
-                                        FirebaseAuth.instance.currentUser!.uid
-                                  }).then((doc) {
-                                    FirebaseFirestore.instance
-                                        .collection('rooms')
-                                        .doc(doc.id)
-                                        .update({'roomId': doc.id});
+                                print("after set " + roomsIds.toString());
 
-                                    dataController.addDevice(
-                                        "O" + element,
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                        "O" + element,
-                                        false,
-                                        doc.id);
-                                    dataController.addDevice(
-                                        "I" + element,
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                        "I" + element,
-                                        true,
-                                        doc.id);
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    Navigator.of(context)
-                                        .pushReplacement(MaterialPageRoute(
-                                      builder: (context) {
-                                        return Authenticate();
-                                      },
-                                    ));
-                                  });
-                                });
+                                // roomsIds.forEach((element) {
+                                //   FirebaseFirestore.instance
+                                //       .collection('rooms')
+                                //       .add({
+                                //     'name': "room$element",
+                                //     'userId':
+                                //         FirebaseAuth.instance.currentUser!.uid
+                                //   }).then((doc) {
+                                //     FirebaseFirestore.instance
+                                //         .collection('rooms')
+                                //         .doc(doc.id)
+                                //         .update({'roomId': doc.id});
+
+                                //     dataController.addDevice(
+                                //         "O" + element,
+                                //         FirebaseAuth.instance.currentUser!.uid,
+                                //         "O" + element,
+                                //         false,
+                                //         doc.id);
+                                //     dataController.addDevice(
+                                //         "I" + element,
+                                //         FirebaseAuth.instance.currentUser!.uid,
+                                //         "I" + element,
+                                //         true,
+                                //         doc.id);
+                                //     setState(() {
+                                //       isLoading = false;
+                                //     });
+                                //     Navigator.of(context)
+                                //         .pushReplacement(MaterialPageRoute(
+                                //       builder: (context) {
+                                //         return Authenticate();
+                                //       },
+                                //     ));
+                                //   });
+                                // });
                               },
                               child: Text("Press to read"))
                         ],
