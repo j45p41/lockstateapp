@@ -143,7 +143,8 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 });
                                 List roomsIds = readData.split(',').toList();
                                 roomsIds.forEach((element) {
-                                  element = element.trim().substring(1);
+                                  element =
+                                      element.toString().trim().substring(1);
                                 });
                                 print(roomsIds);
                                 roomsIds.toSet().toList();
