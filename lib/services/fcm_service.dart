@@ -12,6 +12,8 @@ class FcmService extends MomentumService {
       if (initialMessage != null) {}
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         print("Notification data " + message.notification!.body.toString());
+
+      
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {

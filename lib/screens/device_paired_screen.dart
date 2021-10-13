@@ -45,6 +45,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
         });
       }
     });
+    targetCharacteristic.setNotifyValue(true);
   }
 
   writeData(String data) async {
@@ -62,7 +63,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 
   TextEditingController wifiNameController = TextEditingController();
   TextEditingController wifiPasswordController = TextEditingController();
-
+  String readData = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,30 +78,55 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                     style: TextStyle(fontSize: 34, color: Colors.red),
                   ),
                 )
-              : Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: TextField(
-                        controller: wifiNameController,
-                        decoration: InputDecoration(labelText: 'Wifi Name'),
+              : SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: TextField(
+                          controller: wifiNameController,
+                          decoration: InputDecoration(labelText: 'Wifi Name'),
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: TextField(
-                        controller: wifiPasswordController,
-                        decoration: InputDecoration(labelText: 'Wifi Password'),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: TextField(
+                          controller: wifiPasswordController,
+                          decoration:
+                              InputDecoration(labelText: 'Wifi Password'),
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ElevatedButton(
-                        onPressed: submitAction,
-                        child: Text('Submit'),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ElevatedButton(
+                          onPressed: submitAction,
+                          child: Text('Submit'),
+                        ),
                       ),
-                    )
-                  ],
+                      StreamBuilder(
+                        stream: targetCharacteristic.value,
+                        builder: (context, snapshot) {
+                          return Text(snapshot.toString());
+                        },
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Text(readData.toString()),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      ElevatedButton(
+                          onPressed: () async {
+                            var res = await targetCharacteristic.read();
+                            print(res.toString());
+                            setState(() {
+                              readData = utf8.decode(res);
+                            });
+                          },
+                          child: Text("Press to read"))
+                    ],
+                  ),
                 )),
     );
   }
