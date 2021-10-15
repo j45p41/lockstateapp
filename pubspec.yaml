@@ -40,7 +40,7 @@ dependencies:
   flutter_blue: ^0.8.0
   permission_handler: ^8.1.6
   dotted_border: ^2.0.0+1
-  # qr_code_scanner: ^0.5.2
+  qr_code_scanner: ^0.5.2
   
 
 dev_dependencies:
