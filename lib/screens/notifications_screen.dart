@@ -78,7 +78,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         subtitle: Text(
                           DateTime.parse(historyItem
-                                  .message.uplinkMessage.receivedAt
+                                  .message.receivedAt
                                   .toString())
                               .toString(),
                           style: TextStyle(color: Colors.white70),

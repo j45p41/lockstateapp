@@ -82,6 +82,8 @@ exports.mqttFunction = functions.https.onRequest
             await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).collection('history').add(body).catch((e) => {
                 functions.logger.log("write doc devices error " + e);
             });
+
+            await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState });
             await db.collection('notifications').add(body).catch((e) => {
                 functions.logger.log("write doc notifications error " + e);
             });

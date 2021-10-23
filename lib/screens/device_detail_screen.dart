@@ -168,7 +168,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                         ),
                         subtitle: Text(
                           DateTime.parse(historyItem
-                                  .message.uplinkMessage.receivedAt
+                                  .message.receivedAt
                                   .toString())
                               .toString(),
                           style: TextStyle(color: Colors.white70),
