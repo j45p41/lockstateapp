@@ -32,13 +32,14 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Color(ColorUtils.colorDarkGrey),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Color(ColorUtils.color2),
         title: Text(
           "Add Door",
         ),
-        centerTitle: false,
+        centerTitle: true,
+        automaticallyImplyLeading: true,
       ),
       body: Form(
         key: _formKey,
@@ -46,22 +47,35 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
           child: Column(
             children: [
+              SizedBox(
+                height: 10,
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Enter Door Name : ",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ),
+              SizedBox(
+                height: 10,
+              ),
               TextFormField(
-                style: TextStyle(color: Color(ColorUtils.color4)),
+                style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  fillColor: Color(ColorUtils.color2),
+                  fillColor: Color(ColorUtils.colorWhite),
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  hintText: "Enter Door name",
+                  hintText: "Type here",
                   hintStyle: TextStyle(color: Color(ColorUtils.color4)),
                 ),
                 onSaved: (newValue) => roomName = newValue!,
               ),
-              SizedBox(
-                height: 40,
-              ),
+              Spacer(),
               GestureDetector(
                 onTap: addDevice,
                 child: Container(
@@ -70,7 +84,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                       "Add Door",
                       style: TextStyle(
                         color: Color(
-                          ColorUtils.color4,
+                          ColorUtils.colorWhite,
                         ),
                       ),
                     ),
@@ -81,6 +95,9 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                       color: Color(ColorUtils.color3),
                       borderRadius: BorderRadius.circular(10)),
                 ),
+              ),
+              SizedBox(
+                height: 30,
               ),
             ],
           ),

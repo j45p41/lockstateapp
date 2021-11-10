@@ -18,11 +18,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     print("user id " + FirebaseAuth.instance.currentUser!.uid.toString());
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Color(ColorUtils.colorDarkGrey),
       appBar: AppBar(
-        title: Text("Notifications"),
-        backgroundColor: Theme.of(context).backgroundColor,
         elevation: 0,
+        backgroundColor: Color(ColorUtils.colorDarkGrey),
+        title: Text(
+          'Notifications',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: Color(
+              ColorUtils.colorWhite,
+            ),
+          ),
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.symmetric(
+              vertical: 10,
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: 8,
+            ),
+            width: 100,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(5)),
+            child: Image.asset(
+              "assets/images/logo.png",
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(
+            width: 10,
+          )
+        ],
+        centerTitle: false,
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
@@ -38,9 +68,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               return Center(
                 child: Text(
                   "No notifications",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(),
                 ),
               );
             }
@@ -58,38 +86,198 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 historyFromJson(json.encode(data[length - 1].data()));
 
             // print(latestDocData.toString());
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            return Container(
+              margin: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(8)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                       child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
                     itemCount: length,
                     itemBuilder: (context, index) {
                       print("index " + index.toString());
                       var historyItem =
                           historyFromJson(json.encode(data[index].data()));
 
-                      return ListTile(
-                        title: Text(
-                          "Event Type : ${historyItem.message.uplinkMessage.decodedPayload.lockState.toString() == "1" ? "Open" : "Close"}",
-                          style: TextStyle(color: Colors.white70),
+                      return Container(
+                        // elevation: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: Offset(4.0, 10.0), //(x,y)
+                              blurRadius: 8.0,
+                              spreadRadius: 4,
+                            ),
+                          ],
                         ),
-                        subtitle: Text(
-                          DateTime.parse(historyItem
-                                  .message.receivedAt
-                                  .toString())
-                              .toString(),
-                          style: TextStyle(color: Colors.white70),
+                        margin: EdgeInsets.only(top: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Color(historyItem.message.uplinkMessage
+                                              .decodedPayload.lockState ==
+                                          0
+                                      ? ColorUtils.colorGrey
+                                      : historyItem.message.uplinkMessage
+                                                  .decodedPayload.lockState ==
+                                              1
+                                          ? ColorUtils.colorRed
+                                          : historyItem
+                                                      .message
+                                                      .uplinkMessage
+                                                      .decodedPayload
+                                                      .lockState ==
+                                                  2
+                                              ? ColorUtils.colorGreen
+                                              : historyItem
+                                                          .message
+                                                          .uplinkMessage
+                                                          .decodedPayload
+                                                          .lockState ==
+                                                      3
+                                                  ? ColorUtils.colorRed
+                                                  : ColorUtils.colorRed),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(6),
+                                    bottomLeft: Radius.circular(6),
+                                  ),
+                                  // boxShadow: [
+                                  //   BoxShadow(
+                                  //     color: Colors.grey,
+                                  //     offset: Offset(4.0, 10.0), //(x,y)
+                                  //     blurRadius: 6.0,
+                                  //   ),
+                                  // ],
+                                ),
+                                height: 60,
+                                child: Center(
+                                  child: Text(
+                                    historyItem.message.uplinkMessage
+                                                .decodedPayload.lockState ==
+                                            0
+                                        ? "Not Set"
+                                        : historyItem.message.uplinkMessage
+                                                    .decodedPayload.lockState ==
+                                                1
+                                            ? "Unlocked"
+                                            : historyItem
+                                                        .message
+                                                        .uplinkMessage
+                                                        .decodedPayload
+                                                        .lockState ==
+                                                    2
+                                                ? "Locked"
+                                                : historyItem
+                                                            .message
+                                                            .uplinkMessage
+                                                            .decodedPayload
+                                                            .lockState ==
+                                                        3
+                                                    ? "Opened"
+                                                    : "Closed",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              flex: 3,
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    historyItem.deviceName,
+                                    textAlign: TextAlign.start,
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    DateTime.parse(historyItem
+                                            .message.receivedAt
+                                            .toString())
+                                        .toString(),
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              flex: 8,
+                            )
+                          ],
                         ),
-                        trailing: Text(
-                          "State Count : " +
-                              historyItem.message.uplinkMessage.decodedPayload
-                                  .lockCount
-                                  .toString(),
-                          style: TextStyle(color: Colors.white70),
-                        ),
+                        // child: ListTile(
+                        //   contentPadding:
+                        //       EdgeInsets.only(left: 0, top: 0, bottom: 0),
+                        //   minLeadingWidth: 0,
+                        //   leading: Container(
+                        //     width: 100,
+                        //     color: Color(historyItem.message.uplinkMessage
+                        //                 .decodedPayload.lockState ==
+                        //             0
+                        //         ? ColorUtils.colorGrey
+                        //         : historyItem.message.uplinkMessage
+                        //                     .decodedPayload.lockState ==
+                        //                 1
+                        //             ? ColorUtils.colorRed
+                        //             : historyItem.message.uplinkMessage
+                        //                         .decodedPayload.lockState ==
+                        //                     2
+                        //                 ? ColorUtils.colorGreen
+                        //                 : historyItem.message.uplinkMessage
+                        //                             .decodedPayload.lockState ==
+                        //                         3
+                        //                     ? ColorUtils.colorRed
+                        //                     : ColorUtils.colorRed),
+                        //     child: Center(
+                        //       child: Text(
+                        //         historyItem.message.uplinkMessage.decodedPayload
+                        //                     .lockState ==
+                        //                 0
+                        //             ? "Not Set"
+                        //             : historyItem.message.uplinkMessage
+                        //                         .decodedPayload.lockState ==
+                        //                     1
+                        //                 ? "Unlocked"
+                        //                 : historyItem.message.uplinkMessage
+                        //                             .decodedPayload.lockState ==
+                        //                         2
+                        //                     ? "Locked"
+                        //                     : historyItem
+                        //                                 .message
+                        //                                 .uplinkMessage
+                        //                                 .decodedPayload
+                        //                                 .lockState ==
+                        //                             3
+                        //                         ? "Opened"
+                        //                         : "Closed",
+                        //         style: TextStyle(
+                        //           color: Colors.white,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // title: Text(
+                        //   historyItem.deviceName,
+                        //   style: TextStyle(
+                        //       color: Colors.black,
+                        //       fontWeight: FontWeight.bold),
+                        // ),
+                        // subtitle: Text(
+                        //   DateTime.parse(
+                        //           historyItem.message.receivedAt.toString())
+                        //       .toString(),
+                        //   style: TextStyle(color: Colors.black),
+                        // ),
+                        // ),
                       );
                     },
                   )),

@@ -36,7 +36,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 title: Text(
                   widget.device.deviceName,
                   style: TextStyle(
-                    color: Colors.white,
+                     
                     fontSize: 20,
                     // fontWeight: FontWeight.w700,
                   ),
@@ -72,7 +72,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               title: Text(
                 widget.device.deviceName,
                 style: TextStyle(
-                  color: Colors.white,
+                   
                   fontSize: 20,
                   // fontWeight: FontWeight.w700,
                 ),
@@ -84,7 +84,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 },
                 child: Icon(
                   Icons.arrow_back_ios,
-                  color: Colors.white,
+                   
                 ),
               ),
             ),
@@ -120,7 +120,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                   children: [
                                     Icon(
                                       Icons.battery_full,
-                                      color: Colors.white,
+                                       
                                       size: 20,
                                     ),
                                     Text(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -6,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lockstate/authentication/index.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/screens/home_screen.dart';
+import 'package:lockstate/screens/initial_slideshow_screen.dart';
 import 'package:lockstate/screens/login_screen.dart';
+import 'package:lockstate/screens/select_connection_type_screen.dart';
 import 'package:lockstate/services/auth_service.dart';
 import 'package:lockstate/services/fcm_service.dart';
 import 'package:lockstate/services/firestore_service.dart';
@@ -58,7 +61,7 @@ class MyApp extends StatelessWidget {
         accentColor: Color(ColorUtils.color4),
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: Authenticate(),
+      home: IntroScreen(),
     );
   }
 }
@@ -71,9 +74,27 @@ class Authenticate extends StatefulWidget {
 }
 
 class _AuthenticateState extends State<Authenticate> {
+  bool isConnectionTypeSet = true;
+  getUser() async {
+    if (FirebaseAuth.instance.currentUser != null) {
+      print("getUser auth");
+
+      var doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+      print("getUser auth " + doc['connectionType'].toString());
+      setState(() {
+        isConnectionTypeSet =
+            doc['connectionType'] == "NOT_SELECTED" ? false : true;
+      });
+    }
+  }
+
   @override
   void initState() {
     FcmService().startFCMService(context);
+    getUser();
     super.initState();
   }
 
@@ -90,7 +111,11 @@ class _AuthenticateState extends State<Authenticate> {
               ),
             );
           }
-          return snapshot.data != null ? HomeScreen() : LoginScreen();
+          return snapshot.data != null
+              ? isConnectionTypeSet
+                  ? HomeScreen()
+                  : SelectConnectionScreen()
+              : LoginScreen();
         });
   }
 }

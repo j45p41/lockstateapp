@@ -14,7 +14,8 @@ class FirestoreService extends MomentumService {
       'uid': uid,
       'email': email,
       'username': username,
-      'fcmId': fcmId
+      'fcmId': fcmId,
+      'connectionType':"NOT_SELECTED",
     }).whenComplete(() {
       print('Created user on firestore');
     });
@@ -24,6 +25,7 @@ class FirestoreService extends MomentumService {
     await firestore.collection('rooms').add({
       'userId': userId,
       'name': roomName,
+      'state': 0,
 
       // 'lockState': '',
       // 'doorState': '',
@@ -39,7 +41,6 @@ class FirestoreService extends MomentumService {
         // 'dev_eui': '',
       });
     });
-    
   }
 
   //add remaining fields

@@ -31,114 +31,158 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).backgroundColor,
-        elevation: 0,
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 30,
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Log in",
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 3,
-                    color: Color(
-                      ColorUtils.color4,
+      body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover)),
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 100,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Image.asset(
+                      "assets/images/logo.png",
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              TextFormField(
-                style: TextStyle(color: Color(ColorUtils.color4)),
-                decoration: InputDecoration(
-                  fillColor: Color(ColorUtils.color2),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  hintText: "Enter your email address",
-                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
-
+                SizedBox(
+                  height: 30,
                 ),
-                onSaved: (newValue) => email = newValue!,
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              TextFormField(
-                style: TextStyle(color: Color(ColorUtils.color4)),
-                decoration: InputDecoration(
-                  fillColor: Color(ColorUtils.color2),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                TextFormField(
+                  style: TextStyle(color: Color(ColorUtils.colorWhite)),
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    enabledBorder: UnderlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                          style: BorderStyle.solid),
+                    ),
+                    labelStyle: TextStyle(color: Color(ColorUtils.colorWhite)),
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    hintText: "Enter your email address",
+                    hintStyle: TextStyle(color: Color(ColorUtils.colorWhite)),
                   ),
-                  hintText: "Enter you password",
-                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
+                  onSaved: (newValue) => email = newValue!,
                 ),
-                onSaved: (newValue) => password = newValue!,
-              ),
-              SizedBox(
-                height: 40,
-              ),
-              GestureDetector(
-                onTap: login,
-                child: Container(
-                  child: Center(
-                    child: Text(
-                      "Log in",
-                      style: TextStyle(
-                        color: Color(
-                          ColorUtils.color4,
+                SizedBox(
+                  height: 5,
+                ),
+                TextFormField(
+                  style: TextStyle(color: Color(ColorUtils.colorWhite)),
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelStyle: TextStyle(color: Color(ColorUtils.colorWhite)),
+                    labelText: "Password",
+                    enabledBorder: UnderlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                          style: BorderStyle.solid),
+                    ),
+                    border: UnderlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                          style: BorderStyle.solid),
+                    ),
+                    hintText: "Enter you password",
+                    hintStyle: TextStyle(color: Color(ColorUtils.colorWhite)),
+                  ),
+                  onSaved: (newValue) => password = newValue!,
+                ),
+                SizedBox(
+                  height: 40,
+                ),
+                GestureDetector(
+                  onTap: login,
+                  child: Container(
+                    child: Center(
+                      child: Text(
+                        "Log in",
+                        style: TextStyle(
+                          color: Color(
+                            ColorUtils.colorWhite,
+                          ),
                         ),
                       ),
                     ),
+                    padding: EdgeInsets.all(12),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Color(ColorUtils.color3),
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  padding: EdgeInsets.all(10),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Color(ColorUtils.color3),
-                      borderRadius: BorderRadius.circular(10)),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Dont have an account?",
-                    style: TextStyle(
-                      color: Color(
-                        ColorUtils.color4,
+                SizedBox(
+                  height: 20,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => SignupScreen(),
+                    ));
+                  },
+                  child: Container(
+                    child: Center(
+                      child: Text(
+                        "Register",
+                        style: TextStyle(
+                          color: Color(
+                            ColorUtils.colorWhite,
+                          ),
+                        ),
                       ),
                     ),
+                    padding: EdgeInsets.all(12),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Color(ColorUtils.colorGrey),
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => SignupScreen(),
-                      ));
-                    },
-                    child: Text(
-                      "Signup",
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Color(
+                          ColorUtils.colorWhite,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        "Click here",
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
