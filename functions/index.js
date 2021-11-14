@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const mqtt = require('mqtt');
 var atob = require('atob');
+
 const { firebaseConfig } = require("firebase-functions");
 admin.initializeApp();
 // // Create and Deploy Your First Cloud Functions
@@ -132,13 +133,6 @@ exports.heliumMqttFunction = functions.https.onRequest
         functions.logger.log("type 1 " + test1);
         functions.logger.log("type 2 " + test2);
         functions.logger.log("type 3 " + test3);
-
-
-
-
-
-
-
         var db = admin.firestore();
         functions.logger.log("Function running");
 
@@ -178,18 +172,18 @@ exports.heliumMqttFunction = functions.https.onRequest
         var roomId = doc.data()["roomId"];
         var isIndoor = doc.data()["isIndoor"];
         var decodedPayload = base64ToHex(parsedMessage.payload);
-        var batVolts = parseInt(Number("0x" + decodedPayload.toString().substring(2, 4)), 10);
+        var batVolts = parseInt(Number("0x" + decodedPayload.toString().substring(4)), 10);
         var lockST = parseInt(Number("0x" + decodedPayload.toString().substring(0, 2)), 10);
-        var lockC = parseInt(Number("0x" + decodedPayload.toString().substring(4)), 10);
+        var lockC = parseInt(Number("0x" + decodedPayload.toString().substring(2, 4)), 10);
 
-        functions.logger.log("lock Count " + decodedPayload.toString().substring(4));
+        // functions.logger.log("lock Count " + decodedPayload.toString().substring(4));
 
-        functions.logger.log("lock state " + decodedPayload.toString().substring(0, 2));
-        functions.logger.log("bat volts " + decodedPayload.toString().substring(2, 4));
+        // functions.logger.log("lock state " + decodedPayload.toString().substring(0, 2));
+        // functions.logger.log("bat volts " + decodedPayload.toString().substring(2, 4));
 
         var body = {
             "message": {
-                "recieved_at": Date(parsedMessage.reported_at).toString(),
+                "recieved_at": dateFormat(Date(parsedMessage.reported_at), "isoUtcDateTime").toString(),
                 "uplink_message": { "decoded_payload": { "batVolts": batVolts, "lockState": lockST, "lockCount": lockC }, }
             },
             "deviceId": parsedMessage.name,
@@ -212,7 +206,9 @@ exports.heliumMqttFunction = functions.https.onRequest
             functions.logger.log("write doc devices error " + e);
         });
 
-        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": Date(parsedMessage.reported_at).toString(), "volts": batVolts, "count": lockC });
+        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": dateFormat(Date(parsedMessage.reported_at), "isoUtcDateTime").toString(), "volts": batVolts, "count": lockC });
+        await db.collection('rooms').doc(roomId).update({ "state": lockST, });
+
         await db.collection('notifications').add(body).catch((e) => {
             functions.logger.log("write doc notifications error " + e);
         });
