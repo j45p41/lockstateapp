@@ -60,7 +60,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               .where(
                 "userId",
                 isEqualTo: FirebaseAuth.instance.currentUser!.uid,
-              )
+              ).orderBy("recieved_at",descending: true)
               .snapshots(),
           builder: (context, snapshot) {
             print("snapshot " + snapshot.toString());
@@ -128,14 +128,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       ? ColorUtils.colorGrey
                                       : historyItem.message.uplinkMessage
                                                   .decodedPayload.lockState ==
-                                              1
+                                              2
                                           ? ColorUtils.colorRed
                                           : historyItem
                                                       .message
                                                       .uplinkMessage
                                                       .decodedPayload
                                                       .lockState ==
-                                                  2
+                                                  1
                                               ? ColorUtils.colorGreen
                                               : historyItem
                                                           .message
@@ -166,14 +166,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         ? "Not Set"
                                         : historyItem.message.uplinkMessage
                                                     .decodedPayload.lockState ==
-                                                1
+                                                2
                                             ? "Unlocked"
                                             : historyItem
                                                         .message
                                                         .uplinkMessage
                                                         .decodedPayload
                                                         .lockState ==
-                                                    2
+                                                    1
                                                 ? "Locked"
                                                 : historyItem
                                                             .message
@@ -202,10 +202,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   Text(
-                                    DateTime.parse(historyItem
+                                    historyItem
                                             .message.receivedAt
-                                            .toString())
-                                        .toString(),
+                                            .toString()
+                                        ,
                                     style: TextStyle(color: Colors.grey),
                                   ),
                                 ],

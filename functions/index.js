@@ -92,7 +92,9 @@ exports.mqttFunction = functions.https.onRequest
                 functions.logger.log("write doc devices error " + e);
             });
 
-            await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState });
+            await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState, "last_update_recieved_at": parsedMessage.uplink_message.recieved_at.toString(), "volts": parsedMessage.uplink_message.decoded_payload.batVolts, "count": parsedMessage.uplink_message.decoded_payload.lockCount });
+            await db.collection('rooms').doc(roomId).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState, });
+
             await db.collection('notifications').add(body).catch((e) => {
                 functions.logger.log("write doc notifications error " + e);
             });

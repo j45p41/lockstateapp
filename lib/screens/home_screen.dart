@@ -336,9 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         border: Border.all(
                                             color: Color(room.state == 0
                                                 ? ColorUtils.colorGrey
-                                                : room.state == 1
+                                                : room.state == 2
                                                     ? ColorUtils.colorRed
-                                                    : room.state == 2
+                                                    : room.state == 1
                                                         ? ColorUtils.colorGreen
                                                         : room.state == 3
                                                             ? ColorUtils
@@ -379,10 +379,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 border: Border.all(
                                                     color: Color(room.state == 0
                                                         ? ColorUtils.colorGrey
-                                                        : room.state == 1
+                                                        : room.state == 2
                                                             ? ColorUtils
                                                                 .colorRed
-                                                            : room.state == 2
+                                                            : room.state == 1
                                                                 ? ColorUtils
                                                                     .colorGreen
                                                                 : room.state ==
@@ -394,13 +394,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     width: 1)),
                                             child: Center(
                                               child: Icon(
-                                                Icons.door_front_door_outlined,
+                                                room.state == 1
+                                                    ? Icons.sensor_door_outlined
+                                                    : Icons
+                                                        .meeting_room_rounded,
                                                 size: 100,
                                                 color: Color(room.state == 0
                                                     ? ColorUtils.colorGrey
-                                                    : room.state == 1
+                                                    : room.state == 2
                                                         ? ColorUtils.colorRed
-                                                        : room.state == 2
+                                                        : room.state == 1
                                                             ? ColorUtils
                                                                 .colorGreen
                                                             : room.state == 3
@@ -417,9 +420,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Text(
                                             room.state == 0
                                                 ? "Not Set"
-                                                : room.state == 1
+                                                : room.state == 2
                                                     ? "Unlocked / Closed"
-                                                    : room.state == 2
+                                                    : room.state == 1
                                                         ? "Locked / Closed"
                                                         : room.state == 3
                                                             ? "Unlocked / Open"

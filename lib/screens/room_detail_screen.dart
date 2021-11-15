@@ -100,6 +100,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 );
               }
               var data = snapshot.data;
+
               return GridView.builder(
                 padding: EdgeInsets.all(
                   15,
@@ -180,13 +181,14 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   // }
                   var doc = data.docs[index];
                   var device = Device.fromDocument(doc);
+
                   return GestureDetector(
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) {
-                          return DeviceDetailScreen(device: device);
-                        },
-                      ));
+                      // Navigator.of(context).push(MaterialPageRoute(
+                      //   builder: (context) {
+                      //     return DeviceDetailScreen(device: device);
+                      //   },
+                      // ));
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -195,9 +197,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                         border: Border.all(
                             color: Color(device.state == 0
                                 ? ColorUtils.colorGrey
-                                : device.state == 1
+                                : device.state == 2
                                     ? ColorUtils.colorRed
-                                    : device.state == 2
+                                    : device.state == 1
                                         ? ColorUtils.colorGreen
                                         : device.state == 3
                                             ? ColorUtils.colorRed
@@ -212,84 +214,138 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                         // border: Border.all(
                         //     color: Theme.of(context).accentColor),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(15),
-                            margin: EdgeInsets.only(
-                              top: 20,
-                            ),
-                            decoration: BoxDecoration(
-                                color: Color(ColorUtils.colorWhite),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: Offset(0.0, 1.0), //(x,y)
-                                    blurRadius: 6.0,
-                                  ),
-                                ],
-                                border: Border.all(
-                                    color: Color(device.state == 0
-                                        ? ColorUtils.colorGrey
-                                        : device.state == 1
-                                            ? ColorUtils.colorRed
-                                            : device.state == 2
-                                                ? ColorUtils.colorGreen
-                                                : device.state == 3
-                                                    ? ColorUtils.colorRed
-                                                    : ColorUtils.colorRed),
-                                    width: 1)),
-                            child: Center(
-                              child: Icon(
-                                Icons.door_front_door_outlined,
-                                size: 130,
-                                color: Color(device.state == 0
-                                    ? ColorUtils.colorGrey
-                                    : device.state == 1
-                                        ? ColorUtils.colorRed
-                                        : device.state == 2
-                                            ? ColorUtils.colorGreen
-                                            : device.state == 3
-                                                ? ColorUtils.colorRed
-                                                : ColorUtils.colorRed),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(15),
+                              margin: EdgeInsets.only(
+                                top: 15,
+                              ),
+                              decoration: BoxDecoration(
+                                  color: Color(ColorUtils.colorWhite),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey,
+                                      offset: Offset(0.0, 1.0), //(x,y)
+                                      blurRadius: 6.0,
+                                    ),
+                                  ],
+                                  border: Border.all(
+                                      color: Color(device.state == 0
+                                          ? ColorUtils.colorGrey
+                                          : device.state == 2
+                                              ? ColorUtils.colorRed
+                                              : device.state == 1
+                                                  ? ColorUtils.colorGreen
+                                                  : device.state == 3
+                                                      ? ColorUtils.colorRed
+                                                      : ColorUtils.colorRed),
+                                      width: 1)),
+                              child: Center(
+                                child: Image.asset(
+                                  device.state == 1
+                                      ? "assets/images/device_locked.png"
+                                      : "assets/images/device_unlocked.png",
+                                  height: 130,
+                                ),
+                                // child: Icon(
+                                //   Icons.door_front_door_outlined,
+                                //   size: 100,
+                                //   color: Color(device.state == 0
+                                //       ? ColorUtils.colorGrey
+                                //       : device.state == 2
+                                //           ? ColorUtils.colorRed
+                                //           : device.state == 1
+                                //               ? ColorUtils.colorGreen
+                                //               : device.state == 3
+                                //                   ? ColorUtils.colorRed
+                                //                   : ColorUtils.colorRed),
+                                // ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            device.state == 0
-                                ? "Not Set"
-                                : device.state == 1
-                                    ? "Unlocked / Closed"
-                                    : device.state == 2
-                                        ? "Locked / Closed"
-                                        : device.state == 3
-                                            ? "Unlocked / Open"
-                                            : "Closed",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                            SizedBox(
+                              height: 10,
                             ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            widget.room.name,
-                            style: TextStyle(
-                              color: Color(
-                                ColorUtils.color4,
+                            Text(
+                              widget.room.name,
+                              style: TextStyle(
+                                color: Color(
+                                  ColorUtils.color4,
+                                ),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              "Battery Level : " + device.batVolts.toString(),
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              device.state == 0
+                                  ? "Not Set"
+                                  : device.state == 2
+                                      ? "Unlocked / Closed"
+                                      : device.state == 1
+                                          ? "Locked / Closed"
+                                          : device.state == 3
+                                              ? "Unlocked / Open"
+                                              : "Closed",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              device.isIndoor ? "Indoor" : "Outdoor",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Spacer(),
+                            Text(
+                              "[${device.count}]",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              device.lastRecievedAt == ""
+                                  ? "Not Set"
+                                  : device.lastRecievedAt.substring(16, 24),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
