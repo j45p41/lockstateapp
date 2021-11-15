@@ -39,9 +39,6 @@ exports.mqttFunction = functions.https.onRequest
         functions.logger.log("type " + type);
 
         var db = admin.firestore();
-        functions.logger.log("Function running");
-
-
 
         // if (type === "TTN") {
         var options = {
@@ -134,7 +131,8 @@ exports.heliumMqttFunction = functions.https.onRequest
         functions.logger.log("type 2 " + test2);
         functions.logger.log("type 3 " + test3);
         var db = admin.firestore();
-        functions.logger.log("Function running");
+        functions.logger.log("Function " +
+            new Date().toISOString());
 
 
 
@@ -183,7 +181,7 @@ exports.heliumMqttFunction = functions.https.onRequest
 
         var body = {
             "message": {
-                "recieved_at": dateFormat(Date(parsedMessage.reported_at), "isoUtcDateTime").toString(),
+                "recieved_at": new Date(parsedMessage.reported_at).toString(),
                 "uplink_message": { "decoded_payload": { "batVolts": batVolts, "lockState": lockST, "lockCount": lockC }, }
             },
             "deviceId": parsedMessage.name,
@@ -206,7 +204,7 @@ exports.heliumMqttFunction = functions.https.onRequest
             functions.logger.log("write doc devices error " + e);
         });
 
-        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": dateFormat(Date(parsedMessage.reported_at), "isoUtcDateTime").toString(), "volts": batVolts, "count": lockC });
+        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": Date(parsedMessage.reported_at).toString(), "volts": batVolts, "count": lockC });
         await db.collection('rooms').doc(roomId).update({ "state": lockST, });
 
         await db.collection('notifications').add(body).catch((e) => {
