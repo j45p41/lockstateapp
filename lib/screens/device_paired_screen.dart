@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lockstate/data/data.controller.dart';
 import 'package:lockstate/main.dart';
 import 'package:momentum/momentum.dart';
@@ -20,7 +20,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
   final String CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
   final String TARGET_DEVICE_NAME = "ESP32 THAT PROJECT";
 
-  FlutterBlue flutterBlue = FlutterBlue.instance;
+  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
 
   late BluetoothCharacteristic targetCharacteristic;
   String connectionText = "";

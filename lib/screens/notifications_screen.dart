@@ -60,10 +60,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               .where(
                 "userId",
                 isEqualTo: FirebaseAuth.instance.currentUser!.uid,
-              ).orderBy("recieved_at",descending: true)
+              )
+              // .orderBy("recieved_at", descending: true)
               .snapshots(),
           builder: (context, snapshot) {
-            print("snapshot " + snapshot.toString());
             if (snapshot.data == null || snapshot.data!.docs.length == 0) {
               return Center(
                 child: Text(
@@ -82,8 +82,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             var length = snapshot.data!.docs.length;
             var data = snapshot.data!.docs;
             // print("data " + data[length - 1].data().toString());
-            var latestDocData =
-                historyFromJson(json.encode(data[length - 1].data()));
+            // var latestDocData =
+            //     historyFromJson(json.encode(data[length - 1].data()));
 
             // print(latestDocData.toString());
             return Container(
@@ -99,6 +99,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     itemCount: length,
                     itemBuilder: (context, index) {
                       print("index " + index.toString());
+
                       var historyItem =
                           historyFromJson(json.encode(data[index].data()));
 
@@ -202,10 +203,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   Text(
-                                    historyItem
-                                            .message.receivedAt
-                                            .toString()
-                                        ,
+                                    historyItem.message.receivedAt.toString(),
                                     style: TextStyle(color: Colors.grey),
                                   ),
                                 ],

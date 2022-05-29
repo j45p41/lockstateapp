@@ -91,9 +91,23 @@ exports.mqttFunction = functions.https.onRequest
             await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).collection('history').add(body).catch((e) => {
                 functions.logger.log("write doc devices error " + e);
             });
+            functions.logger.log("1 " + parsedMessage.uplink_message.decoded_payload.lockCount);
+            functions.logger.log("2 " + parsedMessage.uplink_message.decoded_payload.batVolts);
+            functions.logger.log("3 " + parsedMessage.uplink_message.decoded_payload.lockState);
+            functions.logger.log("4 " + parsedMessage.received_at.toString());
 
-            await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState, "last_update_recieved_at": parsedMessage.uplink_message.recieved_at.toString(), "volts": parsedMessage.uplink_message.decoded_payload.batVolts, "count": parsedMessage.uplink_message.decoded_payload.lockCount });
-            await db.collection('rooms').doc(roomId).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState, });
+
+            await db.collection('devices').doc(parsedMessage.end_device_ids.device_id).update({
+                "state": parsedMessage.uplink_message.decoded_payload.lockState,
+                "last_update_recieved_at": parsedMessage.received_at.toString(),
+                "volts": parsedMessage.uplink_message.decoded_payload.batVolts,
+                "count": parsedMessage.uplink_message.decoded_payload.lockCount
+            }).catch((e) => {
+                functions.logger.log("write doc device update error " + e);
+            });
+            await db.collection('rooms').doc(roomId).update({ "state": parsedMessage.uplink_message.decoded_payload.lockState, }).catch((e) => {
+                functions.logger.log("write doc devices error " + e);
+            });;
 
             await db.collection('notifications').add(body).catch((e) => {
                 functions.logger.log("write doc notifications error " + e);
@@ -183,7 +197,7 @@ exports.heliumMqttFunction = functions.https.onRequest
 
         var body = {
             "message": {
-                "recieved_at": new Date(parsedMessage.reported_at).toString(),
+                "recieved_at": new Date().toISOString(),
                 "uplink_message": { "decoded_payload": { "batVolts": batVolts, "lockState": lockST, "lockCount": lockC }, }
             },
             "deviceId": parsedMessage.name,
@@ -205,8 +219,9 @@ exports.heliumMqttFunction = functions.https.onRequest
         await db.collection('devices').doc(parsedMessage.name).collection('history').add(body).catch((e) => {
             functions.logger.log("write doc devices error " + e);
         });
+        functions.logger.log("recieved at " + parsedMessage.updated_at);
 
-        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": Date(parsedMessage.reported_at).toString(), "volts": batVolts, "count": lockC });
+        await db.collection('devices').doc(parsedMessage.name).update({ "state": lockST, "last_update_recieved_at": Date().toISOString(), "volts": batVolts, "count": lockC });
         await db.collection('rooms').doc(roomId).update({ "state": lockST, });
 
         await db.collection('notifications').add(body).catch((e) => {

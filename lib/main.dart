@@ -10,6 +10,7 @@ import 'package:lockstate/screens/home_screen.dart';
 import 'package:lockstate/screens/initial_slideshow_screen.dart';
 import 'package:lockstate/screens/login_screen.dart';
 import 'package:lockstate/screens/select_connection_type_screen.dart';
+import 'package:lockstate/screens/wifi_example.dart';
 import 'package:lockstate/services/auth_service.dart';
 import 'package:lockstate/services/fcm_service.dart';
 import 'package:lockstate/services/firestore_service.dart';

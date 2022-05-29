@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+
 import 'package:lockstate/screens/device_paired_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:lockstate/utils/globals.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class AddHubScreen extends StatefulWidget {
   @override
@@ -14,7 +15,7 @@ class AddHubScreen extends StatefulWidget {
 
 class _AddHubScreenState extends State<AddHubScreen> {
   bool isScanned = false;
-  FlutterBlue _flutterBlue = FlutterBlue.instance;
+  FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamSubscription _scanSubscription;
   Map<DeviceIdentifier, ScanResult> scanResults = new Map();
@@ -51,6 +52,7 @@ class _AddHubScreenState extends State<AddHubScreen> {
     )
         .listen((scanResult) {
       setState(() {
+        print(scanResult);
         scanResults[scanResult.device.id] = scanResult;
       });
     }, onDone: stopScan);
@@ -90,6 +92,12 @@ class _AddHubScreenState extends State<AddHubScreen> {
             "Add hub",
             style: TextStyle(color: Colors.white, fontSize: 21),
           ),
+          actions: [
+            IconButton(
+              onPressed: startScan,
+              icon: Icon(Icons.ac_unit),
+            ),
+          ],
         ),
         body: Center(
           child: state == BluetoothState.off
@@ -106,6 +114,8 @@ class _AddHubScreenState extends State<AddHubScreen> {
                     //   isFound = true;
                     //   scanResult = snapshot.data!;
                     // }
+                    print("snapshot data " + snapshot.data!.device.name);
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Column(
