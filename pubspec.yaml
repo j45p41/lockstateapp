@@ -41,7 +41,7 @@ dependencies:
   dotted_border: ^2.0.0+1
   qr_code_scanner: ^0.5.2
   smooth_page_indicator: ^1.0.0+2
-  wifi_iot: ^0.3.15+2
+  wifi_iot: ^0.3.16
 
 dev_dependencies:
   flutter_test:
