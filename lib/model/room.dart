@@ -18,7 +18,7 @@ class Room {
       roomId: doc.data()['roomId'],
       name: doc.data()["name"].toString(),
       userId: doc.data()["userId"],
-      state: doc.data()['state'],
+      state: doc.data()['state'] == null ? 0 : doc.data()['state'],
     );
   }
 }
