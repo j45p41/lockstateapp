@@ -76,13 +76,17 @@ class _AddHubScreenState extends State<AddHubScreen> {
                   children: snapshot.data!
                       .map(
                         (r) => ScanResultTile(
-                          result: r,
-                          onTap: () => Navigator.of(context)
-                              .push(MaterialPageRoute(builder: (context) {
-                            r.device.connect();
-                            return DevicePairedScreen(r.device);
-                          })),
-                        ),
+                            result: r,
+                            onTap: () async {
+                              await r.device.connect();
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return DevicePairedScreen(r.device);
+                                  },
+                                ),
+                              );
+                            }),
                       )
                       .toList(),
                 ),

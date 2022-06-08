@@ -36,8 +36,10 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
       return;
     }
     print("running discover services");
+    print("device : " + widget.device.toString());
 
     List<BluetoothService> services = await widget.device.discoverServices();
+
     services.forEach((service) {
       if (service.uuid.toString() == SERVICE_UUID) {
         service.characteristics.forEach((characteristics) {
@@ -141,7 +143,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 setState(() {
                                   readData = utf8.decode(res);
                                 });
-                              List temp = readData.split(',').toList();
+                                List temp = readData.split(',').toList();
                                 List temp1 = [];
                                 temp.forEach((element) {
                                   temp1.add(element.toString().substring(1));
