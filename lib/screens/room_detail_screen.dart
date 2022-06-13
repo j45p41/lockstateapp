@@ -267,19 +267,19 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                 // ),
                               ),
                             ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              widget.room.name,
-                              style: TextStyle(
-                                color: Color(
-                                  ColorUtils.color4,
-                                ),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
+                            // SizedBox(
+                            //   height: 10,
+                            // ),
+                            // Text(
+                            //   widget.room.name,
+                            //   style: TextStyle(
+                            //     color: Color(
+                            //       ColorUtils.color4,
+                            //     ),
+                            //     fontWeight: FontWeight.bold,
+                            //     fontSize: 14,
+                            //   ),
+                            // ),
                             SizedBox(
                               height: 20,
                             ),

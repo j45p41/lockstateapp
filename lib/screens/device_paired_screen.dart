@@ -155,7 +155,8 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 
                                 roomsIds = temp1.toList();
                                 print("after set " + roomsIds.toString());
-                                for (int i = 0; i < temp1.length; i += 2) {//1,2,3,4,5,6,7,8      
+                                for (int i = 0; i < temp1.length; i += 2) {
+                                  //1,2,3,4,5,6,7,8
                                   FirebaseFirestore.instance
                                       .collection('rooms')
                                       .add({
@@ -173,7 +174,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                           FirebaseAuth
                                               .instance.currentUser!.uid,
                                           temp1[i],
-                                          false,
+                                          true,
                                           doc.id);
                                     }
                                     if (temp[i + 1] != "0") {
@@ -182,11 +183,9 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                           FirebaseAuth
                                               .instance.currentUser!.uid,
                                           temp1[i + 1],
-                                          true,
+                                          false,
                                           doc.id);
                                     }
-
-                                    
                                   });
                                 }
                                 setState(() {
