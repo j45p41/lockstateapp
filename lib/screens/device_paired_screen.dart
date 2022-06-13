@@ -146,18 +146,20 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 List temp = readData.split(',').toList();
                                 List temp1 = [];
                                 temp.forEach((element) {
-                                  temp1.add(element.toString().substring(1));
+                                  temp1.add(element.toString() //.substring(1)
+                                      );
                                 });
 
                                 print(temp1);
                                 List roomsIds = [];
-                                roomsIds = temp1.toSet().toList();
+
+                                roomsIds = temp1.toList();
                                 print("after set " + roomsIds.toString());
-                                roomsIds.forEach((element) {
+                                for (int i = 0; i < temp1.length; i += 2) {//1,2,3,4,5,6,7,8      
                                   FirebaseFirestore.instance
                                       .collection('rooms')
                                       .add({
-                                    'name': "room$element",
+                                    'name': "room${temp1[i]}",
                                     'userId':
                                         FirebaseAuth.instance.currentUser!.uid
                                   }).then((doc) {
@@ -165,30 +167,73 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                         .collection('rooms')
                                         .doc(doc.id)
                                         .update({'roomId': doc.id});
+                                    if (temp[i] != "0") {
+                                      dataController.addDevice(
+                                          temp1[i],
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          temp1[i],
+                                          false,
+                                          doc.id);
+                                    }
+                                    if (temp[i + 1] != "0") {
+                                      dataController.addDevice(
+                                          temp1[i + 1],
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          temp1[i + 1],
+                                          true,
+                                          doc.id);
+                                    }
 
-                                    dataController.addDevice(
-                                        "O" + element,
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                        "O" + element,
-                                        false,
-                                        doc.id);
-                                    dataController.addDevice(
-                                        "I" + element,
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                        "I" + element,
-                                        true,
-                                        doc.id);
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    Navigator.of(context)
-                                        .pushReplacement(MaterialPageRoute(
-                                      builder: (context) {
-                                        return Authenticate();
-                                      },
-                                    ));
+                                    
                                   });
+                                }
+                                setState(() {
+                                  isLoading = false;
                                 });
+                                Navigator.of(context)
+                                    .pushReplacement(MaterialPageRoute(
+                                  builder: (context) {
+                                    return Authenticate();
+                                  },
+                                ));
+                                // roomsIds.forEach((element) {
+                                //   FirebaseFirestore.instance
+                                //       .collection('rooms')
+                                //       .add({
+                                //     'name': "room$element",
+                                //     'userId':
+                                //         FirebaseAuth.instance.currentUser!.uid
+                                //   }).then((doc) {
+                                //     FirebaseFirestore.instance
+                                //         .collection('rooms')
+                                //         .doc(doc.id)
+                                //         .update({'roomId': doc.id});
+
+                                //     dataController.addDevice(
+                                //         "O" + element,
+                                //         FirebaseAuth.instance.currentUser!.uid,
+                                //         "O" + element,
+                                //         false,
+                                //         doc.id);
+                                //     dataController.addDevice(
+                                //         "I" + element,
+                                //         FirebaseAuth.instance.currentUser!.uid,
+                                //         "I" + element,
+                                //         true,
+                                //         doc.id);
+                                //     setState(() {
+                                //       isLoading = false;
+                                //     });
+                                //     Navigator.of(context)
+                                //         .pushReplacement(MaterialPageRoute(
+                                //       builder: (context) {
+                                //         return Authenticate();
+                                //       },
+                                //     ));
+                                //   });
+                                // });
                               },
                               child: Text("Press to read"))
                         ],
