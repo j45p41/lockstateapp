@@ -112,13 +112,14 @@ class _AuthenticateState extends State<Authenticate> {
               ),
             );
           }
-          return FlutterWifiIoT();
+          return
+              // FlutterWifiIoT();
 
-          // snapshot.data != null
-          //     ? isConnectionTypeSet
-          //         ? HomeScreen()
-          //         : SelectConnectionScreen()
-          //     : LoginScreen();
+              snapshot.data != null
+                  ? isConnectionTypeSet
+                      ? HomeScreen()
+                      : SelectConnectionScreen()
+                  : LoginScreen();
         });
   }
 }
