@@ -157,10 +157,12 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 print("after set " + roomsIds.toString());
                                 for (int i = 0; i < temp1.length; i += 2) {
                                   //1,2,3,4,5,6,7,8
+                                  print("********ROOM ID's*******");
+                                  print("room${i}");
                                   FirebaseFirestore.instance
                                       .collection('rooms')
                                       .add({
-                                    'name': "room${temp1[i]}",
+                                    'name': "room${i}",
                                     'userId':
                                         FirebaseAuth.instance.currentUser!.uid
                                   }).then((doc) {
