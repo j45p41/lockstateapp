@@ -18,6 +18,8 @@ class RoomDetailScreen extends StatefulWidget {
 }
 
 class _RoomDetailScreenState extends State<RoomDetailScreen> {
+  final GlobalKey<FormState> _editRoomFormKey = GlobalKey<FormState>();
+  String newRoomName = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +66,63 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
               child: Image.asset(
                 "assets/images/logo.png",
                 fit: BoxFit.contain,
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      height: 500,
+                      child: Form(
+                        key: _editRoomFormKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              onSaved: (newValue) {
+                                setState(() {
+                                  newRoomName = newValue!;
+                                });
+                              },
+                            ),
+                            ElevatedButton(
+                                onPressed: () {
+                                  
+                                  if (_editRoomFormKey.currentState!
+                                      .validate()) {
+                                    FirebaseFirestore.instance
+                                        .collection("rooms")
+                                        .doc(widget.room.roomId)
+                                        .update({"name": newRoomName});
+                                  }
+                                },
+                                child: Text("Edit Name"))
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: 10,
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8,
+                ),
+                width: 100,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5)),
+                child: Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                ),
               ),
             ),
             SizedBox(
@@ -129,7 +188,6 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   //       // padding: EdgeInsets.all(10),
                   //       radius: Radius.circular(20),
                   //       strokeWidth: 3,
-
                   //       dashPattern: [10, 5],
                   //       strokeCap: StrokeCap.butt,
                   //       child: Center(

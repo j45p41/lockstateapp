@@ -112,10 +112,7 @@ class _AuthenticateState extends State<Authenticate> {
               ),
             );
           }
-          return
-              // FlutterWifiIoT();
-
-              snapshot.data != null
+          return snapshot.data != null
                   ? isConnectionTypeSet
                       ? HomeScreen()
                       : SelectConnectionScreen()
