@@ -143,6 +143,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                 setState(() {
                                   readData = utf8.decode(res);
                                 });
+                                print(readData);
                                 List temp = readData.split(',').toList();
                                 List temp1 = [];
                                 temp.forEach((element) {
@@ -155,6 +156,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 
                                 roomsIds = temp1.toList();
                                 print("after set " + roomsIds.toString());
+                                var index = 1;
                                 for (int i = 0; i < temp1.length; i += 2) {
                                   //1,2,3,4,5,6,7,8
                                   print("********ROOM ID's*******");
@@ -162,7 +164,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                   FirebaseFirestore.instance
                                       .collection('rooms')
                                       .add({
-                                    'name': "room${i}",
+                                    'name': "room ${index}",
                                     'userId':
                                         FirebaseAuth.instance.currentUser!.uid
                                   }).then((doc) {
@@ -189,6 +191,7 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                           doc.id);
                                     }
                                   });
+                                  index++;
                                 }
                                 setState(() {
                                   isLoading = false;

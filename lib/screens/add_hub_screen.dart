@@ -1,12 +1,8 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import 'package:lockstate/screens/device_paired_screen.dart';
-import 'package:lockstate/utils/color_utils.dart';
-import 'package:lockstate/utils/globals.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class AddHubScreen extends StatefulWidget {
@@ -30,7 +26,11 @@ class _AddHubScreenState extends State<AddHubScreen> {
     });
 
     for (var device in connectedDevices) {
-      if (device.name == "locksure_mini_hub") {
+      print("device.toString()");
+      print(device.toString());
+
+      if (device.name == "locksure") {
+
         if (device.state == BluetoothDeviceState.connected) {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => DevicePairedScreen(device)));
@@ -44,8 +44,12 @@ class _AddHubScreenState extends State<AddHubScreen> {
         break;
       }
     }
+
+    
     for (var scanResult in scanResults) {
-      if (scanResult.device.name == "locksure_mini_hub") {
+      print("scanResult.device.name.toString()");
+      print(scanResult.device.name.toString());
+      if (scanResult.device.name == "locksure") {
         await scanResult.device.connect();
         if (scanResult.device.state == BluetoothDeviceState.connected) {
           Navigator.of(context).push(MaterialPageRoute(
@@ -69,22 +73,27 @@ class _AddHubScreenState extends State<AddHubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Find Devices'),
-        actions: [
-          ElevatedButton(
-            child: const Text('TURN OFF'),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.black,
-              onPrimary: Colors.white,
+        appBar: AppBar(
+          title: const Text('Find Devices'),
+          actions: [
+            ElevatedButton(
+              child: const Text('TURN OFF'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.black,
+                onPrimary: Colors.white,
+              ),
+              onPressed: Platform.isAndroid
+                  ? () => FlutterBluePlus.instance.turnOff()
+                  : null,
             ),
-            onPressed: Platform.isAndroid
-                ? () => FlutterBluePlus.instance.turnOff()
-                : null,
-          ),
-        ],
-      ),
-      body: isLoading?Center(child: CircularProgressIndicator(),):Center(child: Text("Minihub not found"),)
-    );
+          ],
+        ),
+        body: isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Center(
+                child: Text("Minihub not found"),
+              ));
   }
 }

@@ -1,24 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:im_stepper/stepper.dart';
 import 'package:lockstate/authentication/index.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/model/account.dart';
-import 'package:lockstate/model/device.dart';
 import 'package:lockstate/model/room.dart';
-import 'package:lockstate/screens/add_device_screen.dart';
 import 'package:lockstate/screens/add_hub_screen.dart';
 import 'package:lockstate/screens/add_room_screen.dart';
-import 'package:lockstate/screens/device_detail_screen.dart';
 import 'package:lockstate/screens/notifications_screen.dart';
 import 'package:lockstate/screens/room_detail_screen.dart';
-import 'package:lockstate/screens/select_connection_type_screen.dart';
 import 'package:lockstate/screens/settings_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
+import 'package:lockstate/utils/globals_jas.dart' as globals;
 
-import 'package:dotted_border/dotted_border.dart';
+var lightSetting = 3; // Added by Jas to allow for different colour schemes
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -336,15 +332,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                         border: Border.all(
                                             color: Color(room.state == 0
                                                 ? ColorUtils.colorGrey
-                                                : room.state == 2
+                                                : room.state == 2 &&
+                                                        lightSetting == 0
                                                     ? ColorUtils.colorRed
-                                                    : room.state == 1
+                                                    : room.state == 1 &&
+                                                            lightSetting == 0
                                                         ? ColorUtils.colorGreen
-                                                        : room.state == 3
+                                                        : room.state == 3 &&
+                                                                lightSetting ==
+                                                                    0
                                                             ? ColorUtils
                                                                 .colorRed
-                                                            : ColorUtils
-                                                                .colorRed),
+                                                            : room.state == 0
+                                                                ? ColorUtils
+                                                                    .colorGrey
+                                                                : room.state ==
+                                                                            2 &&
+                                                                        lightSetting ==
+                                                                            2
+                                                                    ? ColorUtils
+                                                                        .colorMagenta
+                                                                    : room.state ==
+                                                                                1 &&
+                                                                            lightSetting ==
+                                                                                2
+                                                                        ? ColorUtils
+                                                                            .colorBlue
+                                                                        : room.state == 3 &&
+                                                                                lightSetting == 2
+                                                                            ? ColorUtils.colorRed
+                                                                            : room.state == 2 && lightSetting == 3
+                                                                                ? ColorUtils.colorAmber
+                                                                                : room.state == 1 && lightSetting == 3
+                                                                                    ? ColorUtils.colorCyan
+                                                                                    : room.state == 3 && lightSetting == 3
+                                                                                        ? ColorUtils.colorRed
+                                                                                        : ColorUtils.colorRed),
                                             width: 2),
 
                                         // boxShadow: [
@@ -379,18 +402,40 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 border: Border.all(
                                                     color: Color(room.state == 0
                                                         ? ColorUtils.colorGrey
-                                                        : room.state == 2
+                                                        : room.state == 2 &&
+                                                                lightSetting ==
+                                                                    0
                                                             ? ColorUtils
                                                                 .colorRed
-                                                            : room.state == 1
+                                                            : room.state == 1 &&
+                                                                    lightSetting ==
+                                                                        0
                                                                 ? ColorUtils
                                                                     .colorGreen
                                                                 : room.state ==
-                                                                        3
+                                                                            3 &&
+                                                                        lightSetting ==
+                                                                            0
                                                                     ? ColorUtils
                                                                         .colorRed
-                                                                    : ColorUtils
-                                                                        .colorRed),
+                                                                    : room.state ==
+                                                                            0
+                                                                        ? ColorUtils
+                                                                            .colorGrey
+                                                                        : room.state == 2 &&
+                                                                                lightSetting == 2
+                                                                            ? ColorUtils.colorMagenta
+                                                                            : room.state == 1 && lightSetting == 2
+                                                                                ? ColorUtils.colorBlue
+                                                                                : room.state == 3 && lightSetting == 3
+                                                                                    ? ColorUtils.colorRed
+                                                                                    : room.state == 2 && lightSetting == 3
+                                                                                        ? ColorUtils.colorAmber
+                                                                                        : room.state == 1 && lightSetting == 3
+                                                                                            ? ColorUtils.colorCyan
+                                                                                            : room.state == 3 && lightSetting == 3
+                                                                                                ? ColorUtils.colorRed
+                                                                                                : ColorUtils.colorRed),
                                                     width: 1)),
                                             child: Center(
                                               child: Icon(
@@ -401,16 +446,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 size: 100,
                                                 color: Color(room.state == 0
                                                     ? ColorUtils.colorGrey
-                                                    : room.state == 2
+                                                    : room.state == 2 &&
+                                                            lightSetting == 0
                                                         ? ColorUtils.colorRed
-                                                        : room.state == 1
+                                                        : room.state == 1 &&
+                                                                lightSetting ==
+                                                                    0
                                                             ? ColorUtils
                                                                 .colorGreen
-                                                            : room.state == 3
+                                                            : room.state == 3 &&
+                                                                    lightSetting ==
+                                                                        0
                                                                 ? ColorUtils
                                                                     .colorRed
-                                                                : ColorUtils
-                                                                    .colorRed),
+                                                                : room.state ==
+                                                                        0
+                                                                    ? ColorUtils
+                                                                        .colorGrey
+                                                                    : room.state ==
+                                                                                2 &&
+                                                                            lightSetting ==
+                                                                                2
+                                                                        ? ColorUtils
+                                                                            .colorMagenta
+                                                                        : room.state == 1 &&
+                                                                                lightSetting == 2
+                                                                            ? ColorUtils.colorBlue
+                                                                            : room.state == 3 && lightSetting == 3
+                                                                                ? ColorUtils.colorRed
+                                                                                : room.state == 2 && lightSetting == 3
+                                                                                    ? ColorUtils.colorAmber
+                                                                                    : room.state == 1 && lightSetting == 3
+                                                                                        ? ColorUtils.colorCyan
+                                                                                        : room.state == 3 && lightSetting == 3
+                                                                                            ? ColorUtils.colorRed
+                                                                                            : ColorUtils.colorRed),
                                               ),
                                             ),
                                           ),
@@ -418,15 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             height: 10,
                                           ),
                                           Text(
-                                            room.state == 0
-                                                ? "Not Set"
-                                                : room.state == 2
-                                                    ? "Unlocked / Closed"
-                                                    : room.state == 1
-                                                        ? "Locked / Closed"
-                                                        : room.state == 3
-                                                            ? "Unlocked / Open"
-                                                            : "Closed",
+                                            room.name,
                                             style: TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.bold,
@@ -437,7 +499,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                             height: 10,
                                           ),
                                           Text(
-                                            room.name,
+                                            room.state == 0
+                                                ? "Not Set"
+                                                : room.state == 2
+                                                    ? "Unlocked"
+                                                    : room.state == 1
+                                                        ? "Locked"
+                                                        : room.state == 3
+                                                            ? "Unlocked / Open"
+                                                            : "Closed",
                                             style: TextStyle(
                                               color: Color(
                                                 ColorUtils.color4,

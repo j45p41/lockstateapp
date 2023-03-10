@@ -216,11 +216,9 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/model/room.dart';
-import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -380,7 +378,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
       setState(() {
         result = scanData;
       });
-      addDevice(result!.code);
+      addDevice(result!.code.toString());
     });
   }
 

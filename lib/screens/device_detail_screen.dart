@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/model/device.dart';
 import 'package:lockstate/model/history.dart';
@@ -126,7 +125,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                     Text(
                                       "${latestDocData.message.uplinkMessage.decodedPayload.batVolts.toString()}%",
                                       style: TextStyle(
-                                        color: Theme.of(context).accentColor,
+                                        color: Theme.of(context).colorScheme.secondary,
                                       ),
                                     ),
                                   ],

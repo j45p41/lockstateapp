@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lockstate/model/account.dart';
-import 'package:lockstate/services/auth_service.dart';
 
 import 'package:lockstate/services/firestore_service.dart';
 import 'package:momentum/momentum.dart';

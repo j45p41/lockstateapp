@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/model/device.dart';
 import 'package:lockstate/model/room.dart';
 import 'package:lockstate/screens/add_device_screen.dart';
-import 'package:lockstate/screens/device_detail_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
+import 'package:lockstate/utils/globals_jas.dart' as globals;
+
+var lightSetting =
+    3; // Added by Jas to allow for different colour schemes need to move to globals
 
 class RoomDetailScreen extends StatefulWidget {
   final Room room;
@@ -77,21 +78,20 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   context: context,
                   builder: (context) {
                     return Container(
-                      height: 500,
+                      height: 200,
                       child: Form(
                         key: _editRoomFormKey,
                         child: Column(
                           children: [
                             TextFormField(
-                              onSaved: (newValue) {
+                              onChanged: (newValue) {
                                 setState(() {
-                                  newRoomName = newValue!;
+                                  newRoomName = newValue;
                                 });
                               },
                             ),
                             ElevatedButton(
                                 onPressed: () {
-                                  
                                   if (_editRoomFormKey.currentState!
                                       .validate()) {
                                     FirebaseFirestore.instance
@@ -100,7 +100,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                         .update({"name": newRoomName});
                                   }
                                 },
-                                child: Text("Edit Name"))
+                                child: Text("Update Room Name"))
                           ],
                         ),
                       ),
@@ -255,13 +255,45 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                         border: Border.all(
                             color: Color(device.state == 0
                                 ? ColorUtils.colorGrey
-                                : device.state == 2
+                                : device.state == 2 && lightSetting == 0
                                     ? ColorUtils.colorRed
-                                    : device.state == 1
+                                    : device.state == 1 && lightSetting == 0
                                         ? ColorUtils.colorGreen
-                                        : device.state == 3
+                                        : device.state == 3 && lightSetting == 0
                                             ? ColorUtils.colorRed
-                                            : ColorUtils.colorRed),
+                                            : device.state == 0
+                                                ? ColorUtils.colorGrey
+                                                : device.state == 2 &&
+                                                        lightSetting == 2
+                                                    ? ColorUtils.colorMagenta
+                                                    : device.state == 1 &&
+                                                            lightSetting == 2
+                                                        ? ColorUtils.colorBlue
+                                                        : device.state == 3 &&
+                                                                lightSetting ==
+                                                                    3
+                                                            ? ColorUtils
+                                                                .colorRed
+                                                            : device.state ==
+                                                                        2 &&
+                                                                    lightSetting ==
+                                                                        3
+                                                                ? ColorUtils
+                                                                    .colorAmber
+                                                                : device.state ==
+                                                                            1 &&
+                                                                        lightSetting ==
+                                                                            3
+                                                                    ? ColorUtils
+                                                                        .colorCyan
+                                                                    : device.state ==
+                                                                                3 &&
+                                                                            lightSetting ==
+                                                                                3
+                                                                        ? ColorUtils
+                                                                            .colorRed
+                                                                        : ColorUtils
+                                                                            .colorRed),
                             width: 2),
 
                         // boxShadow: [
@@ -295,13 +327,44 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                   border: Border.all(
                                       color: Color(device.state == 0
                                           ? ColorUtils.colorGrey
-                                          : device.state == 2
+                                          : device.state == 2 &&
+                                                  lightSetting == 0
                                               ? ColorUtils.colorRed
-                                              : device.state == 1
+                                              : device.state == 1 &&
+                                                      lightSetting == 0
                                                   ? ColorUtils.colorGreen
-                                                  : device.state == 3
+                                                  : device.state == 3 &&
+                                                          lightSetting == 0
                                                       ? ColorUtils.colorRed
-                                                      : ColorUtils.colorRed),
+                                                      : device.state == 0
+                                                          ? ColorUtils.colorGrey
+                                                          : device.state == 2 &&
+                                                                  lightSetting ==
+                                                                      2
+                                                              ? ColorUtils
+                                                                  .colorMagenta
+                                                              : device.state ==
+                                                                          1 &&
+                                                                      lightSetting ==
+                                                                          2
+                                                                  ? ColorUtils
+                                                                      .colorBlue
+                                                                  : device.state ==
+                                                                              3 &&
+                                                                          lightSetting ==
+                                                                              3
+                                                                      ? ColorUtils
+                                                                          .colorRed
+                                                                      : device.state == 2 &&
+                                                                              lightSetting ==
+                                                                                  3
+                                                                          ? ColorUtils
+                                                                              .colorAmber
+                                                                          : device.state == 1 && lightSetting == 3
+                                                                              ? ColorUtils.colorCyan
+                                                                              : device.state == 3 && lightSetting == 3
+                                                                                  ? ColorUtils.colorRed
+                                                                                  : ColorUtils.colorRed),
                                       width: 1)),
                               child: Center(
                                 child: Image.asset(
@@ -342,13 +405,14 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                               height: 20,
                             ),
                             Text(
-                              "Battery Level : " + device.batVolts.toString(),
+                              device.isIndoor ? "INDOOR" : "OUTDOOR",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
+
                             SizedBox(
                               height: 20,
                             ),
@@ -356,9 +420,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                               device.state == 0
                                   ? "Not Set"
                                   : device.state == 2
-                                      ? "Unlocked / Closed"
+                                      ? "Unlocked"
                                       : device.state == 1
-                                          ? "Locked / Closed"
+                                          ? "Locked"
                                           : device.state == 3
                                               ? "Unlocked / Open"
                                               : "Closed",
@@ -368,11 +432,13 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                 fontSize: 14,
                               ),
                             ),
+
                             SizedBox(
                               height: 20,
                             ),
+
                             Text(
-                              device.isIndoor ? "Indoor" : "Outdoor",
+                              "Battery Level : " + device.batVolts.toString(),
                               style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
