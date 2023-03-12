@@ -6,8 +6,8 @@ import 'package:lockstate/screens/add_device_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 
-var lightSetting =
-    3; // Added by Jas to allow for different colour schemes need to move to globals
+// var globals.lightSetting =
+//     3; // Added by Jas to allow for different colour schemes need to move to globals
 
 class RoomDetailScreen extends StatefulWidget {
   final Room room;
@@ -158,6 +158,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   ),
                 );
               }
+
               var data = snapshot.data;
 
               return GridView.builder(
@@ -173,72 +174,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 scrollDirection: Axis.vertical,
                 itemCount: data!.docs.length,
                 itemBuilder: (context, index) {
-                  // if (index == data.docs.length) {
-                  //   return GestureDetector(
-                  //     onTap: () {
-                  // Navigator.of(context).push(MaterialPageRoute(
-                  //   builder: (context) {
-                  //     return AddDeviceScreen(widget.room);
-                  //   },
-                  // ));
-                  //     },
-                  //     child: DottedBorder(
-                  //       color: Color(ColorUtils.color3),
-                  //       borderType: BorderType.RRect,
-                  //       // padding: EdgeInsets.all(10),
-                  //       radius: Radius.circular(20),
-                  //       strokeWidth: 3,
-                  //       dashPattern: [10, 5],
-                  //       strokeCap: StrokeCap.butt,
-                  //       child: Center(
-                  //         child: Container(
-                  //           decoration: BoxDecoration(
-                  //             color: Theme.of(context).backgroundColor,
-                  //             // borderRadius: BorderRadius.circular(20),
-                  //             // boxShadow: [
-                  //             //   BoxShadow(
-                  //             //       blurRadius: 4,
-                  //             //       color: Theme.of(context).accentColor)
-                  //             // ],
-                  //             // border: Border.all(
-                  //             //     color: Theme.of(context).accentColor),
-                  //           ),
-                  //           child: Column(
-                  //             mainAxisAlignment: MainAxisAlignment.center,
-                  //             children: [
-                  //               Container(
-                  //                 padding: EdgeInsets.all(10),
-                  //                 decoration: BoxDecoration(
-                  //                   color: Color(ColorUtils.color2),
-                  //                   shape: BoxShape.circle,
-                  //                 ),
-                  //                 child: Center(
-                  //                   child: Icon(
-                  //                     Icons.add,
-                  //                     size: 40,
-                  //                     color: Color(ColorUtils.color3),
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //               SizedBox(
-                  //                 height: 10,
-                  //               ),
-                  //               Text(
-                  //                 "Add Device",
-                  //                 style: TextStyle(
-                  //                   color: Color(ColorUtils.color3),
-                  //                   fontSize: 20,
-                  //                 ),
-                  //               )
-                  //             ],
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   );
-                  // }
                   var doc = data.docs[index];
                   var device = Device.fromDocument(doc);
+                  print(device.state);
 
                   return GestureDetector(
                     onTap: () {
@@ -255,40 +193,44 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                         border: Border.all(
                             color: Color(device.state == 0
                                 ? ColorUtils.colorGrey
-                                : device.state == 2 && lightSetting == 0
+                                : device.state == 2 && globals.lightSetting == 0
                                     ? ColorUtils.colorRed
-                                    : device.state == 1 && lightSetting == 0
+                                    : device.state == 1 &&
+                                            globals.lightSetting == 0
                                         ? ColorUtils.colorGreen
-                                        : device.state == 3 && lightSetting == 0
+                                        : device.state == 3 &&
+                                                globals.lightSetting == 0
                                             ? ColorUtils.colorRed
                                             : device.state == 0
                                                 ? ColorUtils.colorGrey
                                                 : device.state == 2 &&
-                                                        lightSetting == 2
+                                                        globals.lightSetting ==
+                                                            2
                                                     ? ColorUtils.colorMagenta
                                                     : device.state == 1 &&
-                                                            lightSetting == 2
+                                                            globals.lightSetting ==
+                                                                2
                                                         ? ColorUtils.colorBlue
                                                         : device.state == 3 &&
-                                                                lightSetting ==
+                                                                globals.lightSetting ==
                                                                     3
                                                             ? ColorUtils
                                                                 .colorRed
                                                             : device.state ==
                                                                         2 &&
-                                                                    lightSetting ==
+                                                                    globals.lightSetting ==
                                                                         3
                                                                 ? ColorUtils
                                                                     .colorAmber
                                                                 : device.state ==
                                                                             1 &&
-                                                                        lightSetting ==
+                                                                        globals.lightSetting ==
                                                                             3
                                                                     ? ColorUtils
                                                                         .colorCyan
                                                                     : device.state ==
                                                                                 3 &&
-                                                                            lightSetting ==
+                                                                            globals.lightSetting ==
                                                                                 3
                                                                         ? ColorUtils
                                                                             .colorRed
@@ -328,41 +270,42 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                       color: Color(device.state == 0
                                           ? ColorUtils.colorGrey
                                           : device.state == 2 &&
-                                                  lightSetting == 0
+                                                  globals.lightSetting == 0
                                               ? ColorUtils.colorRed
                                               : device.state == 1 &&
-                                                      lightSetting == 0
+                                                      globals.lightSetting == 0
                                                   ? ColorUtils.colorGreen
                                                   : device.state == 3 &&
-                                                          lightSetting == 0
+                                                          globals.lightSetting ==
+                                                              0
                                                       ? ColorUtils.colorRed
                                                       : device.state == 0
                                                           ? ColorUtils.colorGrey
                                                           : device.state == 2 &&
-                                                                  lightSetting ==
+                                                                  globals.lightSetting ==
                                                                       2
                                                               ? ColorUtils
                                                                   .colorMagenta
                                                               : device.state ==
                                                                           1 &&
-                                                                      lightSetting ==
+                                                                      globals.lightSetting ==
                                                                           2
                                                                   ? ColorUtils
                                                                       .colorBlue
                                                                   : device.state ==
                                                                               3 &&
-                                                                          lightSetting ==
+                                                                          globals.lightSetting ==
                                                                               3
                                                                       ? ColorUtils
                                                                           .colorRed
                                                                       : device.state == 2 &&
-                                                                              lightSetting ==
+                                                                              globals.lightSetting ==
                                                                                   3
                                                                           ? ColorUtils
                                                                               .colorAmber
-                                                                          : device.state == 1 && lightSetting == 3
+                                                                          : device.state == 1 && globals.lightSetting == 3
                                                                               ? ColorUtils.colorCyan
-                                                                              : device.state == 3 && lightSetting == 3
+                                                                              : device.state == 3 && globals.lightSetting == 3
                                                                                   ? ColorUtils.colorRed
                                                                                   : ColorUtils.colorRed),
                                       width: 1)),

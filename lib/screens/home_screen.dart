@@ -14,7 +14,7 @@ import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 
-var lightSetting = 3; // Added by Jas to allow for different colour schemes
+// var globals.lightSetting = 3; // Added by Jas to allow for different colour schemes need to move to globals
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -206,256 +206,145 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Expanded(
                         flex: 10,
-                        child: StreamBuilder<
-                                QuerySnapshot<Map<String, dynamic>>>(
-                            stream: FirebaseFirestore.instance
-                                .collection('rooms')
-                                .where("userId",
-                                    isEqualTo:
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              var data = snapshot.data;
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              if (snapshot.data == null) {
-                                return Center(
-                                  child: Text("No Rooms Registered"),
-                                );
-                              }
+                        child:
+                            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('rooms')
+                                    .where("userId",
+                                        isEqualTo: FirebaseAuth
+                                            .instance.currentUser!.uid)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  var data = snapshot.data;
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                  if (snapshot.data == null) {
+                                    return Center(
+                                      child: Text("No Rooms Registered"),
+                                    );
+                                  }
 
-                              return GridView.builder(
-                                padding: EdgeInsets.all(
-                                  15,
-                                ),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 1 / 1.5,
-                                  crossAxisSpacing: 20,
-                                  mainAxisSpacing: 20,
-                                ),
-                                scrollDirection: Axis.vertical,
-                                itemCount: data!.docs.length,
-                                itemBuilder: (context, index) {
-                                  // print("home room name ${room.name}");
-                                  // if (index == data.docs.length) {
-                                  //   return GestureDetector(
-                                  //     onTap: () {
-                                  //       Navigator.of(context)
-                                  //           .push(MaterialPageRoute(
-                                  //         builder: (context) {
-                                  //           return AddRoomScreen();
-                                  //         },
-                                  //       ));
-                                  //     },
-                                  //     child: DottedBorder(
-                                  //       color: Color(ColorUtils.color3),
-                                  //       borderType: BorderType.RRect,
-                                  //       // padding: EdgeInsets.all(10),
-                                  //       radius: Radius.circular(20),
-                                  //       strokeWidth: 3,
+                                  return GridView.builder(
+                                    padding: EdgeInsets.all(
+                                      15,
+                                    ),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 1 / 1.5,
+                                      crossAxisSpacing: 20,
+                                      mainAxisSpacing: 20,
+                                    ),
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: data!.docs.length,
+                                    itemBuilder: (context, index) {
+                                      // print("home room name ${room.name}");
+                                      // if (index == data.docs.length) {
+                                      //   return GestureDetector(
+                                      //     onTap: () {
+                                      //       Navigator.of(context)
+                                      //           .push(MaterialPageRoute(
+                                      //         builder: (context) {
+                                      //           return AddRoomScreen();
+                                      //         },
+                                      //       ));
+                                      //     },
+                                      //     child: DottedBorder(
+                                      //       color: Color(ColorUtils.color3),
+                                      //       borderType: BorderType.RRect,
+                                      //       // padding: EdgeInsets.all(10),
+                                      //       radius: Radius.circular(20),
+                                      //       strokeWidth: 3,
 
-                                  //       dashPattern: [10, 5],
-                                  //       strokeCap: StrokeCap.butt,
-                                  //       child: Center(
-                                  //         child: Container(
-                                  //           decoration: BoxDecoration(
-                                  //             color: Theme.of(context)
-                                  //                 .backgroundColor,
-                                  //             // borderRadius: BorderRadius.circular(20),
-                                  //             // boxShadow: [
-                                  //             //   BoxShadow(
-                                  //             //       blurRadius: 4,
-                                  //             //       color: Theme.of(context).accentColor)
-                                  //             // ],
-                                  //             // border: Border.all(
-                                  //             //     color: Theme.of(context).accentColor),
-                                  //           ),
-                                  //           child: Column(
-                                  //             mainAxisAlignment:
-                                  //                 MainAxisAlignment.center,
-                                  //             children: [
-                                  //               Container(
-                                  //                 padding: EdgeInsets.all(10),
-                                  //                 decoration: BoxDecoration(
-                                  //                   color: Color(
-                                  //                       ColorUtils.color2),
-                                  //                   shape: BoxShape.circle,
-                                  //                 ),
-                                  //                 child: Center(
-                                  //                   child: Icon(
-                                  //                     Icons.add,
-                                  //                     size: 40,
-                                  //                     color: Color(
-                                  //                         ColorUtils.color3),
-                                  //                   ),
-                                  //                 ),
-                                  //               ),
-                                  //               SizedBox(
-                                  //                 height: 10,
-                                  //               ),
-                                  //               Text(
-                                  //                 "Add Door",
-                                  //                 style: TextStyle(
-                                  //                   color: Color(
-                                  //                       ColorUtils.color3),
-                                  //                   fontSize: 20,
-                                  //                 ),
-                                  //               )
-                                  //             ],
-                                  //           ),
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //   );
-                                  // }
-                                  var doc = data.docs[index];
-                                  var room = Room.fromDocument(doc);
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                        builder: (context) {
-                                          return RoomDetailScreen(room: room);
+                                      //       dashPattern: [10, 5],
+                                      //       strokeCap: StrokeCap.butt,
+                                      //       child: Center(
+                                      //         child: Container(
+                                      //           decoration: BoxDecoration(
+                                      //             color: Theme.of(context)
+                                      //                 .backgroundColor,
+                                      //             // borderRadius: BorderRadius.circular(20),
+                                      //             // boxShadow: [
+                                      //             //   BoxShadow(
+                                      //             //       blurRadius: 4,
+                                      //             //       color: Theme.of(context).accentColor)
+                                      //             // ],
+                                      //             // border: Border.all(
+                                      //             //     color: Theme.of(context).accentColor),
+                                      //           ),
+                                      //           child: Column(
+                                      //             mainAxisAlignment:
+                                      //                 MainAxisAlignment.center,
+                                      //             children: [
+                                      //               Container(
+                                      //                 padding: EdgeInsets.all(10),
+                                      //                 decoration: BoxDecoration(
+                                      //                   color: Color(
+                                      //                       ColorUtils.color2),
+                                      //                   shape: BoxShape.circle,
+                                      //                 ),
+                                      //                 child: Center(
+                                      //                   child: Icon(
+                                      //                     Icons.add,
+                                      //                     size: 40,
+                                      //                     color: Color(
+                                      //                         ColorUtils.color3),
+                                      //                   ),
+                                      //                 ),
+                                      //               ),
+                                      //               SizedBox(
+                                      //                 height: 10,
+                                      //               ),
+                                      //               Text(
+                                      //                 "Add Door",
+                                      //                 style: TextStyle(
+                                      //                   color: Color(
+                                      //                       ColorUtils.color3),
+                                      //                   fontSize: 20,
+                                      //                 ),
+                                      //               )
+                                      //             ],
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //     ),
+                                      //   );
+                                      // }
+                                      var doc = data.docs[index];
+                                      var room = Room.fromDocument(doc);
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (context) {
+                                              return RoomDetailScreen(
+                                                  room: room);
+                                            },
+                                          ));
                                         },
-                                      ));
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Color(0xffF3F3F3),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                            color: Color(room.state == 0
-                                                ? ColorUtils.colorGrey
-                                                : room.state == 2 &&
-                                                        lightSetting == 0
-                                                    ? ColorUtils.colorRed
-                                                    : room.state == 1 &&
-                                                            lightSetting == 0
-                                                        ? ColorUtils.colorGreen
-                                                        : room.state == 3 &&
-                                                                lightSetting ==
-                                                                    0
-                                                            ? ColorUtils
-                                                                .colorRed
-                                                            : room.state == 0
-                                                                ? ColorUtils
-                                                                    .colorGrey
-                                                                : room.state ==
-                                                                            2 &&
-                                                                        lightSetting ==
-                                                                            2
-                                                                    ? ColorUtils
-                                                                        .colorMagenta
-                                                                    : room.state ==
-                                                                                1 &&
-                                                                            lightSetting ==
-                                                                                2
-                                                                        ? ColorUtils
-                                                                            .colorBlue
-                                                                        : room.state == 3 &&
-                                                                                lightSetting == 2
-                                                                            ? ColorUtils.colorRed
-                                                                            : room.state == 2 && lightSetting == 3
-                                                                                ? ColorUtils.colorAmber
-                                                                                : room.state == 1 && lightSetting == 3
-                                                                                    ? ColorUtils.colorCyan
-                                                                                    : room.state == 3 && lightSetting == 3
-                                                                                        ? ColorUtils.colorRed
-                                                                                        : ColorUtils.colorRed),
-                                            width: 2),
-
-                                        // boxShadow: [
-                                        //   BoxShadow(
-                                        //       blurRadius: 4,
-                                        //       color: Theme.of(context).accentColor)
-                                        // ],
-                                        // border: Border.all(
-                                        //     color: Theme.of(context).accentColor),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.all(15),
-                                            margin: EdgeInsets.only(
-                                              top: 20,
-                                            ),
-                                            decoration: BoxDecoration(
-                                                color: Color(
-                                                    ColorUtils.colorWhite),
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey,
-                                                    offset: Offset(
-                                                        0.0, 1.0), //(x,y)
-                                                    blurRadius: 6.0,
-                                                  ),
-                                                ],
-                                                border: Border.all(
-                                                    color: Color(room.state == 0
-                                                        ? ColorUtils.colorGrey
-                                                        : room.state == 2 &&
-                                                                lightSetting ==
-                                                                    0
-                                                            ? ColorUtils
-                                                                .colorRed
-                                                            : room.state == 1 &&
-                                                                    lightSetting ==
-                                                                        0
-                                                                ? ColorUtils
-                                                                    .colorGreen
-                                                                : room.state ==
-                                                                            3 &&
-                                                                        lightSetting ==
-                                                                            0
-                                                                    ? ColorUtils
-                                                                        .colorRed
-                                                                    : room.state ==
-                                                                            0
-                                                                        ? ColorUtils
-                                                                            .colorGrey
-                                                                        : room.state == 2 &&
-                                                                                lightSetting == 2
-                                                                            ? ColorUtils.colorMagenta
-                                                                            : room.state == 1 && lightSetting == 2
-                                                                                ? ColorUtils.colorBlue
-                                                                                : room.state == 3 && lightSetting == 3
-                                                                                    ? ColorUtils.colorRed
-                                                                                    : room.state == 2 && lightSetting == 3
-                                                                                        ? ColorUtils.colorAmber
-                                                                                        : room.state == 1 && lightSetting == 3
-                                                                                            ? ColorUtils.colorCyan
-                                                                                            : room.state == 3 && lightSetting == 3
-                                                                                                ? ColorUtils.colorRed
-                                                                                                : ColorUtils.colorRed),
-                                                    width: 1)),
-                                            child: Center(
-                                              child: Icon(
-                                                room.state == 1
-                                                    ? Icons.sensor_door_outlined
-                                                    : Icons
-                                                        .meeting_room_rounded,
-                                                size: 100,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Color(0xffF3F3F3),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
                                                 color: Color(room.state == 0
                                                     ? ColorUtils.colorGrey
                                                     : room.state == 2 &&
-                                                            lightSetting == 0
+                                                            globals.lightSetting ==
+                                                                0
                                                         ? ColorUtils.colorRed
                                                         : room.state == 1 &&
-                                                                lightSetting ==
+                                                                globals.lightSetting ==
                                                                     0
                                                             ? ColorUtils
                                                                 .colorGreen
                                                             : room.state == 3 &&
-                                                                    lightSetting ==
+                                                                    globals.lightSetting ==
                                                                         0
                                                                 ? ColorUtils
                                                                     .colorRed
@@ -465,64 +354,179 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         .colorGrey
                                                                     : room.state ==
                                                                                 2 &&
-                                                                            lightSetting ==
+                                                                            globals.lightSetting ==
                                                                                 2
                                                                         ? ColorUtils
                                                                             .colorMagenta
                                                                         : room.state == 1 &&
-                                                                                lightSetting == 2
+                                                                                globals.lightSetting == 2
                                                                             ? ColorUtils.colorBlue
-                                                                            : room.state == 3 && lightSetting == 3
+                                                                            : room.state == 3 && globals.lightSetting == 2
                                                                                 ? ColorUtils.colorRed
-                                                                                : room.state == 2 && lightSetting == 3
+                                                                                : room.state == 2 && globals.lightSetting == 3
                                                                                     ? ColorUtils.colorAmber
-                                                                                    : room.state == 1 && lightSetting == 3
+                                                                                    : room.state == 1 && globals.lightSetting == 3
                                                                                         ? ColorUtils.colorCyan
-                                                                                        : room.state == 3 && lightSetting == 3
+                                                                                        : room.state == 3 && globals.lightSetting == 3
                                                                                             ? ColorUtils.colorRed
                                                                                             : ColorUtils.colorRed),
+                                                width: 2),
+
+                                            // boxShadow: [
+                                            //   BoxShadow(
+                                            //       blurRadius: 4,
+                                            //       color: Theme.of(context).accentColor)
+                                            // ],
+                                            // border: Border.all(
+                                            //     color: Theme.of(context).accentColor),
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(15),
+                                                margin: EdgeInsets.only(
+                                                  top: 20,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                    color: Color(
+                                                        ColorUtils.colorWhite),
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.grey,
+                                                        offset: Offset(
+                                                            0.0, 1.0), //(x,y)
+                                                        blurRadius: 6.0,
+                                                      ),
+                                                    ],
+                                                    border: Border.all(
+                                                        color: Color(room
+                                                                    .state ==
+                                                                0
+                                                            ? ColorUtils
+                                                                .colorGrey
+                                                            : room.state == 2 &&
+                                                                    globals.lightSetting ==
+                                                                        0
+                                                                ? ColorUtils
+                                                                    .colorRed
+                                                                : room.state ==
+                                                                            1 &&
+                                                                        globals.lightSetting ==
+                                                                            0
+                                                                    ? ColorUtils
+                                                                        .colorGreen
+                                                                    : room.state ==
+                                                                                3 &&
+                                                                            globals.lightSetting ==
+                                                                                0
+                                                                        ? ColorUtils
+                                                                            .colorRed
+                                                                        : room.state ==
+                                                                                0
+                                                                            ? ColorUtils.colorGrey
+                                                                            : room.state == 2 && globals.lightSetting == 2
+                                                                                ? ColorUtils.colorMagenta
+                                                                                : room.state == 1 && globals.lightSetting == 2
+                                                                                    ? ColorUtils.colorBlue
+                                                                                    : room.state == 3 && globals.lightSetting == 3
+                                                                                        ? ColorUtils.colorRed
+                                                                                        : room.state == 2 && globals.lightSetting == 3
+                                                                                            ? ColorUtils.colorAmber
+                                                                                            : room.state == 1 && globals.lightSetting == 3
+                                                                                                ? ColorUtils.colorCyan
+                                                                                                : room.state == 3 && globals.lightSetting == 3
+                                                                                                    ? ColorUtils.colorRed
+                                                                                                    : ColorUtils.colorRed),
+                                                        width: 1)),
+                                                child: Center(
+                                                  child: Icon(
+                                                    room.state == 1
+                                                        ? Icons
+                                                            .sensor_door_outlined
+                                                        : Icons
+                                                            .meeting_room_rounded,
+                                                    size: 100,
+                                                    color: Color(room.state == 0
+                                                        ? ColorUtils.colorGrey
+                                                        : room.state == 2 &&
+                                                                globals.lightSetting ==
+                                                                    0
+                                                            ? ColorUtils
+                                                                .colorRed
+                                                            : room.state == 1 &&
+                                                                    globals.lightSetting ==
+                                                                        0
+                                                                ? ColorUtils
+                                                                    .colorGreen
+                                                                : room.state ==
+                                                                            3 &&
+                                                                        globals.lightSetting ==
+                                                                            0
+                                                                    ? ColorUtils
+                                                                        .colorRed
+                                                                    : room.state ==
+                                                                            0
+                                                                        ? ColorUtils
+                                                                            .colorGrey
+                                                                        : room.state == 2 &&
+                                                                                globals.lightSetting == 2
+                                                                            ? ColorUtils.colorMagenta
+                                                                            : room.state == 1 && globals.lightSetting == 2
+                                                                                ? ColorUtils.colorBlue
+                                                                                : room.state == 3 && globals.lightSetting == 3
+                                                                                    ? ColorUtils.colorRed
+                                                                                    : room.state == 2 && globals.lightSetting == 3
+                                                                                        ? ColorUtils.colorAmber
+                                                                                        : room.state == 1 && globals.lightSetting == 3
+                                                                                            ? ColorUtils.colorCyan
+                                                                                            : room.state == 3 && globals.lightSetting == 3
+                                                                                                ? ColorUtils.colorRed
+                                                                                                : ColorUtils.colorRed),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text(
-                                            room.name,
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text(
-                                            room.state == 0
-                                                ? "Not Set"
-                                                : room.state == 2
-                                                    ? "Unlocked"
-                                                    : room.state == 1
-                                                        ? "Locked"
-                                                        : room.state == 3
-                                                            ? "Unlocked / Open"
-                                                            : "Closed",
-                                            style: TextStyle(
-                                              color: Color(
-                                                ColorUtils.color4,
+                                              SizedBox(
+                                                height: 10,
                                               ),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
+                                              Text(
+                                                room.name,
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                room.state == 0
+                                                    ? "Not Set"
+                                                    : room.state == 2
+                                                        ? "Unlocked"
+                                                        : room.state == 1
+                                                            ? "Locked"
+                                                            : room.state == 3
+                                                                ? "Unlocked / Open"
+                                                                : "Closed",
+                                                style: TextStyle(
+                                                  color: Color(
+                                                    ColorUtils.color4,
+                                                  ),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   );
-                                },
-                              );
-                            }),
+                                }),
                       ),
                       // Expanded(
                       //   child: Container(),

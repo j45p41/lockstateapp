@@ -11,6 +11,7 @@ import 'package:momentum/momentum.dart';
 class DevicePairedScreen extends StatefulWidget {
   final BluetoothDevice device;
   DevicePairedScreen(this.device);
+
   @override
   _DevicePairedScreenState createState() => _DevicePairedScreenState();
 }
@@ -27,6 +28,8 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 
   @override
   void initState() {
+    print("_DevicePairedScreenState");
+
     super.initState();
     discoverServices();
   }
@@ -139,11 +142,16 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                     Momentum.controller<DataController>(
                                         context);
 
+                                print("res.toString()");
                                 print(res.toString());
                                 setState(() {
                                   readData = utf8.decode(res);
                                 });
+                                print("readData");
                                 print(readData);
+
+// SPLIT SSIDS and Doors
+
                                 List temp = readData.split(',').toList();
                                 List temp1 = [];
                                 temp.forEach((element) {
@@ -151,10 +159,21 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                                       );
                                 });
 
+                                "print(temp1)";
                                 print(temp1);
+
+                                List wifiIDs = [];
                                 List roomsIds = [];
 
-                                roomsIds = temp1.toList();
+                                wifiIDs = temp1.toList().sublist(0, 10);
+                                roomsIds = temp1.toList().sublist(10);
+
+                                "print(wifiIDs)";
+                                print(wifiIDs);
+
+                                "print(roomsIds)";
+                                print(roomsIds);
+
                                 print("after set " + roomsIds.toString());
                                 var index = 1;
                                 for (int i = 0; i < temp1.length; i += 2) {

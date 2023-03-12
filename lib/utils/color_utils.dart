@@ -16,7 +16,4 @@ class ColorUtils {
 
   static final colorCyan = 0xff80DEEA;
   static final colorAmber = 0xffffC107;
-
-  static final lightSetting =
-      3; // Added by Jas to allow for different colour schemes
 }

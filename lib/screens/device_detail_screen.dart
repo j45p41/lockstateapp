@@ -35,7 +35,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 title: Text(
                   widget.device.deviceName,
                   style: TextStyle(
-                     
                     fontSize: 20,
                     // fontWeight: FontWeight.w700,
                   ),
@@ -63,6 +62,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           var latestDocData =
               historyFromJson(json.encode(data[length - 1].data()));
 
+          print("latestDocData.toString()");
+          print(latestDocData.toString());
+
           // print(latestDocData.toString());
           return Scaffold(
             appBar: AppBar(
@@ -71,7 +73,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               title: Text(
                 widget.device.deviceName,
                 style: TextStyle(
-                   
                   fontSize: 20,
                   // fontWeight: FontWeight.w700,
                 ),
@@ -83,7 +84,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 },
                 child: Icon(
                   Icons.arrow_back_ios,
-                   
                 ),
               ),
             ),
@@ -119,13 +119,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                   children: [
                                     Icon(
                                       Icons.battery_full,
-                                       
                                       size: 20,
                                     ),
                                     Text(
                                       "${latestDocData.message.uplinkMessage.decodedPayload.batVolts.toString()}%",
                                       style: TextStyle(
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                       ),
                                     ),
                                   ],
@@ -166,9 +167,8 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                           style: TextStyle(color: Colors.white70),
                         ),
                         subtitle: Text(
-                          DateTime.parse(historyItem
-                                  .message.receivedAt
-                                  .toString())
+                          DateTime.parse(
+                                  historyItem.message.receivedAt.toString())
                               .toString(),
                           style: TextStyle(color: Colors.white70),
                         ),

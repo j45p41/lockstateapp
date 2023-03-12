@@ -14,6 +14,7 @@ class _AddHubScreenState extends State<AddHubScreen> {
   bool isDeviceFound = false;
   bool isLoading = false;
   test() async {
+    print("**** TEST FUNCTION ****");
     setState(() {
       isLoading = true;
     });
@@ -25,12 +26,18 @@ class _AddHubScreenState extends State<AddHubScreen> {
       scanResults = scanResultList;
     });
 
+    scanResults.forEach((res) {
+      print(res);
+    });
+
+    print("**** SCAN RESULTS ****");
+    // print(scanResults.length);
+
     for (var device in connectedDevices) {
-      print("device.toString()");
-      print(device.toString());
+      // print("device.toString()");
+      // print(device.toString());
 
       if (device.name == "locksure") {
-
         if (device.state == BluetoothDeviceState.connected) {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => DevicePairedScreen(device)));
@@ -45,20 +52,24 @@ class _AddHubScreenState extends State<AddHubScreen> {
       }
     }
 
-    
     for (var scanResult in scanResults) {
       print("scanResult.device.name.toString()");
       print(scanResult.device.name.toString());
       if (scanResult.device.name == "locksure") {
         await scanResult.device.connect();
-        if (scanResult.device.state == BluetoothDeviceState.connected) {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => DevicePairedScreen(scanResult.device)));
-        }
+        print("1A");
+        // if (scanResult.device.state == BluetoothDeviceState.connected) {
+        print("1");
+
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => DevicePairedScreen(scanResult.device)));
+        print("2");
+        // }
         break;
       }
     }
     setState(() {
+      print("3");
       isDeviceFound = false;
       isLoading = false;
     });
@@ -66,12 +77,14 @@ class _AddHubScreenState extends State<AddHubScreen> {
 
   @override
   void initState() {
+    print("5");
     super.initState();
     test();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("4");
     return Scaffold(
         appBar: AppBar(
           title: const Text('Find Devices'),
@@ -79,8 +92,8 @@ class _AddHubScreenState extends State<AddHubScreen> {
             ElevatedButton(
               child: const Text('TURN OFF'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.black,
-                onPrimary: Colors.white,
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
               ),
               onPressed: Platform.isAndroid
                   ? () => FlutterBluePlus.instance.turnOff()

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/model/history.dart';
 import 'package:lockstate/utils/color_utils.dart';
+import 'package:lockstate/utils/globals_jas.dart' as globals;
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -17,6 +18,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     print("user id " + FirebaseAuth.instance.currentUser!.uid.toString());
+    // globals.currentUser = FirebaseAuth.instance.currentUser!.uid.toString();
     return Scaffold(
       backgroundColor: Color(ColorUtils.colorDarkGrey),
       appBar: AppBar(
@@ -57,11 +59,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('notifications')
+              // .orderBy('recieved_at', descending: true)
               .where(
                 "userId",
                 isEqualTo: FirebaseAuth.instance.currentUser!.uid,
               )
-              // .orderBy("recieved_at", descending: true)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.data == null || snapshot.data!.docs.length == 0) {
@@ -83,7 +85,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             var data = snapshot.data!.docs;
             // print("data " + data[length - 1].data().toString());
             // var latestDocData =
-            //     historyFromJson(json.encode(data[length - 1].data()));
+            //     historyFromJRson(json.encode(data[length - 1].data()));
 
             // print(latestDocData.toString());
             return Container(
