@@ -444,10 +444,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 child: Center(
                                                   child: Icon(
                                                     room.state == 1
-                                                        ? Icons
-                                                            .sensor_door_outlined
-                                                        : Icons
-                                                            .meeting_room_rounded,
+                                                        ? Icons.lock
+                                                        : Icons.lock_open,
                                                     size: 100,
                                                     color: Color(room.state == 0
                                                         ? ColorUtils.colorGrey

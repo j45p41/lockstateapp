@@ -18,7 +18,77 @@ double brightnessSliderSetting = 90;
 double brightnessAlertSliderSetting = 75;
 double volumeSliderSetting = 40;
 double sentLightSetting = 2;
+
 final List<bool> _selectedFruits = <bool>[true, false];
+
+void getSettingsFromFirestore() async {
+  // getInitialSettings(); //temp
+  print('Getting Settings from Firestore');
+  globals.lightSetting = 0;
+  sentLightSetting = 0;
+
+  print(FirebaseAuth.instance.currentUser!.uid.toString());
+  // print(device.deviceId);
+
+  int deviceIndex = 0;
+
+  final db = FirebaseFirestore.instance;
+  var result = await db
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+      .collection('devices')
+      .get();
+  result.docs.forEach((res) {
+    print(res.id);
+
+    FirebaseFirestore.instance
+        .collection('devices')
+        .doc(res.id.toString())
+        .get()
+        .then((value) {
+      print(value.get('lightSetting'));
+      globals.lightSetting = value.get('lightSetting');
+    });
+
+    FirebaseFirestore.instance
+        .collection('devices')
+        .doc(res.id.toString())
+        .get()
+        .then((value) {
+      print(value.get('volumeSliderSetting'));
+      volumeSliderSetting =
+          double.parse(value.get('volumeSliderSetting').toint());
+    });
+
+    FirebaseFirestore.instance
+        .collection('devices')
+        .doc(res.id.toString())
+        .get()
+        .then((value) {
+      print(value.get('brightnessSliderSetting'));
+      brightnessSliderSetting =
+          double.parse(value.get('brightnessSliderSetting').toint());
+    });
+
+    FirebaseFirestore.instance
+        .collection('devices')
+        .doc(res.id.toString())
+        .get()
+        .then((value) {
+      print(value.get('doorStateInvert'));
+      doorStateInvert = value.get('doorStateInvert');
+    });
+    FirebaseFirestore.instance
+        .collection('devices')
+        .doc(res.id.toString())
+        .get()
+        .then((value) {
+      print(value.get('brightnessAlertSliderSetting'));
+      brightnessAlertSliderSetting =
+          double.parse(value.get('brightnessAlertSliderSetting').toint());
+    });
+  });
+}
 
 const List<Widget> icons = <Widget>[
   Icon(Icons.arrow_left),
@@ -44,6 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return MomentumBuilder(
         controllers: [AuthenticationController, DataController],
         builder: (context, snapshot) {
+          getSettingsFromFirestore();
           var authModel = snapshot<AuthenticationModel>();
           var authController = authModel.controller;
 
