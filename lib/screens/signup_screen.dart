@@ -15,15 +15,20 @@ class _SignupScreenState extends State<SignupScreen> {
   String password = '';
   String username = '';
   final _formKey = GlobalKey<FormState>();
-  signup() {
+  signup() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final authController =
           Momentum.controller<AuthenticationController>(context);
       print("signup screen " + email + " " + password + " " + username);
-      authController.signup(email, password, username);
+      var isCreated = await authController.signup(email, password, username);
+
+      if (!isCreated) return;
+      print("USER CREATED: " + isCreated.toString());
+
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => Authenticate(),
+        // builder: (context) => LoginScreen(),
       ));
     }
   }

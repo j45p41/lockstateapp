@@ -177,24 +177,21 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
 // DELETE OLD ROOMS HERE
 
     print("OLD ROOMS:");
-    // final db = FirebaseFirestore.instance;
-    // var result = await db
-    //     .collection('rooms')
-    //     .doc()
-    //     .get();
-    // result.docs.forEach((res) {
-    //   print(res.id);
+    final db = FirebaseFirestore.instance;
+    var userId = FirebaseAuth.instance.currentUser!.uid.toString();
 
-    //   FirebaseFirestore.instance
-    //       .collection('devices')
-    //       .doc(res.id.toString())
-    //       .update({'lightSetting': sentLightSetting});
-    // });
+    var result =
+        await db.collection('rooms').where("userId", isEqualTo: userId).get();
+    result.docs.forEach((res) {
+      print(res.id);
+
+      FirebaseFirestore.instance.collection('rooms').doc(res.id).delete();
+    });
 
     var index = 1;
 
     bool j = false;
-    for (int i = 0; i < temp1.length; i += 2) {
+    for (int i = 0; i < roomsIds.length; i += 2) {
       //1,2,3,4,5,6,7,8
       print("********ROOM ID's*******");
       print("room${i}");

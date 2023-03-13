@@ -19,7 +19,13 @@ class _AddHubScreenState extends State<AddHubScreen> {
       isLoading = true;
     });
     var flutterBluePlusInstance = FlutterBluePlus.instance;
-    flutterBluePlusInstance.startScan();
+    await flutterBluePlusInstance
+        .startScan(timeout: Duration(seconds: 5))
+        .then((value) {
+      setState(() {
+        isLoading = false;
+      });
+    });
     var connectedDevices = await flutterBluePlusInstance.connectedDevices;
     List<ScanResult> scanResults = [];
     await flutterBluePlusInstance.scanResults.listen((scanResultList) {
@@ -31,22 +37,28 @@ class _AddHubScreenState extends State<AddHubScreen> {
     });
 
     print("**** SCAN RESULTS ****");
+    print("scanresults: " + scanResults.length.toString());
+    print("connectedDevices: " + connectedDevices.length.toString());
     // print(scanResults.length);
 
     for (var device in connectedDevices) {
       // print("device.toString()");
       // print(device.toString());
-
+      print("10A");
       if (device.name == "locksure") {
+        print("11A");
         if (device.state == BluetoothDeviceState.connected) {
+          print("12A");
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => DevicePairedScreen(device)));
         } else {
+          print("14A");
           await device.connect();
-          if (device.state == BluetoothDeviceState.connected) {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => DevicePairedScreen(device)));
-          }
+          // if (device.state == BluetoothDeviceState.connected) {
+          print("13A");
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => DevicePairedScreen(device)));
+          // }
         }
         break;
       }

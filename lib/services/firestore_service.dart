@@ -9,15 +9,19 @@ class FirestoreService extends MomentumService {
   final firestore = FirebaseFirestore.instance;
 
   createUserInFirestore(String uid, String email, String username) async {
+    var isCreated = false;
     await firestore.collection('users').doc(uid).set({
       'uid': uid,
       'email': email,
       'username': username,
       'fcmId': fcmId,
-      'connectionType':"NOT_SELECTED",
+      'connectionType': "NOT_SELECTED",
     }).whenComplete(() {
       print('Created user on firestore');
+      isCreated = true;
     });
+
+    return isCreated;
   }
 
   addRoom(String userId, String roomName) async {

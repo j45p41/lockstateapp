@@ -21,75 +21,6 @@ double sentLightSetting = 2;
 
 final List<bool> _selectedFruits = <bool>[true, false];
 
-void getSettingsFromFirestore() async {
-  // getInitialSettings(); //temp
-  print('Getting Settings from Firestore');
-  globals.lightSetting = 0;
-  sentLightSetting = 0;
-
-  print(FirebaseAuth.instance.currentUser!.uid.toString());
-  // print(device.deviceId);
-
-  int deviceIndex = 0;
-
-  final db = FirebaseFirestore.instance;
-  var result = await db
-      .collection('users')
-      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-      .collection('devices')
-      .get();
-  result.docs.forEach((res) {
-    print(res.id);
-
-    FirebaseFirestore.instance
-        .collection('devices')
-        .doc(res.id.toString())
-        .get()
-        .then((value) {
-      print(value.get('lightSetting'));
-      globals.lightSetting = value.get('lightSetting');
-    });
-
-    FirebaseFirestore.instance
-        .collection('devices')
-        .doc(res.id.toString())
-        .get()
-        .then((value) {
-      print(value.get('volumeSliderSetting'));
-      volumeSliderSetting =
-          double.parse(value.get('volumeSliderSetting').toint());
-    });
-
-    FirebaseFirestore.instance
-        .collection('devices')
-        .doc(res.id.toString())
-        .get()
-        .then((value) {
-      print(value.get('brightnessSliderSetting'));
-      brightnessSliderSetting =
-          double.parse(value.get('brightnessSliderSetting').toint());
-    });
-
-    FirebaseFirestore.instance
-        .collection('devices')
-        .doc(res.id.toString())
-        .get()
-        .then((value) {
-      print(value.get('doorStateInvert'));
-      doorStateInvert = value.get('doorStateInvert');
-    });
-    FirebaseFirestore.instance
-        .collection('devices')
-        .doc(res.id.toString())
-        .get()
-        .then((value) {
-      print(value.get('brightnessAlertSliderSetting'));
-      brightnessAlertSliderSetting =
-          double.parse(value.get('brightnessAlertSliderSetting').toint());
-    });
-  });
-}
-
 const List<Widget> icons = <Widget>[
   Icon(Icons.arrow_left),
   Icon(Icons.arrow_right),
@@ -109,6 +40,74 @@ int lastIndex = 0;
 // }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  void getSettingsFromFirestore() async {
+    // getInitialSettings(); //temp
+    print('Getting Settings from Firestore');
+    globals.lightSetting = 0;
+    sentLightSetting = 0;
+
+    print(FirebaseAuth.instance.currentUser!.uid.toString());
+    // print(device.deviceId);
+
+    int deviceIndex = 0;
+
+    final db = FirebaseFirestore.instance;
+    var result = await db
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+        .collection('devices')
+        .get();
+    result.docs.forEach((res) {
+      print(res.id);
+
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        print(value.get('lightSetting'));
+        globals.lightSetting = value.get('lightSetting');
+      });
+
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        print(value.get('volumeSliderSetting'));
+        volumeSliderSetting = double.parse(value.get('volumeSliderSetting'));
+      });
+
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        print(value.get('brightnessSliderSetting'));
+        brightnessSliderSetting =
+            double.parse(value.get('brightnessSliderSetting'));
+      });
+
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        print(value.get('doorStateInvert'));
+        doorStateInvert = value.get('doorStateInvert');
+      });
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        print(value.get('brightnessAlertSliderSetting'));
+        brightnessAlertSliderSetting =
+            double.parse(value.get('brightnessAlertSliderSetting'));
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MomentumBuilder(
@@ -578,7 +577,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     minWidth: (5000),
                     height: 100.0,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        FirebaseAuth.instance.signOut();
+                      },
                       child: Text("LOGOUT"),
                       style: ElevatedButton.styleFrom(
                           primary: Colors.redAccent,

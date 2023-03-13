@@ -30,8 +30,10 @@ class AuthenticationController extends MomentumController<AuthenticationModel> {
     String username,
   ) {
     var authService = service<AuthService>();
-    authService.signup(email, password, username);
+    var isCreated = authService.signup(email, password, username);
     model.update();
+
+    return isCreated;
   }
 
   logout() {

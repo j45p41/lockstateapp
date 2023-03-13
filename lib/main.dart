@@ -58,7 +58,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         backgroundColor: Color(ColorUtils.color1),
         primaryColor: Color(ColorUtils.color2),
-        textTheme: GoogleFonts.poppinsTextTheme(), colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Color(ColorUtils.color4)),
+        textTheme: GoogleFonts.poppinsTextTheme(),
+        colorScheme: ColorScheme.fromSwatch()
+            .copyWith(secondary: Color(ColorUtils.color4)),
       ),
       home: IntroScreen(),
     );
@@ -82,7 +84,8 @@ class _AuthenticateState extends State<Authenticate> {
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .get();
-      print("getUser auth " + doc['connectionType'].toString());
+      print("*******getUser auth************ " +
+          doc['connectionType'].toString());
       setState(() {
         isConnectionTypeSet =
             doc['connectionType'] == "NOT_SELECTED" ? false : true;
@@ -111,10 +114,10 @@ class _AuthenticateState extends State<Authenticate> {
             );
           }
           return snapshot.data != null
-                  ? isConnectionTypeSet
-                      ? HomeScreen()
-                      : SelectConnectionScreen()
-                  : LoginScreen();
+              ? isConnectionTypeSet
+                  ? HomeScreen()
+                  : SelectConnectionScreen()
+              : LoginScreen();
         });
   }
 }
