@@ -148,7 +148,9 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
         // .replaceFirst('[', '')
         // .replaceFirst(']', '')
 
-        .split(',');
+        .split(',')
+        .toSet()
+        .toList();
 
     firstWifi = wifiIDs[0].toString();
 
@@ -204,15 +206,19 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
             .collection('rooms')
             .doc(doc.id)
             .update({'roomId': doc.id});
-        if (temp[i] != "0") {
-          dataController.addDevice(temp1[i],
-              FirebaseAuth.instance.currentUser!.uid, temp1[i], true, doc.id);
-        }
-        if (temp[i + 1] != "0") {
+        if (roomsIds[i] != "0") {
           dataController.addDevice(
-              temp1[i + 1],
+              roomsIds[i],
               FirebaseAuth.instance.currentUser!.uid,
-              temp1[i + 1],
+              roomsIds[i],
+              true,
+              doc.id);
+        }
+        if (roomsIds[i + 1] != "0") {
+          dataController.addDevice(
+              roomsIds[i + 1],
+              FirebaseAuth.instance.currentUser!.uid,
+              roomsIds[i + 1],
               false,
               doc.id);
         }

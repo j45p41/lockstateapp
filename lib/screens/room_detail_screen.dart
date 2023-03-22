@@ -5,6 +5,7 @@ import 'package:lockstate/model/room.dart';
 import 'package:lockstate/screens/add_device_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
+import 'package:firebase_auth/firebase_auth.dart';
 
 // var globals.lightSetting =
 //     3; // Added by Jas to allow for different colour schemes need to move to globals
@@ -91,13 +92,62 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                               },
                             ),
                             ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (_editRoomFormKey.currentState!
                                       .validate()) {
                                     FirebaseFirestore.instance
                                         .collection("rooms")
                                         .doc(widget.room.roomId)
                                         .update({"name": newRoomName});
+
+                                    FirebaseFirestore.instance
+                                        .collection("rooms")
+                                        .doc(widget.room.roomId)
+                                        .update({"name": newRoomName});
+
+                                    print('volumeSliderSetting Pressed');
+
+                                    print(FirebaseAuth.instance.currentUser!.uid
+                                        .toString());
+                                    // print(device.deviceId);
+
+                                    final db = FirebaseFirestore.instance;
+                                    var result = await db
+                                        .collection('users')
+                                        .doc(widget.room.userId)
+                                        .collection('devices')
+                                        .where('roomId',
+                                            isEqualTo: widget.room.roomId)
+                                        .get();
+                                    result.docs.forEach((res) {
+                                      print(res.id);
+
+                                      db
+                                          .collection('devices')
+                                          .doc(res.id.toString())
+                                          .get()
+                                          .then((value) {
+                                        print(value.get('isIndoor').toString());
+                                        bool isIndoor = value.get('isIndoor');
+
+                                        if (isIndoor)
+                                          db
+                                              .collection('devices')
+                                              .doc(res.id.toString())
+                                              .update({
+                                            'deviceName':
+                                                newRoomName + " INSIDE"
+                                          });
+                                        else
+                                          db
+                                              .collection('devices')
+                                              .doc(res.id.toString())
+                                              .update({
+                                            'deviceName':
+                                                newRoomName + " OUTSIDE"
+                                          });
+                                      });
+                                    });
                                   }
                                 },
                                 child: Text("Update Room Name"))
@@ -121,7 +171,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                     borderRadius: BorderRadius.circular(5)),
                 child: Icon(
                   Icons.edit,
-                  color: Colors.white,
+                  color: Colors.red,
                 ),
               ),
             ),

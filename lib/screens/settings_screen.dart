@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+bool gotSettings = false;
+
 class SettingsScreen extends StatefulWidget {
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -19,6 +21,10 @@ double brightnessAlertSliderSetting = 75;
 double volumeSliderSetting = 40;
 double sentLightSetting = 2;
 
+Color _colorGreen = Color.fromARGB(0, 255, 255, 255);
+Color _colorBlue = Color.fromARGB(0, 255, 255, 255);
+Color _colorCyan = Color.fromARGB(0, 255, 255, 255);
+
 final List<bool> _selectedFruits = <bool>[true, false];
 
 const List<Widget> icons = <Widget>[
@@ -26,9 +32,9 @@ const List<Widget> icons = <Widget>[
   Icon(Icons.arrow_right),
 ];
 bool vertical = false;
-bool doorStateInvert = false;
+int doorStateInvert = 0;
 
-double titleSize = 15;
+double titleSize = 20;
 int lastIndex = 0;
 
 // Future<QuerySnapshot> getDocuments() async {
@@ -42,11 +48,12 @@ int lastIndex = 0;
 class _SettingsScreenState extends State<SettingsScreen> {
   void getSettingsFromFirestore() async {
     // getInitialSettings(); //temp
+
     print('Getting Settings from Firestore');
-    globals.lightSetting = 0;
+
     sentLightSetting = 0;
 
-    print(FirebaseAuth.instance.currentUser!.uid.toString());
+    // print(FirebaseAuth.instance.currentUser!.uid.toString());
     // print(device.deviceId);
 
     int deviceIndex = 0;
@@ -65,63 +72,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
           .doc(res.id.toString())
           .get()
           .then((value) {
-        print(value.get('lightSetting'));
-        globals.lightSetting = value.get('lightSetting');
-      });
-
-      FirebaseFirestore.instance
-          .collection('devices')
-          .doc(res.id.toString())
-          .get()
-          .then((value) {
-        print(value.get('volumeSliderSetting'));
-        volumeSliderSetting = double.parse(value.get('volumeSliderSetting'));
-      });
-
-      FirebaseFirestore.instance
-          .collection('devices')
-          .doc(res.id.toString())
-          .get()
-          .then((value) {
         print(value.get('brightnessSliderSetting'));
-        brightnessSliderSetting =
-            double.parse(value.get('brightnessSliderSetting'));
+        // brightnessSliderSetting =
+        //     double.parse(value.get('brightnessSliderSetting'));
+
+        // brightnessSliderSetting = value.get('brightnessSliderSetting');
+
+        if (!globals.gotSettings) {
+          print('LIGHTSETTING:');
+          print(value.get('lightSetting'));
+          // sentLightSetting = value.get('lightSetting');
+          globals.lightSetting = value.get('lightSetting').toInt();
+
+          setState(() {
+            if (globals.lightSetting == 1) {
+              _colorGreen = Color.fromARGB(73, 255, 7, 7);
+              _colorCyan = Color.fromARGB(0, 255, 255, 255);
+              _colorBlue = Color.fromARGB(0, 255, 255, 255);
+            } else if (globals.lightSetting == 2) {
+              _colorBlue = Color.fromARGB(73, 255, 7, 7);
+              _colorCyan = Color.fromARGB(0, 255, 255, 255);
+              _colorGreen = Color.fromARGB(0, 255, 255, 255);
+            } else if (globals.lightSetting == 3) {
+              _colorCyan = Color.fromARGB(73, 255, 7, 7);
+              _colorBlue = Color.fromARGB(0, 255, 255, 255);
+              _colorGreen = Color.fromARGB(0, 255, 255, 255);
+            }
+
+            brightnessSliderSetting = value.get('brightnessSliderSetting');
+            brightnessAlertSliderSetting =
+                value.get('brightnessAlertSliderSetting');
+            volumeSliderSetting = value.get('volumeSliderSetting');
+
+            print(value.get('doorStateInvert'));
+
+            if (value.get('doorStateInvert') == 1) {
+              doorStateInvert = 0;
+              _selectedFruits[0] = true;
+              _selectedFruits[1] = false;
+              lastIndex = 1;
+              print('TRUE');
+            } else {
+              doorStateInvert = 1;
+              _selectedFruits[0] = false;
+              _selectedFruits[1] = true;
+              lastIndex = 0;
+              print('FALSE');
+            }
+          });
+        }
+        globals.gotSettings = true;
       });
 
-      FirebaseFirestore.instance
-          .collection('devices')
-          .doc(res.id.toString())
-          .get()
-          .then((value) {
-        print(value.get('doorStateInvert'));
-        doorStateInvert = value.get('doorStateInvert');
-      });
-      FirebaseFirestore.instance
-          .collection('devices')
-          .doc(res.id.toString())
-          .get()
-          .then((value) {
-        print(value.get('brightnessAlertSliderSetting'));
-        brightnessAlertSliderSetting =
-            double.parse(value.get('brightnessAlertSliderSetting'));
-      });
+      // FirebaseFirestore.instance
+      //     .collection('devices')
+      //     .doc(res.id.toString())
+      //     .get()
+      //     .then((value) {
+      //   print(value.get('doorStateInvert'));
+      //   // doorStateInvert = value.get('doorStateInvert');
+      // });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // getSettingsFromFirestore();S
+    // globals.gotSettings = false;
+
+    print('Widget build(BuildContext context) {');
     return MomentumBuilder(
         controllers: [AuthenticationController, DataController],
         builder: (context, snapshot) {
-          getSettingsFromFirestore();
           var authModel = snapshot<AuthenticationModel>();
           var authController = authModel.controller;
+          // getInitialSettings();
+
+          getSettingsFromFirestore();
 
           return Scaffold(
-            backgroundColor: Color(ColorUtils.colorDarkGrey),
+            backgroundColor: Color.fromARGB(255, 43, 43, 43),
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: Color(ColorUtils.colorDarkGrey),
+              backgroundColor: Color.fromARGB(255, 43, 43, 43),
               title: Text(
                 'Settings',
                 style: TextStyle(
@@ -135,12 +168,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               actions: [
                 Container(
                   margin: EdgeInsets.symmetric(
-                    vertical: 10,
+                    vertical: 1,
                   ),
                   padding: EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 20,
                   ),
-                  width: 100,
+                  width: 200,
+                  height: 100,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(5)),
@@ -160,17 +194,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 height: 10,
               ),
               Text(
-                "Hub and Monitor Color Schemes",
+                "Setting take effect on next operation",
                 style: TextStyle(color: Colors.white, fontSize: titleSize),
               ),
               const SizedBox(
                 height: 10,
               ),
               ListTile(
+                tileColor: _colorGreen,
                 onTap: () async {
+                  setState(() {
+                    _colorGreen = Color.fromARGB(73, 255, 7, 7);
+                    _colorBlue = Color.fromARGB(0, 255, 255, 255);
+                    _colorCyan = Color.fromARGB(0, 255, 255, 255);
+                    globals.lightSetting = 1;
+                    globals.gotLightSettings = false;
+                  });
+
+                  print('Getting Settings from Firestore');
+
+                  sentLightSetting = 0;
+
+                  // print(FirebaseAuth.instance.currentUser!.uid.toString());
+                  // print(device.deviceId);
+
                   // getInitialSettings(); //temp
                   print('RED/GREEN Pressed');
-                  globals.lightSetting = 0;
+
                   sentLightSetting = 0;
 
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
@@ -190,7 +240,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
+                        .update({'lightSetting': 1});
                   });
                 },
                 leading: Icon(
@@ -203,16 +253,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 title: new Center(
                     child: new Text(
-                  "GREEN LOCKED / RED UNLOCKED",
+                  "Green = Locked / Red = Unlocked",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
               ),
               ListTile(
+                tileColor: _colorBlue,
                 onTap: () async {
+                  setState(() {
+                    _colorBlue = Color.fromARGB(73, 255, 7, 7);
+                    _colorCyan = Color.fromARGB(0, 255, 255, 255);
+                    _colorGreen = Color.fromARGB(0, 255, 255, 255);
+                    globals.lightSetting = 2;
+                    globals.gotLightSettings = false;
+                  });
                   print('BLUE/AMBER Pressed');
-                  globals.lightSetting = 2;
-                  sentLightSetting = 2;
+
+                  // sentLightSetting = 2;
 
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
@@ -229,7 +287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
+                        .update({'lightSetting': 2});
                   });
                 },
                 leading: Icon(
@@ -242,16 +300,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 title: new Center(
                     child: new Text(
-                  "BLUE LOCKED / AMBER UNLOCKED",
+                  "Blue = Locked / Amber = Unlocked",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
               ),
               ListTile(
+                tileColor: _colorCyan,
                 onTap: () async {
+                  setState(() {
+                    _colorCyan = Color.fromARGB(73, 255, 7, 7);
+                    _colorBlue = Color.fromARGB(0, 255, 255, 255);
+                    _colorGreen = Color.fromARGB(0, 255, 255, 255);
+                    globals.lightSetting = 3;
+                    globals.gotLightSettings = false;
+                  });
                   print('CYAN/MAGENTA Pressed');
-                  globals.lightSetting = 3;
-                  sentLightSetting = 3;
+
+                  // sentLightSetting = 3;
 
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
@@ -268,7 +334,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
+                        .update({'lightSetting': 3});
                   });
                 },
                 leading: Icon(
@@ -281,7 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 title: new Center(
                     child: new Text(
-                  "CYAN LOCKED / MAGENTA UNLOCKED",
+                  "Cyan = Locked / Magenta = Unlocked",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
@@ -291,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Text(
                 "Hub Brightness",
-                style: TextStyle(color: Colors.white, fontSize: titleSize),
+                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
               ),
               const SizedBox(
                 height: 5,
@@ -307,6 +373,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         max: 100,
                         divisions: 5,
                         label: brightnessSliderSetting.round().toString(),
+                        // onChangeStart: (value) async {
+                        //   final db = FirebaseFirestore.instance;
+                        //   var result = await db
+                        //       .collection('users')
+                        //       .doc(FirebaseAuth.instance.currentUser!.uid
+                        //           .toString())
+                        //       .collection('devices')
+                        //       .get();
+                        //   result.docs.forEach((res) {
+                        //     print(res.id);
+
+                        //     FirebaseFirestore.instance
+                        //         .collection('devices')
+                        //         .doc(res.id.toString())
+                        //         .get()
+                        //         .then((value) {
+                        //       print(value.get('brightnessSliderSetting'));
+
+                        //       setState(() {
+                        //         brightnessSliderSetting =
+                        //             value.get('brightnessSliderSetting');
+                        //       });
+                        //       value = value.get('brightnessSliderSetting');
+                        //     });
+                        //   });
+                        // },
                         onChanged: (double value) {
                           setState(() {
                             brightnessSliderSetting = value;
@@ -343,7 +435,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                         child: Text("SET"),
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.redAccent,
+                            primary: Color.fromARGB(73, 255, 7, 7),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
                             textStyle: TextStyle(
@@ -356,7 +448,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Text(
                 "Hub Alert Brightness",
-                style: TextStyle(color: Colors.white, fontSize: titleSize),
+                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
               ),
               const SizedBox(
                 height: 5,
@@ -409,7 +501,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                         child: Text("SET"),
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.redAccent,
+                            primary: Color.fromARGB(73, 255, 7, 7),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
                             textStyle: TextStyle(
@@ -422,7 +514,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Text(
                 "Hub Volume",
-                style: TextStyle(color: Colors.white, fontSize: titleSize),
+                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
               ),
               const SizedBox(
                 height: 5,
@@ -474,7 +566,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                         child: Text("SET"),
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.redAccent,
+                            primary: Color.fromARGB(73, 255, 7, 7),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 5),
                             textStyle: TextStyle(
@@ -507,7 +599,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (lastIndex == 1) {
                       print('doorStateInvert FALSE Pressed');
 
-                      doorStateInvert = false;
+                      doorStateInvert = 0;
 
                       print(FirebaseAuth.instance.currentUser!.uid.toString());
                       // print(device.deviceId);
@@ -530,7 +622,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     } else {
                       print('doorStateInvert TRUE Pressed');
 
-                      doorStateInvert = true;
+                      doorStateInvert = 1;
 
                       print(FirebaseAuth.instance.currentUser!.uid.toString());
                       // print(device.deviceId);
@@ -555,14 +647,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                   selectedBorderColor: Colors.blue[700],
                   selectedColor: Colors.white,
-                  fillColor: Colors.blue[200],
-                  color: Colors.blue[400],
+                  fillColor: Color.fromARGB(73, 255, 7, 7),
+                  color: Color.fromARGB(73, 255, 7, 7),
                   isSelected: _selectedFruits,
                   children: icons,
                 ),
                 title: new Center(
                     child: new Text(
-                  "SWAP LOCK/UNLOCK",
+                  "Swap Lock/Unlock",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
@@ -580,9 +672,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: () {
                         FirebaseAuth.instance.signOut();
                       },
-                      child: Text("LOGOUT"),
+                      child: Text("Logout"),
                       style: ElevatedButton.styleFrom(
-                          primary: Colors.redAccent,
+                          primary: Color.fromARGB(73, 255, 7, 7),
                           padding: EdgeInsets.symmetric(
                               horizontal: 100, vertical: 15),
                           textStyle: TextStyle(

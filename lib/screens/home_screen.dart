@@ -21,7 +21,49 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
+Color _lightSettingColour = Color.fromARGB(0, 255, 255, 255);
+
 class _HomeScreenState extends State<HomeScreen> {
+  void getLightSettingsFromFirestore() async {
+    print('Getting LIGHT Settings from Firestore');
+
+    final db = FirebaseFirestore.instance;
+    var result = await db
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid.toString())
+        .collection('devices')
+        .get();
+    result.docs.forEach((res) {
+      print(res.id);
+
+      FirebaseFirestore.instance
+          .collection('devices')
+          .doc(res.id.toString())
+          .get()
+          .then((value) {
+        if (!globals.gotLightSettings) {
+          print('LIGHTSETTING:');
+          print(value.get('lightSetting'));
+          // sentLightSetting = value.get('lightSetting');
+          globals.lightSetting = value.get('lightSetting').toInt();
+
+          setState(() {
+            globals.lightSetting = value.get('lightSetting').toInt();
+
+            if (globals.lightSetting == 1) {
+              _lightSettingColour = Colors.green;
+            } else if (globals.lightSetting == 2) {
+              _lightSettingColour = Colors.blue;
+            } else if (globals.lightSetting == 3) {
+              _lightSettingColour = Colors.cyan;
+            }
+          });
+        }
+        globals.gotLightSettings = true;
+      });
+    });
+  }
+
   late Account? currentAccount;
   late PageController pageController;
   int currentIndex = 0;
@@ -34,55 +76,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
   buildBottomNavigationBar() {
     return BottomNavigationBar(
-      selectedItemColor: Colors.red,
-      currentIndex: currentIndex,
-      unselectedItemColor: Colors.white,
-      onTap: (int index) {
-        setState(() {
-          currentIndex = index;
-        });
-        pageController.animateToPage(
-          index,
-          duration: Duration(milliseconds: 100),
-          curve: Curves.bounceIn,
-        );
-      },
-      items: [
-        BottomNavigationBarItem(
-          // backgroundColor: Color(ColorUtils.color1),
+        selectedItemColor: _lightSettingColour,
+        currentIndex: currentIndex,
+        unselectedItemColor: Colors.white,
+        onTap: (int index) {
+          setState(() {
+            currentIndex = index;
+          });
+          pageController.animateToPage(
+            index,
+            duration: Duration(milliseconds: 100),
+            curve: Curves.bounceIn,
+          );
+        },
+        items: [
+          BottomNavigationBarItem(
+            // backgroundColor: Color(ColorUtils.color1),
 
-          icon: Icon(
-            Icons.home,
-            // color: Colors.grey,
-            size: 30,
-          ),
+            icon: Icon(
+              Icons.home,
+              // color: Colors.grey,
+              size: 30,
+            ),
 
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          // backgroundColor: Color(ColorUtils.color1),
-          icon: Icon(
-            Icons.notifications,
-            // color: Colors.grey,
-            size: 30,
+            label: 'Home',
           ),
-          label: 'Notificactions',
-        ),
-        BottomNavigationBarItem(
-          // backgroundColor: Color(ColorUtils.color1),
-          icon: Icon(
-            Icons.settings,
-            // color: Colors.grey,
-            size: 30,
+          BottomNavigationBarItem(
+            // backgroundColor: Color(ColorUtils.color1),
+            icon: Icon(
+              Icons.history,
+              // color: Colors.grey,
+              size: 30,
+            ),
+            label: 'History',
           ),
-          label: 'Settings',
-        ),
-      ],
-      backgroundColor: Color(ColorUtils.color2),
-    );
+          BottomNavigationBarItem(
+            // backgroundColor: Color(ColorUtils.color1),
+            icon: Icon(
+              Icons.settings,
+              // color: Colors.grey,
+              size: 30,
+            ),
+            label: 'Settings',
+          ),
+        ],
+        backgroundColor: Color.fromARGB(255, 0, 0, 0));
   }
 
   buildRoomsPage() {
+    getLightSettingsFromFirestore();
     return MomentumBuilder(
         controllers: [
           DataController,
@@ -102,11 +144,11 @@ class _HomeScreenState extends State<HomeScreen> {
           return DefaultTabController(
             length: 2,
             child: Scaffold(
-              backgroundColor: Color(ColorUtils.colorDarkGrey),
+              backgroundColor: Color.fromARGB(255, 43, 43, 43),
               appBar: AppBar(
                 elevation: 0,
                 automaticallyImplyLeading: false,
-                backgroundColor: Color(ColorUtils.colorDarkGrey),
+                backgroundColor: Color.fromARGB(255, 43, 43, 43),
                 title: Text(
                   'Home',
                   style: TextStyle(
@@ -120,12 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 actions: [
                   Container(
                     margin: EdgeInsets.symmetric(
-                      vertical: 10,
+                      vertical: 1,
                     ),
                     padding: EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: 20,
                     ),
-                    width: 100,
+                    width: 200,
+                    height: 100,
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5)),
@@ -143,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   elevation: 0,
                   centerTitle: false,
                   automaticallyImplyLeading: false,
-                  backgroundColor: Color(ColorUtils.colorDarkGrey),
+                  backgroundColor: Color.fromARGB(255, 43, 43, 43),
                   title: TabBar(
                     unselectedLabelColor: Color(ColorUtils.colorGrey),
                     indicatorColor: Colors.transparent,
@@ -336,20 +379,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ? ColorUtils.colorGrey
                                                     : room.state == 2 &&
                                                             globals.lightSetting ==
-                                                                0
+                                                                1
                                                         ? ColorUtils.colorRed
                                                         : room.state == 1 &&
                                                                 globals.lightSetting ==
-                                                                    0
+                                                                    1
                                                             ? ColorUtils
                                                                 .colorGreen
                                                             : room.state == 3 &&
                                                                     globals.lightSetting ==
-                                                                        0
+                                                                        1
                                                                 ? ColorUtils
                                                                     .colorRed
                                                                 : room.state ==
-                                                                        0
+                                                                        1
                                                                     ? ColorUtils
                                                                         .colorGrey
                                                                     : room.state ==
@@ -404,24 +447,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     border: Border.all(
                                                         color: Color(room
                                                                     .state ==
-                                                                0
+                                                                1
                                                             ? ColorUtils
                                                                 .colorGrey
                                                             : room.state == 2 &&
                                                                     globals.lightSetting ==
-                                                                        0
+                                                                        1
                                                                 ? ColorUtils
                                                                     .colorRed
                                                                 : room.state ==
                                                                             1 &&
                                                                         globals.lightSetting ==
-                                                                            0
+                                                                            1
                                                                     ? ColorUtils
                                                                         .colorGreen
                                                                     : room.state ==
                                                                                 3 &&
                                                                             globals.lightSetting ==
-                                                                                0
+                                                                                1
                                                                         ? ColorUtils
                                                                             .colorRed
                                                                         : room.state ==
@@ -451,18 +494,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ? ColorUtils.colorGrey
                                                         : room.state == 2 &&
                                                                 globals.lightSetting ==
-                                                                    0
+                                                                    1
                                                             ? ColorUtils
                                                                 .colorRed
                                                             : room.state == 1 &&
                                                                     globals.lightSetting ==
-                                                                        0
+                                                                        1
                                                                 ? ColorUtils
                                                                     .colorGreen
                                                                 : room.state ==
                                                                             3 &&
                                                                         globals.lightSetting ==
-                                                                            0
+                                                                            1
                                                                     ? ColorUtils
                                                                         .colorRed
                                                                     : room.state ==

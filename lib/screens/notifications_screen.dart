@@ -20,12 +20,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     print("user id " + FirebaseAuth.instance.currentUser!.uid.toString());
     // globals.currentUser = FirebaseAuth.instance.currentUser!.uid.toString();
     return Scaffold(
-      backgroundColor: Color(ColorUtils.colorDarkGrey),
+      backgroundColor: Color.fromARGB(255, 43, 43, 43),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Color(ColorUtils.colorDarkGrey),
+        backgroundColor: Color.fromARGB(255, 43, 43, 43),
         title: Text(
-          'Notifications',
+          'History',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w900,
@@ -37,12 +37,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           Container(
             margin: EdgeInsets.symmetric(
-              vertical: 10,
+              vertical: 1,
             ),
             padding: EdgeInsets.symmetric(
-              horizontal: 8,
+              horizontal: 20,
             ),
-            width: 100,
+            width: 200,
+            height: 100,
             decoration: BoxDecoration(
                 color: Colors.white, borderRadius: BorderRadius.circular(5)),
             child: Image.asset(
@@ -59,11 +60,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('notifications')
-              // .orderBy('recieved_at', descending: true)
+              .orderBy('received_at', descending: true)
               .where(
                 "userId",
                 isEqualTo: FirebaseAuth.instance.currentUser!.uid,
               )
+              // .orderBy("state", descending: false)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.data == null || snapshot.data!.docs.length == 0) {
