@@ -131,25 +131,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               .decodedPayload.lockState ==
                                           0
                                       ? ColorUtils.colorGrey
-                                      : historyItem.message.uplinkMessage
-                                                  .decodedPayload.lockState ==
-                                              2
+                                      : historyItem.message.uplinkMessage.decodedPayload.lockState ==
+                                                  2 &&
+                                              globals.lightSetting == 1
                                           ? ColorUtils.colorRed
                                           : historyItem
-                                                      .message
-                                                      .uplinkMessage
-                                                      .decodedPayload
-                                                      .lockState ==
-                                                  1
-                                              ? ColorUtils.colorGreen
-                                              : historyItem
                                                           .message
                                                           .uplinkMessage
                                                           .decodedPayload
                                                           .lockState ==
-                                                      3
-                                                  ? ColorUtils.colorRed
-                                                  : ColorUtils.colorRed),
+                                                      1 &&
+                                                  globals.lightSetting == 1
+                                              ? ColorUtils.colorGreen
+                                              : historyItem
+                                                              .message
+                                                              .uplinkMessage
+                                                              .decodedPayload
+                                                              .lockState ==
+                                                          2 &&
+                                                      globals.lightSetting == 2
+                                                  ? ColorUtils.colorMagenta
+                                                  : historyItem
+                                                                  .message
+                                                                  .uplinkMessage
+                                                                  .decodedPayload
+                                                                  .lockState ==
+                                                              1 &&
+                                                          globals.lightSetting == 3
+                                                      ? ColorUtils.colorCyan
+                                                      : historyItem.message.uplinkMessage.decodedPayload.lockState == 2 && globals.lightSetting == 3
+                                                          ? ColorUtils.colorAmber
+                                                          : historyItem.message.uplinkMessage.decodedPayload.lockState == 1 && globals.lightSetting == 2
+                                                              ? ColorUtils.colorBlue
+                                                              : historyItem.message.uplinkMessage.decodedPayload.lockState == 3
+                                                                  ? ColorUtils.colorAmber
+                                                                  : ColorUtils.colorAmber),
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(6),
                                     bottomLeft: Radius.circular(6),

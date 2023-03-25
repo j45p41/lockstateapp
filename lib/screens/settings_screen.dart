@@ -213,20 +213,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   print('Getting Settings from Firestore');
 
-                  sentLightSetting = 0;
-
                   // print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
 
                   // getInitialSettings(); //temp
                   print('RED/GREEN Pressed');
 
-                  sentLightSetting = 0;
-
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
-
-                  int deviceIndex = 0;
 
                   final db = FirebaseFirestore.instance;
                   var result = await db
@@ -236,11 +230,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       .get();
                   result.docs.forEach((res) {
                     print(res.id);
-
+                    sentLightSetting = 1;
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': 1});
+                        .update({'lightSetting': sentLightSetting});
                   });
                 },
                 leading: Icon(
@@ -268,9 +262,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     globals.lightSetting = 2;
                     globals.gotLightSettings = false;
                   });
-                  print('BLUE/AMBER Pressed');
-
-                  // sentLightSetting = 2;
+                  print('BLUE/MAGENTA Pressed');
 
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
@@ -283,11 +275,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       .get();
                   result.docs.forEach((res) {
                     print(res.id);
-
+                    sentLightSetting = 2;
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': 2});
+                        .update({'lightSetting': sentLightSetting});
                   });
                 },
                 leading: Icon(
@@ -296,11 +288,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 trailing: Icon(
                   Icons.circle,
-                  color: Colors.amber,
+                  color: Colors.pinkAccent,
                 ),
                 title: new Center(
                     child: new Text(
-                  "Blue = Locked / Amber = Unlocked",
+                  "Blue = Locked / Magenta = Unlocked",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
@@ -315,9 +307,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     globals.lightSetting = 3;
                     globals.gotLightSettings = false;
                   });
-                  print('CYAN/MAGENTA Pressed');
-
-                  // sentLightSetting = 3;
+                  print('CYAN/AMBER Pressed');
 
                   print(FirebaseAuth.instance.currentUser!.uid.toString());
                   // print(device.deviceId);
@@ -330,11 +320,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       .get();
                   result.docs.forEach((res) {
                     print(res.id);
+                    sentLightSetting = 3;
 
                     FirebaseFirestore.instance
                         .collection('devices')
                         .doc(res.id.toString())
-                        .update({'lightSetting': 3});
+                        .update({'lightSetting': sentLightSetting});
                   });
                 },
                 leading: Icon(
@@ -343,11 +334,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 trailing: Icon(
                   Icons.circle,
-                  color: Colors.pinkAccent,
+                  color: Colors.amber,
                 ),
                 title: new Center(
                     child: new Text(
-                  "Cyan = Locked / Magenta = Unlocked",
+                  "Cyan = Locked / Amber = Unlocked",
                   style:
                       TextStyle(color: Colors.white, fontSize: titleSize - 5),
                 )),
@@ -513,7 +504,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 height: 10,
               ),
               Text(
-                "Hub Volume",
+                "Audible Alert Interval (Minutes)",
                 style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
               ),
               const SizedBox(
@@ -527,8 +518,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Column(children: [
                       Slider(
                         value: volumeSliderSetting,
-                        max: 100,
-                        divisions: 5,
+                        max: 60,
+                        divisions: 6,
                         label: volumeSliderSetting.round().toString(),
                         onChanged: (double value) {
                           setState(() {

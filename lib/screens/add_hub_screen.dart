@@ -20,7 +20,7 @@ class _AddHubScreenState extends State<AddHubScreen> {
     });
     var flutterBluePlusInstance = FlutterBluePlus.instance;
     await flutterBluePlusInstance
-        .startScan(timeout: Duration(seconds: 10))
+        .startScan(timeout: Duration(seconds: 3))
         .then((value) {
       setState(() {
         isLoading = false;

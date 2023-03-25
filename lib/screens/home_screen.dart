@@ -227,9 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 30,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(
-                            ColorUtils.color2,
-                          ),
+                          color: _lightSettingColour,
                         ),
                         child: Icon(
                           Icons.add,
@@ -285,78 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     scrollDirection: Axis.vertical,
                                     itemCount: data!.docs.length,
                                     itemBuilder: (context, index) {
-                                      // print("home room name ${room.name}");
-                                      // if (index == data.docs.length) {
-                                      //   return GestureDetector(
-                                      //     onTap: () {
-                                      //       Navigator.of(context)
-                                      //           .push(MaterialPageRoute(
-                                      //         builder: (context) {
-                                      //           return AddRoomScreen();
-                                      //         },
-                                      //       ));
-                                      //     },
-                                      //     child: DottedBorder(
-                                      //       color: Color(ColorUtils.color3),
-                                      //       borderType: BorderType.RRect,
-                                      //       // padding: EdgeInsets.all(10),
-                                      //       radius: Radius.circular(20),
-                                      //       strokeWidth: 3,
-
-                                      //       dashPattern: [10, 5],
-                                      //       strokeCap: StrokeCap.butt,
-                                      //       child: Center(
-                                      //         child: Container(
-                                      //           decoration: BoxDecoration(
-                                      //             color: Theme.of(context)
-                                      //                 .backgroundColor,
-                                      //             // borderRadius: BorderRadius.circular(20),
-                                      //             // boxShadow: [
-                                      //             //   BoxShadow(
-                                      //             //       blurRadius: 4,
-                                      //             //       color: Theme.of(context).accentColor)
-                                      //             // ],
-                                      //             // border: Border.all(
-                                      //             //     color: Theme.of(context).accentColor),
-                                      //           ),
-                                      //           child: Column(
-                                      //             mainAxisAlignment:
-                                      //                 MainAxisAlignment.center,
-                                      //             children: [
-                                      //               Container(
-                                      //                 padding: EdgeInsets.all(10),
-                                      //                 decoration: BoxDecoration(
-                                      //                   color: Color(
-                                      //                       ColorUtils.color2),
-                                      //                   shape: BoxShape.circle,
-                                      //                 ),
-                                      //                 child: Center(
-                                      //                   child: Icon(
-                                      //                     Icons.add,
-                                      //                     size: 40,
-                                      //                     color: Color(
-                                      //                         ColorUtils.color3),
-                                      //                   ),
-                                      //                 ),
-                                      //               ),
-                                      //               SizedBox(
-                                      //                 height: 10,
-                                      //               ),
-                                      //               Text(
-                                      //                 "Add Door",
-                                      //                 style: TextStyle(
-                                      //                   color: Color(
-                                      //                       ColorUtils.color3),
-                                      //                   fontSize: 20,
-                                      //                 ),
-                                      //               )
-                                      //             ],
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   );
-                                      // }
                                       var doc = data.docs[index];
                                       var room = Room.fromDocument(doc);
                                       return GestureDetector(
