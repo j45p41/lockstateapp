@@ -19,10 +19,10 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(ColorUtils.colorDarkGrey),
+      backgroundColor: const Color(ColorUtils.colorDarkGrey),
       appBar: AppBar(
-        backgroundColor: Color(ColorUtils.color2),
-        title: Text(
+        backgroundColor: const Color(ColorUtils.color2),
+        title: const Text(
           "Connection Type",
         ),
         centerTitle: true,
@@ -31,6 +31,8 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
           if (isSelected)
             TextButton(
               onPressed: () async {
+
+                
                 await FirebaseFirestore.instance
                     .collection('users')
                     .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -43,12 +45,12 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
                 }).whenComplete(() {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (context) {
-                      return Authenticate();
+                      return const Authenticate();
                     },
                   ));
                 });
               },
-              child: Text(
+              child: const Text(
                 "Save",
                 style: TextStyle(color: Colors.white),
               ),
@@ -58,10 +60,10 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
-            Center(
+            const Center(
               child: Text("How will you connect your detector?",
                   style: TextStyle(
                     color: Colors.white,
@@ -69,16 +71,16 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
                     fontWeight: FontWeight.w600,
                   )),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             GridView(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
                 horizontal: 10,
               ),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 1 / 1.3,
                 crossAxisSpacing: 10,
@@ -97,21 +99,21 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
                   child: Column(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         height: 180,
                         width: 180,
                         decoration: BoxDecoration(
                           color: isMinihubSelected
-                              ? Color(ColorUtils.color2)
+                              ? const Color(ColorUtils.color2)
                               : Colors.white,
                           shape: BoxShape.circle,
                         ),
                         child: Image.asset("assets/images/minihub.png"),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
-                      Text(
+                      const Text(
                         "Mini-Hub",
                         style: TextStyle(
                           color: Colors.white,
@@ -134,21 +136,21 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
                   child: Column(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         height: 180,
                         width: 180,
                         decoration: BoxDecoration(
                           color: isheliumSelected
-                              ? Color(ColorUtils.color2)
+                              ? const Color(ColorUtils.color2)
                               : Colors.white,
                           shape: BoxShape.circle,
                         ),
                         child: Image.asset("assets/images/helium.png"),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
-                      Text(
+                      const Text(
                         "Helium",
                         style: TextStyle(
                           color: Colors.white,
@@ -171,21 +173,21 @@ class _SelectConnectionScreenState extends State<SelectConnectionScreen> {
                   child: Column(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         height: 180,
                         width: 180,
                         decoration: BoxDecoration(
                           color: isTtnSelected
-                              ? Color(ColorUtils.color2)
+                              ? const Color(ColorUtils.color2)
                               : Colors.white,
                           shape: BoxShape.circle,
                         ),
                         child: Image.asset("assets/images/ttn.png"),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
-                      Text(
+                      const Text(
                         "The Things Network",
                         style: TextStyle(
                           color: Colors.white,

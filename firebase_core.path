@@ -1,0 +1,8 @@
+--- a/android/src/main/java/io/flutter/plugins/firebase/core/FlutterFirebaseCoreRegistrar.java
++++ b/android/src/main/java/io/flutter/plugins/firebase/core/FlutterFirebaseCoreRegistrar.java
+@@ -16,7 +16,7 @@
+         LibraryVersionComponent.create(
+-                BuildConfig.LIBRARY_NAME,
+-                BuildConfig.LIBRARY_VERSION));
++                "firebase_core",
++                "1.24.0"));

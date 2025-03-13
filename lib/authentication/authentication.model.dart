@@ -6,7 +6,7 @@ import 'package:momentum/momentum.dart';
 import 'index.dart';
 
 class AuthenticationModel extends MomentumModel<AuthenticationController> {
-  AuthenticationModel(AuthenticationController controller,
+  const AuthenticationModel(AuthenticationController controller,
       {this.authSubscription, this.userSnapshot})
       : super(controller);
   final StreamSubscription<User?>? authSubscription;

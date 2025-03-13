@@ -13,31 +13,39 @@ class History {
       {required this.deviceId,
       required this.deviceName,
       required this.fcmIds,
+      required this.isIndoor,
+      required this.radioPowerLevel,
       required this.message,
       required this.roomId,
       required this.userId});
 
   String deviceId;
   String deviceName;
+  int radioPowerLevel;
+  bool isIndoor;
   List<dynamic> fcmIds;
   Message message;
   String roomId;
   String userId;
 
   factory History.fromJson(Map<String, dynamic> json) => History(
-      deviceId: json["deviceId"] == null ? "" : json["deviceId"],
-      deviceName: json["deviceName"] == null ? "" : json["deviceName"],
-      roomId: json["roomId"] == null ? "" : json["roomId"],
+      deviceId: json["deviceId"] ?? "",
+      deviceName: json["deviceName"] ?? "",
+      roomId: json["roomId"] ?? "",
+      radioPowerLevel:json["radioPowerLevel"] ?? "",
+            isIndoor:json["isIndoor"] ?? "",
       fcmIds: List<dynamic>.from(json["fcmIds"].map((x) => x)),
       message: Message.fromJson(json["message"]),
-      userId: json["userId"] == null ? "" : json["userId"]);
+      userId: json["userId"] ?? "");
 
   Map<String, dynamic> toJson() => {
         "deviceId": deviceId,
         "deviceName": deviceName,
+        "radioPowerLevel": radioPowerLevel,
+        "isIndoor": isIndoor,
         "fcmIds": List<dynamic>.from(fcmIds.map((x) => x)),
         "message": message.toJson(),
-        "userId":userId,
+        "userId": userId,
       };
 }
 
@@ -89,9 +97,9 @@ class DecodedPayload {
   int lockState;
 
   factory DecodedPayload.fromJson(Map<String, dynamic> json) => DecodedPayload(
-        batVolts: json["batVolts"] == null ? 0 : json["batVolts"],
-        lockCount: json["lockCount"] == null ? 0 : json["lockCount"],
-        lockState: json["lockState"] == null ? 0 : json["lockState"],
+        batVolts: json["batVolts"] ?? 0,
+        lockCount: json["lockCount"] ?? 0,
+        lockState: json["lockState"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {

@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:284838840885:android:ac24b11b919cecab7a3f7c",
         "android_client_info": {
-          "package_name": "com.example.lockstate"
+          "package_name": "com.locksure.lockstate"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "284838840885-qobt67p8r01dnfk6qliot084ineba05g.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.lockstate",
+            "package_name": "com.locksure.lockstate",
             "certificate_hash": "ab61d488ea30a764c756d23bd2f0c519023f1a0e"
           }
         },

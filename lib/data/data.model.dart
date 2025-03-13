@@ -6,7 +6,7 @@ import 'package:momentum/momentum.dart';
 import 'index.dart';
 
 class DataModel extends MomentumModel<DataController> {
-  DataModel(DataController controller,
+  const DataModel(DataController controller,
       {this.account, this.devicesSnapshot, this.devicesSubscription})
       : super(controller);
 

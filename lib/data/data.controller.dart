@@ -19,7 +19,7 @@ class DataController extends MomentumController<DataModel> {
   getAccountFromFirestore() async {
     final firestoreService = service<FirestoreService>();
     Account account = firestoreService.getCurrentAccount();
-    print("Data controller getAccount " + account.email.toString());
+    print("Data controller getAccount ${account.email}");
     model.update(account: account);
   }
 

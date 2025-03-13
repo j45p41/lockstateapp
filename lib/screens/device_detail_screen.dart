@@ -8,7 +8,7 @@ import 'package:lockstate/utils/color_utils.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final Device device;
-  DeviceDetailScreen({required this.device});
+  const DeviceDetailScreen({Key? key, required this.device}) : super(key: key);
   @override
   _DeviceDetailScreenState createState() => _DeviceDetailScreenState();
 }
@@ -25,23 +25,23 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             .collection('history')
             .snapshots(),
         builder: (context, snapshot) {
-          print("snapshot " + snapshot.toString());
-          if (snapshot.data == null || snapshot.data!.docs.length == 0) {
+          print("snapshot $snapshot");
+          if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
             return Scaffold(
-              backgroundColor: Theme.of(context).backgroundColor,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               appBar: AppBar(
                 elevation: 0,
                 centerTitle: false,
                 title: Text(
                   widget.device.deviceName,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     // fontWeight: FontWeight.w700,
                   ),
                 ),
-                backgroundColor: Theme.of(context).backgroundColor,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               ),
-              body: Center(
+              body: const Center(
                 child: Text(
                   "No history",
                   style: TextStyle(color: Color(ColorUtils.color4)),
@@ -50,7 +50,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             );
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(
+            return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
               ),
@@ -72,22 +72,22 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               centerTitle: false,
               title: Text(
                 widget.device.deviceName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   // fontWeight: FontWeight.w700,
                 ),
               ),
-              backgroundColor: Theme.of(context).backgroundColor,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               leading: GestureDetector(
                 onTap: () {
                   Navigator.of(context).pop();
                 },
-                child: Icon(
+                child: const Icon(
                   Icons.arrow_back_ios,
                 ),
               ),
             ),
-            backgroundColor: Theme.of(context).backgroundColor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Column(
@@ -107,7 +107,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                 size: 300,
                                 color: isOn
                                     ? Colors.white
-                                    : Color(
+                                    : const Color(
                                         ColorUtils.color3,
                                       ),
                               ),
@@ -117,7 +117,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.battery_full,
                                       size: 20,
                                     ),
@@ -134,7 +134,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                               ),
                             ],
                           ),
-                          Divider(
+                          const Divider(
                             thickness: 1,
                             color: Color(
                               ColorUtils.color3,
@@ -145,7 +145,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                     ),
                     // flex: 3,
                   ),
-                  Text(
+                  const Text(
                     "History",
                     style: TextStyle(
                       color: Colors.white70,
@@ -157,27 +157,25 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       child: ListView.builder(
                     itemCount: length,
                     itemBuilder: (context, index) {
-                      print("index " + index.toString());
+                      print("index $index");
                       var historyItem =
                           historyFromJson(json.encode(data[index].data()));
 
                       return ListTile(
                         title: Text(
                           "Event Type : ${historyItem.message.uplinkMessage.decodedPayload.lockState.toString() == "1" ? "Open" : "Close"}",
-                          style: TextStyle(color: Colors.white70),
+                          style: const TextStyle(color: Colors.white70),
                         ),
                         subtitle: Text(
                           DateTime.parse(
                                   historyItem.message.receivedAt.toString())
                               .toString(),
-                          style: TextStyle(color: Colors.white70),
+                          style: const TextStyle(color: Colors.white70),
                         ),
                         trailing: Text(
-                          "State Count : " +
-                              historyItem.message.uplinkMessage.decodedPayload
-                                  .lockCount
-                                  .toString(),
-                          style: TextStyle(color: Colors.white70),
+                          "State Count : ${historyItem.message.uplinkMessage.decodedPayload
+                                  .lockCount}",
+                          style: const TextStyle(color: Colors.white70),
                         ),
                       );
                     },

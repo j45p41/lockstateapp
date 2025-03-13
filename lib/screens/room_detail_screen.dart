@@ -12,9 +12,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class RoomDetailScreen extends StatefulWidget {
   final Room room;
-  RoomDetailScreen({
+  const RoomDetailScreen({Key? key, 
     required this.room,
-  });
+  }) : super(key: key);
   @override
   _RoomDetailScreenState createState() => _RoomDetailScreenState();
 }
@@ -25,14 +25,10 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(ColorUtils.colorDarkGrey),
+        backgroundColor: const Color(ColorUtils.colorDarkGrey),
         floatingActionButton: FloatingActionButton(
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-          backgroundColor: Color(ColorUtils.color2),
-          foregroundColor: Color(ColorUtils.color2),
+          backgroundColor: const Color(ColorUtils.color2),
+          foregroundColor: const Color(ColorUtils.color2),
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
@@ -40,13 +36,17 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
               },
             ));
           },
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
         ),
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Color(ColorUtils.colorDarkGrey),
+          backgroundColor: const Color(ColorUtils.colorDarkGrey),
           title: Text(
             widget.room.name,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
               color: Color(
@@ -56,10 +56,10 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
           ),
           actions: [
             Container(
-              margin: EdgeInsets.symmetric(
+              margin: const EdgeInsets.symmetric(
                 vertical: 10,
               ),
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: 8,
               ),
               width: 100,
@@ -70,7 +70,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               width: 10,
             ),
             GestureDetector(
@@ -78,7 +78,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return Container(
+                    return SizedBox(
                       height: 200,
                       child: Form(
                         key: _editRoomFormKey,
@@ -119,7 +119,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                         .where('roomId',
                                             isEqualTo: widget.room.roomId)
                                         .get();
-                                    result.docs.forEach((res) {
+                                    for (var res in result.docs) {
                                       print(res.id);
 
                                       db
@@ -130,27 +130,28 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                         print(value.get('isIndoor').toString());
                                         bool isIndoor = value.get('isIndoor');
 
-                                        if (isIndoor)
+                                        if (isIndoor) {
                                           db
                                               .collection('devices')
                                               .doc(res.id.toString())
                                               .update({
                                             'deviceName':
-                                                newRoomName + " INSIDE"
+                                                newRoomName
                                           });
-                                        else
+                                        } else {
                                           db
                                               .collection('devices')
                                               .doc(res.id.toString())
                                               .update({
                                             'deviceName':
-                                                newRoomName + " OUTSIDE"
+                                                "$newRoomName OUTSIDE"
                                           });
+                                        }
                                       });
-                                    });
+                                    }
                                   }
                                 },
-                                child: Text("Update Room Name"))
+                                child: const Text("Update Room Name"))
                           ],
                         ),
                       ),
@@ -159,23 +160,23 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 );
               },
               child: Container(
-                margin: EdgeInsets.symmetric(
+                margin: const EdgeInsets.symmetric(
                   vertical: 10,
                 ),
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 8,
                 ),
                 width: 100,
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5)),
-                child: Icon(
+                child: const Icon(
                   Icons.edit,
-                  color: Colors.red,
+                  color: Colors.blue,
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               width: 10,
             )
           ],
@@ -188,20 +189,20 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
               if (snapshot.data == null) {
-                return Center(
+                return const Center(
                   child: Text(
                     "No Devices Registered",
                     style: TextStyle(color: Colors.white),
                   ),
                 );
               }
-              if (snapshot.data!.docs.length == 0) {
-                return Center(
+              if (snapshot.data!.docs.isEmpty) {
+                return const Center(
                   child: Text(
                     "No Devices Registered",
                     style: TextStyle(color: Colors.white),
@@ -212,10 +213,10 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
               var data = snapshot.data;
 
               return GridView.builder(
-                padding: EdgeInsets.all(
+                padding: const EdgeInsets.all(
                   15,
                 ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 1.5 / 4,
                   crossAxisSpacing: 20,
@@ -238,7 +239,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Color(0xffF3F3F3),
+                        color: const Color(0xffF3F3F3),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             color: Color(device.state == 0
@@ -302,14 +303,14 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Container(
-                              padding: EdgeInsets.all(15),
-                              margin: EdgeInsets.only(
+                              padding: const EdgeInsets.all(15),
+                              margin: const EdgeInsets.only(
                                 top: 15,
                               ),
                               decoration: BoxDecoration(
-                                  color: Color(ColorUtils.colorWhite),
+                                  color: const Color(ColorUtils.colorWhite),
                                   shape: BoxShape.circle,
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                       color: Colors.grey,
                                       offset: Offset(0.0, 1.0), //(x,y)
@@ -394,19 +395,19 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                             //     fontSize: 14,
                             //   ),
                             // ),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             Text(
                               device.isIndoor ? "INDOOR" : "OUTDOOR",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
 
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             Text(
@@ -419,46 +420,46 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                           : device.state == 3
                                               ? "Unlocked / Open"
                                               : "Closed",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
 
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
 
                             Text(
-                              "Battery Level : " + device.batVolts.toString(),
-                              style: TextStyle(
+                              "Battery Level : ${device.batVolts}",
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             Text(
                               "[${device.count}]",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 8,
                             ),
                             Text(
                               device.lastRecievedAt == ""
                                   ? "Not Set"
                                   : device.lastRecievedAt.substring(16, 24),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                           ],

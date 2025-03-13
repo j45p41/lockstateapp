@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:lockstate/main.dart';
 import 'package:lockstate/utils/color_utils.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class IntroScreen extends StatefulWidget {
+  const IntroScreen({Key? key}) : super(key: key);
+
   @override
   _IntroScreenState createState() => _IntroScreenState();
 }
 
 class _IntroScreenState extends State<IntroScreen> {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   int selectedIndex = 0;
   // @override
   // void initState() {
@@ -37,13 +38,13 @@ class _IntroScreenState extends State<IntroScreen> {
               onPressed: () {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (context) {
-                    return Authenticate();
+                    return const Authenticate();
                   },
                 ));
               },
               child: Text(
                 selectedIndex == 2 ? "Done" : "Skip",
-                style: TextStyle(color: Colors.blue, fontSize: 15),
+                style: const TextStyle(color: Colors.blue, fontSize: 15),
               ),
             ),
           ],
@@ -52,10 +53,11 @@ class _IntroScreenState extends State<IntroScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
-              child: Container(),
               flex: 1,
+              child: Container(),
             ),
             Expanded(
+              flex: 7,
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (int index) {
@@ -73,8 +75,8 @@ class _IntroScreenState extends State<IntroScreen> {
                       // SizedBox(
                       //   height: 100,
                       // ),
-                      Text(
-                        "Know the state of your door from\nanywhere using your phone.",
+                      const Text(
+                        "Know the state of all your doors from\nanywhere using your phone.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.black,
@@ -83,61 +85,60 @@ class _IntroScreenState extends State<IntroScreen> {
                       ),
                     ],
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      AspectRatio(
-                          aspectRatio: 375 / 281,
-                          child: Image.asset('assets/images/intro2.png')),
-                      // SizedBox(
-                      //   height: 100,
-                      // ),
-                      Text(
-                        "Detectors are placed on the\ninside and outside of the door.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      AspectRatio(
-                          aspectRatio: 375 / 281,
-                          child: Image.asset('assets/images/intro3.png')),
-                      // SizedBox(
-                      //   height: 100,
-                      // ),
-                      Text(
-                        "Instant notification of you about\nany change.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      )
-                    ],
-                  ),
+                  // Column(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //   children: [
+                  //     AspectRatio(
+                  //         aspectRatio: 375 / 281,
+                  //         child: Image.asset('assets/images/intro2.png')),
+                  //     // SizedBox(
+                  //     //   height: 100,
+                  //     // ),
+                  //     Text(
+                  //       "Detectors are placed on the\ninside and outside of the door.",
+                  //       textAlign: TextAlign.center,
+                  //       style: TextStyle(
+                  //           color: Colors.black,
+                  //           fontSize: 20,
+                  //           fontWeight: FontWeight.w800),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Column(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //   children: [
+                  //     AspectRatio(
+                  //         aspectRatio: 375 / 281,
+                  //         child: Image.asset('assets/images/intro3.png')),
+                  //     // SizedBox(
+                  //     //   height: 100,
+                  //     // ),
+                  //     Text(
+                  //       "Get Instant notification of\nany change.",
+                  //       textAlign: TextAlign.center,
+                  //       style: TextStyle(
+                  //           color: Colors.black,
+                  //           fontSize: 20,
+                  //           fontWeight: FontWeight.w800),
+                  //     )
+                  //   ],
+                  // ),
                 ],
               ),
-              flex: 7,
             ),
 
-            Expanded(
-              flex: 1,
-              child: SmoothPageIndicator(
-                controller: _pageController,
-                effect: WormEffect(
-                    activeDotColor: Colors.blue,
-                    strokeWidth: 0.1,
-                    dotWidth: 10,
-                    dotHeight: 10),
-                count: 3,
-              ),
-            ),
+            // Expanded(
+            //   flex: 1,
+            //   child: SmoothPageIndicator(
+            //     controller: _pageController,
+            //     effect: WormEffect(
+            //         activeDotColor: Colors.blue,
+            //         strokeWidth: 0.1,
+            //         dotWidth: 10,
+            //         dotHeight: 10),
+            //     count: 3,
+            //   ),
+            // ),
             // Expanded(
             //   child: PageView(
             //     controller: _pageController,
@@ -159,18 +160,19 @@ class _IntroScreenState extends State<IntroScreen> {
             //   flex: 3,
             // ),
             Expanded(
-              child: Container(),
               flex: 1,
+              child: Container(),
             ),
 
             if (selectedIndex == 2)
               Expanded(
+                flex: 1,
                 child: Container(
                   child: GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) {
-                          return Authenticate();
+                          return const Authenticate();
                         },
                       ));
                     },
@@ -178,13 +180,13 @@ class _IntroScreenState extends State<IntroScreen> {
                       aspectRatio: 355 / 65,
                       child: Container(
                         // padding: const EdgeInsets.all(15.0),
-                        decoration: new BoxDecoration(
+                        decoration: BoxDecoration(
                           // shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(10),
 
-                          color: Color(ColorUtils.color2),
+                          color: const Color(ColorUtils.color2),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Text(
                             "Get Started",
                             style: TextStyle(
@@ -197,11 +199,10 @@ class _IntroScreenState extends State<IntroScreen> {
                     ),
                   ),
                 ),
-                flex: 1,
               ),
             Expanded(
-              child: Container(),
               flex: 1,
+              child: Container(),
             ),
           ],
         ),

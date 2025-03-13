@@ -10,7 +10,7 @@ import 'package:momentum/momentum.dart';
 
 class DevicePairedScreen extends StatefulWidget {
   final BluetoothDevice device;
-  DevicePairedScreen(this.device);
+  const DevicePairedScreen(this.device, {Key? key}) : super(key: key);
 
   @override
   _DevicePairedScreenState createState() => _DevicePairedScreenState();
@@ -21,59 +21,143 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
   final String CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
   final String TARGET_DEVICE_NAME = "ESP32 THAT PROJECT";
 
-  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+  // FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+
+  bool deleteRooms = false;
+  bool deleteRoomsSelected = false;
+  bool portSSID = false;
+  String storedSSID = "";
+  String storedPassword = "";
+
+  @override
+  void initState() {
+    super.initState();
+    // Removed dialog logic from initState
+    discoverServices();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Use addPostFrameCallback to ensure the dialog is shown after the build process
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final snapshot = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where("userId", isEqualTo: userId)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        showDialog(
+          context: context,
+          barrierDismissible:
+              false, // Prevents the user from dismissing the dialog by tapping outside
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Is this the first hub?"),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Yes'),
+                  onPressed: () {
+                    setState(() {
+                      deleteRooms = true;
+                      deleteRoomsSelected = true;
+                      print("User selected: Yes");
+                    });
+                    Navigator.of(context).pop(); // Closes the dialog
+                  },
+                ),
+                TextButton(
+                  child: const Text('No'),
+                  onPressed: () {
+                    setState(() {
+                      deleteRooms = false;
+                      deleteRoomsSelected = true;
+                      print("User selected: No");
+                    });
+                    Navigator.of(context).pop(); // Closes the dialog
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        setState(() {
+          deleteRooms = false;
+          deleteRoomsSelected = true;
+        });
+      }
+    });
+  }
 
   late BluetoothCharacteristic targetCharacteristic;
   String connectionText = "";
 
-  @override
-  void initState() {
-    print("_DevicePairedScreenState");
-
-    super.initState();
-    discoverServices();
-  }
-
   discoverServices() async {
-    if (widget.device == null) {
-      return;
-    }
-    print("running discover services");
-    print("device : " + widget.device.toString());
+    print("Running discover services for device: ${widget.device.toString()}");
 
     List<BluetoothService> services = await widget.device.discoverServices();
+    print("Discovered services: $services");
 
-    services.forEach((service) {
+    for (var service in services) {
       if (service.uuid.toString() == SERVICE_UUID) {
-        service.characteristics.forEach((characteristics) {
+        print("Service found: ${service.uuid}");
+        for (var characteristics in service.characteristics) {
           if (characteristics.uuid.toString() == CHARACTERISTIC_UUID) {
             setState(() {
               targetCharacteristic = characteristics;
-              connectionText = "All Ready with ${widget.device.name}";
+              connectionText = "WIFI SETUP";
+              print("Target characteristic set: ${targetCharacteristic.uuid}");
               readBLE();
             });
           }
-        });
+        }
       }
-    });
+    }
     targetCharacteristic.setNotifyValue(true);
+    print("Notification set for target characteristic.");
   }
 
   writeData(String data) async {
-    if (targetCharacteristic == null) return;
-    print("write data");
+    print("Writing data: $data");
     List<int> bytes = utf8.encode(data);
-    var res = await targetCharacteristic.write(bytes);
-    print(res);
+    await targetCharacteristic.write(bytes);
+    // Removed the print statement since write() returns void
   }
 
-  submitAction() {
-    var wifiData = '${firstWifi},${wifiPasswordController.text}';
+  submitAction() async {
+    var wifiData = '$firstWifi,${wifiPasswordController.text}';
+    print("Submitting WiFi data: $wifiData");
+
+    // Write to Firestore
+    final userId =
+        FirebaseAuth.instance.currentUser!.uid; // Get the current user's ID
+    final db = FirebaseFirestore.instance;
+    if (!portSSID) {
+      try {
+        await db.collection('users').doc(userId).set(
+            {
+              'SSID': firstWifi, // Write firstWifi to SSID field
+              'password': wifiPasswordController
+                  .text, // Write password to password field
+            },
+            SetOptions(
+                merge: true)); // Use merge to avoid overwriting other fields
+        print("WiFi credentials saved successfully.");
+      } catch (e) {
+        print("Error saving WiFi credentials: $e");
+      }
+    } else {
+      wifiData = '$storedSSID,$storedPassword';
+    }
+    // Continue with the rest of the submit action
     writeData(wifiData);
 
     Navigator.of(context).pushReplacement(MaterialPageRoute(
       builder: (context) {
-        return Authenticate();
+        print("Navigating to Authenticate screen.");
+        return const Authenticate();
       },
     ));
   }
@@ -91,137 +175,134 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
     setState(() {
       isLoading = true;
     });
+    print("Reading data from BLE characteristic.");
     var res = await targetCharacteristic.read();
     final dataController = Momentum.controller<DataController>(context);
 
-    print("res.toString()");
-    print(res.toString());
+    print("Read result: ${res.toString()}");
     setState(() {
       readData = utf8.decode(res);
     });
-    print("readData");
-    print(readData);
+    print("Decoded read data: $readData");
 
-// SPLIT SSIDS and Doors
-
+    // SPLIT SSIDS and Doors
     temp = readData.split(',').toList();
+    print("Split data into temp: $temp");
 
-    temp.forEach((element) {
-      temp1.add(element.toString() //.substring(1)
-          );
-    });
+    for (var element in temp) {
+      temp1.add(element.toString());
+    }
+    print("Temp1 after adding elements: $temp1");
 
-    "print(temp1)";
-    print(temp1);
-
-    String wifiIDTemp;
-
-    wifiIDTemp = temp1
+    String wifiIDTemp = temp1
         .toList()
         .sublist(0, 10)
         .toString()
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(', 0', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '')
-        .replaceFirst(' ', '');
+        .replaceAll(', 0', '')
+        .replaceAll(', ', ',');
 
-    print(wifiIDTemp);
+    print("Processed WiFi IDs: $wifiIDTemp");
 
     wifiIDs = wifiIDTemp
         .replaceRange(0, 1, '')
         .replaceRange(wifiIDTemp.length - 2, wifiIDTemp.length - 1, '')
-        // .replaceFirst('[', '')
-        // .replaceFirst(']', '')
-
         .split(',')
         .toSet()
         .toList();
 
     firstWifi = wifiIDs[0].toString();
+    print("First WiFi ID: $firstWifi");
 
     roomsIds = temp1.toList().sublist(10);
+    print("Room IDs: $roomsIds");
 
-    // wifiIDs = temp1
-    //     .toList()
-    //     .sublist(0, 10)
-    //     .toString()
-    //     .replaceRange(0, 1, '')
-    //     .replaceRange(0, length - 2, '')R
-    //     // .replaceFirst('[', '')
-    //     // .replaceFirst(']', '')
-    //     // .replaceFirst(',0,', ',')
-    //     .split(',');
-    roomsIds = temp1.toList().sublist(10);
-
-    "print(wifiIDs)";
-    print(wifiIDs);
-
-    "print(roomsIds)";
-    print(roomsIds);
-
-    print("after set " + roomsIds.toString());
-
-// DELETE OLD ROOMS HERE
-
-    print("OLD ROOMS:");
+    // DELETE OLD ROOMS HERE
     final db = FirebaseFirestore.instance;
     var userId = FirebaseAuth.instance.currentUser!.uid.toString();
 
+    print("CHECKING IF SSID Already Stored");
+
+    DocumentSnapshot userDoc = await db.collection('users').doc(userId).get();
+    try {
+      storedSSID = userDoc['SSID'];
+      storedPassword = userDoc['password'];
+    } catch (e) {
+      print("Error while fetching stored SSID and password: $e");
+    }
+    print('Stored SSID: $storedSSID');
+    print('Stored Password: $storedPassword');
+
+    bool matchedSSID = wifiIDs.contains(storedSSID);
+
+    print('Matched SSID: $matchedSSID');
+
+    print("Fetching rooms for user ID: $userId");
+
+    while (!deleteRoomsSelected) {
+      await Future.delayed(const Duration(seconds: 1));
+    }
     var result =
         await db.collection('rooms').where("userId", isEqualTo: userId).get();
-    result.docs.forEach((res) {
-      print(res.id);
-
-      FirebaseFirestore.instance.collection('rooms').doc(res.id).delete();
-    });
+    for (var res in result.docs) {
+      if (deleteRooms) {
+        print("Deleting old room: ${res.id}");
+        FirebaseFirestore.instance.collection('rooms').doc(res.id).delete();
+      } else {
+        print("Not deleting old room: ${res.id}");
+      }
+    }
 
     var index = 1;
+    var roomIndex = 1;
+    List<String> roomNames = ["", "FRONT", "BACK", "PATIO", "GARAGE", ""];
 
-    bool j = false;
+    // ADD ROOMS
     for (int i = 0; i < roomsIds.length; i += 2) {
-      //1,2,3,4,5,6,7,8
-      print("********ROOM ID's*******");
-      print("room${i}");
-
+      print("Adding room with ID: ${roomsIds[i]}");
       FirebaseFirestore.instance.collection('rooms').add({
-        'name': "room ${index}",
+        'name': roomNames[index],
         'userId': FirebaseAuth.instance.currentUser!.uid
       }).then((doc) {
         FirebaseFirestore.instance
             .collection('rooms')
             .doc(doc.id)
             .update({'roomId': doc.id});
-        if (roomsIds[i] != "0") {
-          dataController.addDevice(
-              roomsIds[i],
-              FirebaseAuth.instance.currentUser!.uid,
-              roomsIds[i],
-              true,
-              doc.id);
+        print("Room added with ID: ${doc.id}");
+
+        // ONE MONITOR
+        if (roomsIds[i + 1].toString().length == 14) {
+          if (roomsIds[i] != "0") {
+            dataController.addDevice(
+                roomsIds[i],
+                FirebaseAuth.instance.currentUser!.uid,
+                roomNames[roomIndex],
+                true,
+                doc.id);
+            print("Device added for room: ${roomNames[roomIndex]}");
+          }
+        } else {
+          // TWO MONITORS
+          if (roomsIds[i] != "0") {
+            dataController.addDevice(
+                roomsIds[i],
+                FirebaseAuth.instance.currentUser!.uid,
+                roomNames[roomIndex],
+                true,
+                doc.id);
+            print("Indoor device added for room: ${roomNames[roomIndex]}");
+          }
+          if (roomsIds[i + 1] != "0") {
+            dataController.addDevice(
+                roomsIds[i + 1],
+                FirebaseAuth.instance.currentUser!.uid,
+                '${roomNames[roomIndex]} OUTSIDE',
+                false,
+                doc.id);
+            print("Outdoor device added for room: ${roomNames[roomIndex]}");
+          }
         }
-        if (roomsIds[i + 1] != "0") {
-          dataController.addDevice(
-              roomsIds[i + 1],
-              FirebaseAuth.instance.currentUser!.uid,
-              roomsIds[i + 1],
-              false,
-              doc.id);
-        }
+
+        roomIndex++;
       });
       index++;
     }
@@ -229,6 +310,39 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
     setState(() {
       isLoading = false;
     });
+    print("Finished reading BLE and processing data.");
+
+    if (matchedSSID) {
+      print('Creating dialogue box for port SSID check');
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Use existing hub password?'),
+            content: Text('SSID: $storedSSID'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('No'),
+                onPressed: () {
+                  print('User selected No');
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Yes'),
+                onPressed: () {
+                  print('User selected Yes');
+                  portSSID = true;
+                  Navigator.of(context).pop();
+                  submitAction();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   TextEditingController wifiNameController = TextEditingController();
@@ -242,12 +356,12 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
         title: Text(connectionText),
       ),
       body: isLoading
-          ? Center(
+          ? const Center(
               child: Text("Creating rooms and doors please wait..."),
             )
           : Container(
               child: targetCharacteristic == null
-                  ? Center(
+                  ? const Center(
                       child: Text(
                         "Waiting...",
                         style: TextStyle(fontSize: 34, color: Colors.red),
@@ -279,14 +393,14 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
                             child: TextField(
                               controller: wifiPasswordController,
                               decoration:
-                                  InputDecoration(labelText: 'Wifi Password'),
+                                  const InputDecoration(labelText: 'Wifi Password'),
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(16),
                             child: ElevatedButton(
                               onPressed: submitAction,
-                              child: Text('Submit'),
+                              child: const Text('Submit'),
                             ),
                           ),
                           // StreamBuilder(

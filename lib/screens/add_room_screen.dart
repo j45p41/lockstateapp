@@ -24,7 +24,7 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
 
       dataController.addRoom(FirebaseAuth.instance.currentUser!.uid, roomName);
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Authenticate(),
+        builder: (context) => const Authenticate(),
       ));
     }
   }
@@ -32,10 +32,10 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(ColorUtils.colorDarkGrey),
+      backgroundColor: const Color(ColorUtils.colorDarkGrey),
       appBar: AppBar(
-        backgroundColor: Color(ColorUtils.color2),
-        title: Text(
+        backgroundColor: const Color(ColorUtils.color2),
+        title: const Text(
           "Add Door",
         ),
         centerTitle: true,
@@ -47,10 +47,10 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
           child: Column(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
                 child: Text("Enter Door Name : ",
                     style: TextStyle(
@@ -59,27 +59,32 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                       fontWeight: FontWeight.bold,
                     )),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               TextFormField(
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  fillColor: Color(ColorUtils.colorWhite),
+                  fillColor: const Color(ColorUtils.colorWhite),
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                   hintText: "Type here",
-                  hintStyle: TextStyle(color: Color(ColorUtils.color4)),
+                  hintStyle: const TextStyle(color: Color(ColorUtils.color4)),
                 ),
                 onSaved: (newValue) => roomName = newValue!,
               ),
-              Spacer(),
+              const Spacer(),
               GestureDetector(
                 onTap: addDevice,
                 child: Container(
-                  child: Center(
+                  padding: const EdgeInsets.all(10),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                      color: const Color(ColorUtils.color3),
+                      borderRadius: BorderRadius.circular(10)),
+                  child: const Center(
                     child: Text(
                       "Add Door",
                       style: TextStyle(
@@ -89,14 +94,9 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
                       ),
                     ),
                   ),
-                  padding: EdgeInsets.all(10),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Color(ColorUtils.color3),
-                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
             ],

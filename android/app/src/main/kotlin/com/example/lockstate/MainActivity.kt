@@ -1,4 +1,4 @@
-package com.example.lockstate
+package com.locksure.lockstate
 
 import io.flutter.embedding.android.FlutterActivity
 

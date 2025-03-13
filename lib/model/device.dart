@@ -31,13 +31,11 @@ class Device {
       deviceName: doc.data()["deviceName"],
       fcmIds: doc.data()["fcmIds"],
       userId: doc.data()["userId"],
-      state: doc.data()["state"] == null ? 0 : doc.data()["state"],
-      batVolts: doc.data()["volts"] == null ? -1 : doc.data()["volts"],
-      count: doc.data()["count"] == null ? -1 : doc.data()["count"],
-      isIndoor: doc.data()["isIndoor"] == null ? false : doc.data()["isIndoor"],
-      lastRecievedAt: doc.data()["last_update_recieved_at"] == null
-          ? ""
-          : doc.data()["last_update_recieved_at"],
+      state: doc.data()["state"] ?? 0,
+      batVolts: doc.data()["volts"] ?? -1,
+      count: doc.data()["count"] ?? -1,
+      isIndoor: doc.data()["isIndoor"] ?? false,
+      lastRecievedAt: doc.data()["last_update_recieved_at"] ?? "",
     );
   }
 }

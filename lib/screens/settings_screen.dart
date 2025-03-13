@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lockstate/authentication/index.dart';
 import 'package:lockstate/data/index.dart';
@@ -5,13 +6,17 @@ import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
 bool gotSettings = false;
 
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -21,9 +26,9 @@ double brightnessAlertSliderSetting = 75;
 double volumeSliderSetting = 40;
 double sentLightSetting = 2;
 
-Color _colorGreen = Color.fromARGB(0, 255, 255, 255);
-Color _colorBlue = Color.fromARGB(0, 255, 255, 255);
-Color _colorCyan = Color.fromARGB(0, 255, 255, 255);
+Color _colorGreen = const Color.fromARGB(0, 255, 255, 255);
+Color _colorBlue = const Color.fromARGB(0, 255, 255, 255);
+Color _colorCyan = const Color.fromARGB(0, 255, 255, 255);
 
 final List<bool> _selectedFruits = <bool>[true, false];
 
@@ -33,6 +38,7 @@ const List<Widget> icons = <Widget>[
 ];
 bool vertical = false;
 int doorStateInvert = 0;
+bool isCancelled = false;
 
 double titleSize = 20;
 int lastIndex = 0;
@@ -46,6 +52,10 @@ int lastIndex = 0;
 // }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late TextEditingController controller;
+  String name = '';
+  bool isAlexaLinked = false;
+
   void getSettingsFromFirestore() async {
     // getInitialSettings(); //temp
 
@@ -64,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         .doc(FirebaseAuth.instance.currentUser!.uid.toString())
         .collection('devices')
         .get();
-    result.docs.forEach((res) {
+    for (var res in result.docs) {
       print(res.id);
 
       FirebaseFirestore.instance
@@ -79,24 +89,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // brightnessSliderSetting = value.get('brightnessSliderSetting');
 
         if (!globals.gotSettings) {
-          print('LIGHTSETTING:');
-          print(value.get('lightSetting'));
+          // print('LIGHTSETTING:');
+          // print(value.get('lightSetting'));
           // sentLightSetting = value.get('lightSetting');
           globals.lightSetting = value.get('lightSetting').toInt();
 
           setState(() {
             if (globals.lightSetting == 1) {
-              _colorGreen = Color.fromARGB(73, 255, 7, 7);
-              _colorCyan = Color.fromARGB(0, 255, 255, 255);
-              _colorBlue = Color.fromARGB(0, 255, 255, 255);
+              _colorGreen = const Color.fromARGB(73, 255, 7, 7);
+              _colorCyan = const Color.fromARGB(0, 255, 255, 255);
+              _colorBlue = const Color.fromARGB(0, 255, 255, 255);
             } else if (globals.lightSetting == 2) {
-              _colorBlue = Color.fromARGB(73, 255, 7, 7);
-              _colorCyan = Color.fromARGB(0, 255, 255, 255);
-              _colorGreen = Color.fromARGB(0, 255, 255, 255);
+              _colorBlue = const Color.fromARGB(73, 255, 7, 7);
+              _colorCyan = const Color.fromARGB(0, 255, 255, 255);
+              _colorGreen = const Color.fromARGB(0, 255, 255, 255);
             } else if (globals.lightSetting == 3) {
-              _colorCyan = Color.fromARGB(73, 255, 7, 7);
-              _colorBlue = Color.fromARGB(0, 255, 255, 255);
-              _colorGreen = Color.fromARGB(0, 255, 255, 255);
+              _colorCyan = const Color.fromARGB(73, 255, 7, 7);
+              _colorBlue = const Color.fromARGB(0, 255, 255, 255);
+              _colorGreen = const Color.fromARGB(0, 255, 255, 255);
             }
 
             brightnessSliderSetting = value.get('brightnessSliderSetting');
@@ -132,7 +142,196 @@ class _SettingsScreenState extends State<SettingsScreen> {
       //   print(value.get('doorStateInvert'));
       //   // doorStateInvert = value.get('doorStateInvert');
       // });
-    });
+    }
+  }
+
+  late PageController pageController;
+  int currentIndex = 0;
+
+  void loadUserSettings() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          globals.showSignalStregth =
+              userDoc.data()?['showSignalStrength'] ?? false;
+          globals.showBatteryPercentage =
+              userDoc.data()?['showBatteryPercentage'] ?? false;
+        });
+      } else {
+        // If user document doesn't exist, create it with default values
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .set({
+          'showSignalStrength': false,
+          'showBatteryPercentage': false,
+        }, SetOptions(merge: true));
+      }
+    } catch (e) {
+      print('Error loading user settings: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    pageController = PageController();
+    controller = TextEditingController();
+    loadUserSettings(); // Load settings when screen initializes
+    super.initState();
+    checkAlexaLinkStatus();
+  }
+
+  Future<void> checkAlexaLinkStatus() async {
+    print('Checking Alexa link status...');
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      print('User document exists: ${userDoc.exists}');
+      print('Alexa linked status: ${userDoc.data()?['alexaLinked']}');
+
+      setState(() {
+        isAlexaLinked = userDoc.data()?['alexaLinked'] ?? false;
+      });
+    } catch (e) {
+      print('Error checking Alexa status: $e');
+    }
+  }
+
+  Future<bool> verifyAlexaLinkage() async {
+    try {
+      // Replace this URL with your actual Alexa skill verification endpoint
+      final response = await http.get(
+        Uri.parse('https://your-api-endpoint/verify-alexa-link'),
+        headers: {
+          'Authorization':
+              'Bearer ${await FirebaseAuth.instance.currentUser?.getIdToken()}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['isLinked'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      print('Error verifying Alexa linkage: $e');
+      return false;
+    }
+  }
+
+  Future<void> linkAlexaAccount() async {
+    print('Attempting to link Alexa account...');
+    try {
+      const alexaPackageName = 'com.amazon.dee.app';
+      final skillDeepLink =
+          'alexa://skills/api/devices-v1/link/amzn1.ask.skill.7dcd0c3d-33ae-4668-988e-1df177df5341';
+      final fallbackUrl = 'https://apps.apple.com/app/amazon-alexa/id944011620';
+
+      if (Platform.isIOS) {
+        try {
+          final Uri alexaUri = Uri.parse(skillDeepLink);
+          print('Attempting to launch Alexa app with skill linking...');
+          await launchUrl(alexaUri, mode: LaunchMode.externalApplication)
+              .then((launched) {
+            if (!launched) {
+              print('Could not launch Alexa app, showing install dialog...');
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Alexa App Required'),
+                    content: const Text(
+                        'The Amazon Alexa app is required to link your account. Would you like to install it?'),
+                    actions: [
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      TextButton(
+                        child: const Text('Install'),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          final Uri appStoreUri = Uri.parse(fallbackUrl);
+                          await launchUrl(appStoreUri,
+                              mode: LaunchMode.externalApplication);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          });
+        } catch (e) {
+          print('Error launching Alexa app: $e');
+        }
+      } else if (Platform.isAndroid) {
+        bool isAlexaInstalled = false;
+        try {
+          isAlexaInstalled = await canLaunch('package:$alexaPackageName');
+        } catch (e) {
+          print('Error checking if Alexa is installed: $e');
+        }
+
+        if (isAlexaInstalled) {
+          print('Alexa app is installed, launching...');
+          if (await canLaunch(skillDeepLink)) {
+            await launch(skillDeepLink);
+          } else {
+            throw 'Could not launch Alexa app';
+          }
+        } else {
+          print('Alexa app is not installed, showing install dialog...');
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Alexa App Required'),
+                content: const Text(
+                    'The Amazon Alexa app is required to link your account. Would you like to install it?'),
+                actions: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  TextButton(
+                    child: const Text('Install'),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      if (await canLaunch(fallbackUrl)) {
+                        await launch(fallbackUrl);
+                      }
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print('Error linking Alexa account: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error linking Alexa: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -142,20 +341,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     print('Widget build(BuildContext context) {');
     return MomentumBuilder(
-        controllers: [AuthenticationController, DataController],
+        controllers: const [AuthenticationController, DataController],
         builder: (context, snapshot) {
           var authModel = snapshot<AuthenticationModel>();
           var authController = authModel.controller;
           // getInitialSettings();
 
-          getSettingsFromFirestore();
+          // getSettingsFromFirestore();
 
           return Scaffold(
-            backgroundColor: Color.fromARGB(255, 43, 43, 43),
+            backgroundColor: const Color.fromARGB(255, 43, 43, 43),
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: Color.fromARGB(255, 43, 43, 43),
-              title: Text(
+              backgroundColor: const Color.fromARGB(255, 43, 43, 43),
+              title: const Text(
                 'Settings',
                 style: TextStyle(
                   fontSize: 28,
@@ -167,14 +366,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               actions: [
                 Container(
-                  margin: EdgeInsets.symmetric(
-                    vertical: 1,
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 10,
                   ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
                   ),
-                  width: 200,
-                  height: 100,
+                  width: 160,
+                  height: 80,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(5)),
@@ -183,7 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 )
               ],
@@ -193,467 +392,627 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(
                 height: 10,
               ),
-              Text(
-                "Setting take effect on next operation",
-                style: TextStyle(color: Colors.white, fontSize: titleSize),
-              ),
+              // Text(
+              //   "Settings take effect on next operation",
+              //   style: TextStyle(color: Colors.white, fontSize: titleSize),
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
+              // Text(
+              //   "Hub Brightness",
+              //   style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
+              // ),
+              // const SizedBox(
+              //   height: 5,
+              // ),
+              // Container(
+              //     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              //     // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              //     child: Row(children: [
+              //       Expanded(
+              //           child: Column(children: [
+              //         Slider(
+              //           value: brightnessSliderSetting,
+              //           max: 100,
+              //           divisions: 5,
+              //           label: brightnessSliderSetting.round().toString(),
+              //           // onChangeStart: (value) async {
+              //           //   final db = FirebaseFirestore.instance;
+              //           //   var result = await db
+              //           //       .collection('users')
+              //           //       .doc(FirebaseAuth.instance.currentUser!.uid
+              //           //           .toString())
+              //           //       .collection('devices')
+              //           //       .get();
+              //           //   result.docs.forEach((res) {
+              //           //     print(res.id);
+
+              //           //     FirebaseFirestore.instance
+              //           //         .collection('devices')
+              //           //         .doc(res.id.toString())
+              //           //         .get()
+              //           //         .then((value) {
+              //           //       print(value.get('brightnessSliderSetting'));
+
+              //           //       setState(() {
+              //           //         brightnessSliderSetting =
+              //           //             value.get('brightnessSliderSetting');
+              //           //       });
+              //           //       value = value.get('brightnessSliderSetting');
+              //           //     });
+              //           //   });
+              //           // },
+              //           onChanged: (double value) {
+              //             setState(() {
+              //               brightnessSliderSetting = value;
+              //             });
+              //           },
+              //         )
+              //       ])),
+              //       Column(children: [
+              //         ElevatedButton(
+              //           onPressed: () async {
+              //             print('Brightness Pressed');
+
+              //             print(FirebaseAuth.instance.currentUser!.uid
+              //                 .toString());
+              //             // print(device.deviceId);
+
+              //             final db = FirebaseFirestore.instance;
+              //             var result = await db
+              //                 .collection('users')
+              //                 .doc(FirebaseAuth.instance.currentUser!.uid
+              //                     .toString())
+              //                 .collection('devices')
+              //                 .get();
+              //             result.docs.forEach((res) {
+              //               print(res.id);
+
+              //               FirebaseFirestore.instance
+              //                   .collection('devices')
+              //                   .doc(res.id.toString())
+              //                   .update({
+              //                 'brightnessSliderSetting': brightnessSliderSetting
+              //               });
+              //             });
+              //           },
+              //           child: Text("SET"),
+              //           style: ElevatedButton.styleFrom(
+              //               backgroundColor: Color.fromARGB(73, 255, 7, 7),
+              //               padding: EdgeInsets.symmetric(
+              //                   horizontal: 5, vertical: 5),
+              //               textStyle: TextStyle(
+              //                   fontSize: 10, fontWeight: FontWeight.bold)),
+              //         ),
+              //       ]),
+              //     ])),
               const SizedBox(
                 height: 10,
               ),
-              ListTile(
-                tileColor: _colorGreen,
-                onTap: () async {
-                  setState(() {
-                    _colorGreen = Color.fromARGB(73, 255, 7, 7);
-                    _colorBlue = Color.fromARGB(0, 255, 255, 255);
-                    _colorCyan = Color.fromARGB(0, 255, 255, 255);
-                    globals.lightSetting = 1;
-                    globals.gotLightSettings = false;
-                  });
+              // Text(
+              //   "Hub Alert Brightness",
+              //   style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
+              // ),
+              // const SizedBox(
+              //   height: 5,
+              // ),
+              // Container(
+              //     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              //     // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              //     child: Row(children: [
+              //       Expanded(
+              //           child: Column(children: [
+              //         Slider(
+              //           value: brightnessAlertSliderSetting,
+              //           max: 100,
+              //           divisions: 5,
+              //           label: brightnessAlertSliderSetting.round().toString(),
+              //           onChanged: (double value) {
+              //             setState(() {
+              //               brightnessAlertSliderSetting = value;
+              //             });
+              //           },
+              //         )
+              //       ])),
+              //       Column(children: [
+              //         ElevatedButton(
+              //           onPressed: () async {
+              //             print('brightnessAlertSliderSetting Pressed');
 
-                  print('Getting Settings from Firestore');
+              //             print(FirebaseAuth.instance.currentUser!.uid
+              //                 .toString());
+              //             // print(device.deviceId);
 
-                  // print(FirebaseAuth.instance.currentUser!.uid.toString());
-                  // print(device.deviceId);
+              //             final db = FirebaseFirestore.instance;
+              //             var result = await db
+              //                 .collection('users')
+              //                 .doc(FirebaseAuth.instance.currentUser!.uid
+              //                     .toString())
+              //                 .collection('devices')
+              //                 .get();
+              //             result.docs.forEach((res) {
+              //               print(res.id);
 
-                  // getInitialSettings(); //temp
-                  print('RED/GREEN Pressed');
-
-                  print(FirebaseAuth.instance.currentUser!.uid.toString());
-                  // print(device.deviceId);
-
-                  final db = FirebaseFirestore.instance;
-                  var result = await db
-                      .collection('users')
-                      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-                      .collection('devices')
-                      .get();
-                  result.docs.forEach((res) {
-                    print(res.id);
-                    sentLightSetting = 1;
-                    FirebaseFirestore.instance
-                        .collection('devices')
-                        .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
-                  });
-                },
-                leading: Icon(
-                  Icons.circle,
-                  color: Colors.green,
-                ),
-                trailing: Icon(
-                  Icons.circle,
-                  color: Colors.red,
-                ),
-                title: new Center(
-                    child: new Text(
-                  "Green = Locked / Red = Unlocked",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: titleSize - 5),
-                )),
-              ),
-              ListTile(
-                tileColor: _colorBlue,
-                onTap: () async {
-                  setState(() {
-                    _colorBlue = Color.fromARGB(73, 255, 7, 7);
-                    _colorCyan = Color.fromARGB(0, 255, 255, 255);
-                    _colorGreen = Color.fromARGB(0, 255, 255, 255);
-                    globals.lightSetting = 2;
-                    globals.gotLightSettings = false;
-                  });
-                  print('BLUE/MAGENTA Pressed');
-
-                  print(FirebaseAuth.instance.currentUser!.uid.toString());
-                  // print(device.deviceId);
-
-                  final db = FirebaseFirestore.instance;
-                  var result = await db
-                      .collection('users')
-                      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-                      .collection('devices')
-                      .get();
-                  result.docs.forEach((res) {
-                    print(res.id);
-                    sentLightSetting = 2;
-                    FirebaseFirestore.instance
-                        .collection('devices')
-                        .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
-                  });
-                },
-                leading: Icon(
-                  Icons.circle,
-                  color: Colors.blue,
-                ),
-                trailing: Icon(
-                  Icons.circle,
-                  color: Colors.pinkAccent,
-                ),
-                title: new Center(
-                    child: new Text(
-                  "Blue = Locked / Magenta = Unlocked",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: titleSize - 5),
-                )),
-              ),
-              ListTile(
-                tileColor: _colorCyan,
-                onTap: () async {
-                  setState(() {
-                    _colorCyan = Color.fromARGB(73, 255, 7, 7);
-                    _colorBlue = Color.fromARGB(0, 255, 255, 255);
-                    _colorGreen = Color.fromARGB(0, 255, 255, 255);
-                    globals.lightSetting = 3;
-                    globals.gotLightSettings = false;
-                  });
-                  print('CYAN/AMBER Pressed');
-
-                  print(FirebaseAuth.instance.currentUser!.uid.toString());
-                  // print(device.deviceId);
-
-                  final db = FirebaseFirestore.instance;
-                  var result = await db
-                      .collection('users')
-                      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-                      .collection('devices')
-                      .get();
-                  result.docs.forEach((res) {
-                    print(res.id);
-                    sentLightSetting = 3;
-
-                    FirebaseFirestore.instance
-                        .collection('devices')
-                        .doc(res.id.toString())
-                        .update({'lightSetting': sentLightSetting});
-                  });
-                },
-                leading: Icon(
-                  Icons.circle,
-                  color: Colors.cyan,
-                ),
-                trailing: Icon(
-                  Icons.circle,
-                  color: Colors.amber,
-                ),
-                title: new Center(
-                    child: new Text(
-                  "Cyan = Locked / Amber = Unlocked",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: titleSize - 5),
-                )),
-              ),
+              //               FirebaseFirestore.instance
+              //                   .collection('devices')
+              //                   .doc(res.id.toString())
+              //                   .update({
+              //                 'brightnessAlertSliderSetting':
+              //                     brightnessAlertSliderSetting
+              //               });
+              //             });
+              //           },
+              //           child: Text("SET"),
+              //           style: ElevatedButton.styleFrom(
+              //               backgroundColor: Color.fromARGB(73, 255, 7, 7),
+              //               padding: EdgeInsets.symmetric(
+              //                   horizontal: 5, vertical: 5),
+              //               textStyle: TextStyle(
+              //                   fontSize: 10, fontWeight: FontWeight.bold)),
+              //         ),
+              //       ]),
+              //     ])),
               const SizedBox(
                 height: 10,
               ),
-              Text(
-                "Hub Brightness",
-                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Container(
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  child: Row(children: [
-                    Expanded(
-                        child: Column(children: [
-                      Slider(
-                        value: brightnessSliderSetting,
-                        max: 100,
-                        divisions: 5,
-                        label: brightnessSliderSetting.round().toString(),
-                        // onChangeStart: (value) async {
-                        //   final db = FirebaseFirestore.instance;
-                        //   var result = await db
-                        //       .collection('users')
-                        //       .doc(FirebaseAuth.instance.currentUser!.uid
-                        //           .toString())
-                        //       .collection('devices')
-                        //       .get();
-                        //   result.docs.forEach((res) {
-                        //     print(res.id);
-
-                        //     FirebaseFirestore.instance
-                        //         .collection('devices')
-                        //         .doc(res.id.toString())
-                        //         .get()
-                        //         .then((value) {
-                        //       print(value.get('brightnessSliderSetting'));
-
-                        //       setState(() {
-                        //         brightnessSliderSetting =
-                        //             value.get('brightnessSliderSetting');
-                        //       });
-                        //       value = value.get('brightnessSliderSetting');
-                        //     });
-                        //   });
-                        // },
-                        onChanged: (double value) {
-                          setState(() {
-                            brightnessSliderSetting = value;
-                          });
-                        },
-                      )
-                    ])),
-                    Column(children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          print('Brightness Pressed');
-
-                          print(FirebaseAuth.instance.currentUser!.uid
-                              .toString());
-                          // print(device.deviceId);
-
-                          final db = FirebaseFirestore.instance;
-                          var result = await db
-                              .collection('users')
-                              .doc(FirebaseAuth.instance.currentUser!.uid
-                                  .toString())
-                              .collection('devices')
-                              .get();
-                          result.docs.forEach((res) {
-                            print(res.id);
-
-                            FirebaseFirestore.instance
-                                .collection('devices')
-                                .doc(res.id.toString())
-                                .update({
-                              'brightnessSliderSetting': brightnessSliderSetting
-                            });
-                          });
-                        },
-                        child: Text("SET"),
-                        style: ElevatedButton.styleFrom(
-                            primary: Color.fromARGB(73, 255, 7, 7),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 5),
-                            textStyle: TextStyle(
-                                fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ]),
-                  ])),
+              // Text(
+              //   "Clear History",
+              //   style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
+              // ),
+              // Text(
+              //   "Door Magnet Must Be Installed!",
+              //   style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
+              // ),
               const SizedBox(
                 height: 10,
               ),
-              Text(
-                "Hub Alert Brightness",
-                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Container(
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  child: Row(children: [
-                    Expanded(
-                        child: Column(children: [
-                      Slider(
-                        value: brightnessAlertSliderSetting,
-                        max: 100,
-                        divisions: 5,
-                        label: brightnessAlertSliderSetting.round().toString(),
-                        onChanged: (double value) {
-                          setState(() {
-                            brightnessAlertSliderSetting = value;
-                          });
-                        },
-                      )
-                    ])),
-                    Column(children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          print('brightnessAlertSliderSetting Pressed');
+              SizedBox(
+                width: 300,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final result = await showDialog<String>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                          title: const Text('Clear History'),
+                          content: const Text(
+                              'Are you sure you want to clear your history?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                isCancelled = true;
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                isCancelled = false;
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('CONFIRM'),
+                            )
+                          ]),
+                    );
 
-                          print(FirebaseAuth.instance.currentUser!.uid
-                              .toString());
-                          // print(device.deviceId);
+                    if (!isCancelled) {
+                      print("DELETE HISTORY:");
+                      final db = FirebaseFirestore.instance;
+                      var userId =
+                          FirebaseAuth.instance.currentUser!.uid.toString();
 
-                          final db = FirebaseFirestore.instance;
-                          var result = await db
-                              .collection('users')
-                              .doc(FirebaseAuth.instance.currentUser!.uid
-                                  .toString())
-                              .collection('devices')
-                              .get();
-                          result.docs.forEach((res) {
-                            print(res.id);
+                      var result = await db
+                          .collection('notifications')
+                          .where("userId", isEqualTo: userId)
+                          .get();
+                      for (var res in result.docs) {
+                        print(res.id);
 
-                            FirebaseFirestore.instance
-                                .collection('devices')
-                                .doc(res.id.toString())
-                                .update({
-                              'brightnessAlertSliderSetting':
-                                  brightnessAlertSliderSetting
-                            });
-                          });
-                        },
-                        child: Text("SET"),
-                        style: ElevatedButton.styleFrom(
-                            primary: Color.fromARGB(73, 255, 7, 7),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 5),
-                            textStyle: TextStyle(
-                                fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ]),
-                  ])),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                "Audible Alert Interval (Minutes)",
-                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Container(
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  child: Row(children: [
-                    Expanded(
-                        child: Column(children: [
-                      Slider(
-                        value: volumeSliderSetting,
-                        max: 60,
-                        divisions: 6,
-                        label: volumeSliderSetting.round().toString(),
-                        onChanged: (double value) {
-                          setState(() {
-                            volumeSliderSetting = value;
-                          });
-                        },
-                      )
-                    ])),
-                    Column(children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          print('volumeSliderSetting Pressed');
-
-                          print(FirebaseAuth.instance.currentUser!.uid
-                              .toString());
-                          // print(device.deviceId);
-
-                          final db = FirebaseFirestore.instance;
-                          var result = await db
-                              .collection('users')
-                              .doc(FirebaseAuth.instance.currentUser!.uid
-                                  .toString())
-                              .collection('devices')
-                              .get();
-                          result.docs.forEach((res) {
-                            print(res.id);
-
-                            FirebaseFirestore.instance
-                                .collection('devices')
-                                .doc(res.id.toString())
-                                .update({
-                              'volumeSliderSetting': volumeSliderSetting
-                            });
-                          });
-                        },
-                        child: Text("SET"),
-                        style: ElevatedButton.styleFrom(
-                            primary: Color.fromARGB(73, 255, 7, 7),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 5),
-                            textStyle: TextStyle(
-                                fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ]),
-                  ])),
-              const SizedBox(
-                height: 10,
-              ),
-              ListTile(
-                onTap: () {
-                  print('Pressed');
-                },
-                leading: Icon(
-                  Icons.swap_horiz,
-                  color: Colors.white,
-                ),
-                trailing: ToggleButtons(
-                  direction: vertical ? Axis.vertical : Axis.horizontal,
-                  onPressed: (int index) async {
-                    setState(() {
-                      // The button that is tapped is set to true, and the others to false.
-                      for (int i = 0; i < _selectedFruits.length; i++) {
-                        _selectedFruits[i] = i == index;
-                        lastIndex = index;
+                        FirebaseFirestore.instance
+                            .collection('notifications')
+                            .doc(res.id)
+                            .delete();
                       }
-                    });
-
-                    if (lastIndex == 1) {
-                      print('doorStateInvert FALSE Pressed');
-
-                      doorStateInvert = 0;
-
-                      print(FirebaseAuth.instance.currentUser!.uid.toString());
-                      // print(device.deviceId);
-
-                      final db = FirebaseFirestore.instance;
-                      var result = await db
-                          .collection('users')
-                          .doc(
-                              FirebaseAuth.instance.currentUser!.uid.toString())
-                          .collection('devices')
-                          .get();
-                      result.docs.forEach((res) {
-                        print(res.id);
-
-                        FirebaseFirestore.instance
-                            .collection('devices')
-                            .doc(res.id.toString())
-                            .update({'doorStateInvert': doorStateInvert});
-                      });
-                    } else {
-                      print('doorStateInvert TRUE Pressed');
-
-                      doorStateInvert = 1;
-
-                      print(FirebaseAuth.instance.currentUser!.uid.toString());
-                      // print(device.deviceId);
-
-                      final db = FirebaseFirestore.instance;
-                      var result = await db
-                          .collection('users')
-                          .doc(
-                              FirebaseAuth.instance.currentUser!.uid.toString())
-                          .collection('devices')
-                          .get();
-                      result.docs.forEach((res) {
-                        print(res.id);
-
-                        FirebaseFirestore.instance
-                            .collection('devices')
-                            .doc(res.id.toString())
-                            .update({'doorStateInvert': doorStateInvert});
-                      });
                     }
                   },
-                  borderRadius: const BorderRadius.all(Radius.circular(8)),
-                  selectedBorderColor: Colors.blue[700],
-                  selectedColor: Colors.white,
-                  fillColor: Color.fromARGB(73, 255, 7, 7),
-                  color: Color.fromARGB(73, 255, 7, 7),
-                  isSelected: _selectedFruits,
-                  children: icons,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(73, 255, 7, 7),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                  child: const Text("Clear History"),
                 ),
-                title: new Center(
-                    child: new Text(
-                  "Swap Lock/Unlock",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: titleSize - 5),
-                )),
+              ),
+
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  // padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  child: const Row(children: [
+                    Expanded(child: Column(children: [])),
+                    // Column(children: [
+                    //   ElevatedButton(
+                    //     onPressed: () async {
+                    //       print('volumeSliderSetting Pressed');
+
+                    //       print(FirebaseAuth.instance.currentUser!.uid
+                    //           .toString());
+                    //       // print(device.deviceId);
+
+                    //       final db = FirebaseFirestore.instance;
+                    //       var result = await db
+                    //           .collection('users')
+                    //           .doc(FirebaseAuth.instance.currentUser!.uid
+                    //               .toString())
+                    //           .collection('devices')
+                    //           .get();
+                    //       result.docs.forEach((res) {
+                    //         print(res.id);
+
+                    //         FirebaseFirestore.instance
+                    //             .collection('devices')
+                    //             .doc(res.id.toString())
+                    //             .update({
+                    //           'volumeSliderSetting': volumeSliderSetting
+                    //         });
+                    //       });
+                    //     },
+                    //     child: Text("SET"),
+                    //     style: ElevatedButton.styleFrom(
+                    //         backgroundColor: Color.fromARGB(73, 255, 7, 7),
+                    //         padding: EdgeInsets.symmetric(
+                    //             horizontal: 5, vertical: 5),
+                    //         textStyle: TextStyle(
+                    //             fontSize: 10, fontWeight: FontWeight.bold)),
+                    //   ),
+                    // ]),
+                  ])),
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                width: 300,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Display Signal Strength",
+                        style: TextStyle(
+                            color: Colors.white, fontSize: titleSize - 5),
+                      ),
+                    ),
+                    Switch(
+                      value: globals.showSignalStregth,
+                      onChanged: (bool state) {
+                        setState(() {
+                          globals.showSignalStregth = state;
+                          // Store the new state in Firestore
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(FirebaseAuth.instance.currentUser!.uid)
+                              .update({
+                            'showSignalStrength': state,
+                          });
+                        });
+                      },
+                      activeColor: Colors.green,
+                      inactiveTrackColor: const Color.fromARGB(73, 255, 7, 7),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: 300,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Display Battery Percentage",
+                        style: TextStyle(
+                            color: Colors.white, fontSize: titleSize - 5),
+                      ),
+                    ),
+                    Switch(
+                      value: globals.showBatteryPercentage,
+                      onChanged: (bool state) {
+                        setState(() {
+                          globals.showBatteryPercentage = state;
+                          // Store the new state in Firestore
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(FirebaseAuth.instance.currentUser!.uid)
+                              .update({
+                            'showBatteryPercentage': state,
+                          });
+                        });
+                      },
+                      activeColor: Colors.green,
+                      inactiveTrackColor: const Color.fromARGB(73, 255, 7, 7),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 10,
               ),
-              Column(),
+              Container(
+                width: 300,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Link Alexa Account",
+                        style: TextStyle(
+                            color: Colors.white, fontSize: titleSize - 5),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        print('Alexa link button pressed');
+                        await linkAlexaAccount();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isAlexaLinked
+                            ? Colors.green
+                            : const Color.fromARGB(73, 255, 7, 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: Text(
+                        isAlexaLinked ? "Linked" : "Link Account",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Column(
+                children: [
+                  ButtonTheme(
+                    minWidth: (5000),
+                    height: 100.0,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final name = await openDeleteAccountDialog();
+                        if (!isCancelled) {
+                          try {
+                            final db = FirebaseFirestore.instance;
+                            final userId =
+                                FirebaseAuth.instance.currentUser!.uid;
+                            print("Deleting all data for user: $userId");
+
+                            // Create a batch for atomic operations
+                            WriteBatch batch = db.batch();
+
+                            // 1. Delete all notifications
+                            var notificationsQuery = await db
+                                .collection('notifications')
+                                .where("userId", isEqualTo: userId)
+                                .get();
+                            for (var doc in notificationsQuery.docs) {
+                              batch.delete(doc.reference);
+                            }
+                            print(
+                                "Queued ${notificationsQuery.docs.length} notifications for deletion");
+
+                            // 2. Delete all rooms and their shared access
+                            var roomsQuery = await db
+                                .collection('rooms')
+                                .where("userId", isEqualTo: userId)
+                                .get();
+                            for (var doc in roomsQuery.docs) {
+                              batch.delete(doc.reference);
+                            }
+                            // Also delete rooms where user is in sharedWith
+                            var sharedRoomsQuery = await db
+                                .collection('rooms')
+                                .where("sharedWith", arrayContains: userId)
+                                .get();
+                            for (var doc in sharedRoomsQuery.docs) {
+                              // Remove user from sharedWith array
+                              batch.update(doc.reference, {
+                                "sharedWith": FieldValue.arrayRemove([userId])
+                              });
+                            }
+                            print(
+                                "Queued ${roomsQuery.docs.length} rooms for deletion");
+
+                            // 3. Delete all devices
+                            // First from user's devices subcollection
+                            var userDevicesQuery = await db
+                                .collection('users')
+                                .doc(userId)
+                                .collection('devices')
+                                .get();
+                            for (var doc in userDevicesQuery.docs) {
+                              batch.delete(doc.reference);
+                              // Also delete from main devices collection
+                              batch
+                                  .delete(db.collection('devices').doc(doc.id));
+                            }
+                            print(
+                                "Queued ${userDevicesQuery.docs.length} devices for deletion");
+
+                            // 4. Delete all share requests
+                            var sentRequestsQuery = await db
+                                .collection('shareRequests')
+                                .where("senderUid", isEqualTo: userId)
+                                .get();
+                            var receivedRequestsQuery = await db
+                                .collection('shareRequests')
+                                .where("recipientUid", isEqualTo: userId)
+                                .get();
+                            for (var doc in sentRequestsQuery.docs) {
+                              batch.delete(doc.reference);
+                            }
+                            for (var doc in receivedRequestsQuery.docs) {
+                              batch.delete(doc.reference);
+                            }
+                            print(
+                                "Queued ${sentRequestsQuery.docs.length + receivedRequestsQuery.docs.length} share requests for deletion");
+
+                            // 5. Delete user document
+                            batch.delete(db.collection('users').doc(userId));
+
+                            // 6. Execute all deletions in a single atomic operation
+                            await batch.commit();
+                            print("Successfully deleted all Firestore records");
+
+                            // 7. Handle Firebase Auth account deletion with reauthentication if needed
+                            final user = FirebaseAuth.instance.currentUser!;
+                            try {
+                              if (user.metadata.creationTime !=
+                                  user.metadata.lastSignInTime) {
+                                // Need to reauthenticate
+                                final emailController =
+                                    TextEditingController(text: user.email);
+                                final passwordController =
+                                    TextEditingController();
+
+                                await showDialog(
+                                  context: context,
+                                  barrierDismissible:
+                                      false, // User must take action
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Verify Your Account'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          controller: emailController,
+                                          enabled: false,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Email',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextField(
+                                          controller: passwordController,
+                                          obscureText: true,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Password',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          throw Exception(
+                                              'Account deletion cancelled by user');
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text('Verify'),
+                                        onPressed: () async {
+                                          try {
+                                            final credential =
+                                                EmailAuthProvider.credential(
+                                              email: emailController.text,
+                                              password: passwordController.text,
+                                            );
+                                            await user
+                                                .reauthenticateWithCredential(
+                                                    credential);
+                                            Navigator.of(context).pop();
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                      'Authentication failed: $e')),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              // Delete the Firebase Auth account
+                              await user.delete();
+                              print(
+                                  "Successfully deleted Firebase Auth account");
+
+                              // Sign out and show success message
+                              await FirebaseAuth.instance.signOut();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Account successfully deleted')),
+                              );
+                            } catch (e) {
+                              print("Error during auth deletion: $e");
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content:
+                                        Text('Error deleting account: $e')),
+                              );
+                            }
+                          } catch (e) {
+                            print("Error during deletion process: $e");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('Error deleting account data: $e')),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(73, 255, 7, 7),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 75, vertical: 15),
+                          textStyle: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text("Delete Account"),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(30, 255, 255, 255),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  FirebaseAuth.instance.currentUser?.email ?? 'Not signed in',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               Column(
                 children: [
                   ButtonTheme(
@@ -663,13 +1022,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: () {
                         FirebaseAuth.instance.signOut();
                       },
-                      child: Text("Logout"),
                       style: ElevatedButton.styleFrom(
-                          primary: Color.fromARGB(73, 255, 7, 7),
-                          padding: EdgeInsets.symmetric(
+                          backgroundColor: const Color.fromARGB(73, 255, 7, 7),
+                          padding: const EdgeInsets.symmetric(
                               horizontal: 100, vertical: 15),
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                               fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text("Logout"),
                     ),
                   ),
                 ],
@@ -677,6 +1036,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
           );
         });
+  }
+
+  Future<String?> openDeleteAccountDialog() => showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: const Text('Delete Account'),
+            content:
+                const Text('Are you sure you want to Delete Your Account?'),
+            actions: [
+              TextButton(
+                onPressed: cancel,
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: confirm,
+                child: const Text('CONFIRM'),
+              )
+            ]),
+      );
+
+  void cancel() {
+    // Navigator.of(context).pop(controller.text);
+    isCancelled = true;
+    Navigator.of(context).pop(controller.text);
+  }
+
+  void confirm() {
+    Navigator.of(context).pop(controller.text);
   }
 }
 

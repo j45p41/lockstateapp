@@ -91,9 +91,9 @@ class FirestoreService extends MomentumService {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)
         .get();
-    print("get current user doc : " + doc.data().toString());
+    print("get current user doc : ${doc.data()}");
     Account account = Account.fromDocument(doc);
-    print("get current user account : " + account.email.toString());
+    print("get current user account : ${account.email}");
     return account;
     // }
     // return null;

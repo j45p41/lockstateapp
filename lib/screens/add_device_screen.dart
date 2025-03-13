@@ -227,7 +227,7 @@ import '../main.dart';
 
 class AddDeviceScreen extends StatefulWidget {
   final Room room;
-  AddDeviceScreen(this.room);
+  const AddDeviceScreen(this.room, {Key? key}) : super(key: key);
   @override
   _AddDeviceScreenState createState() => _AddDeviceScreenState();
 }
@@ -255,7 +255,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     dataController.addDevice(deviceId, FirebaseAuth.instance.currentUser!.uid,
         "deviceName", true, widget.room.roomId);
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => Authenticate(),
+      builder: (context) => const Authenticate(),
     ));
   }
 
@@ -276,13 +276,13 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                     Text(
                         'Barcode Type: ${(result!.format)}   Data: ${result!.code}')
                   else
-                    Text('Scan a code'),
+                    const Text('Scan a code'),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(8),
+                        margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                             onPressed: () async {
                               await controller?.toggleFlash();
@@ -296,7 +296,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                             )),
                       ),
                       Container(
-                        margin: EdgeInsets.all(8),
+                        margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                             onPressed: () async {
                               await controller?.flipCamera();
@@ -309,7 +309,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                                   return Text(
                                       'Camera facing ${(snapshot.data!)}');
                                 } else {
-                                  return Text('loading');
+                                  return const Text('loading');
                                 }
                               },
                             )),
@@ -321,21 +321,21 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(8),
+                        margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                           onPressed: () async {
                             await controller?.pauseCamera();
                           },
-                          child: Text('pause', style: TextStyle(fontSize: 20)),
+                          child: const Text('pause', style: TextStyle(fontSize: 20)),
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.all(8),
+                        margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                           onPressed: () async {
                             await controller?.resumeCamera();
                           },
-                          child: Text('resume', style: TextStyle(fontSize: 20)),
+                          child: const Text('resume', style: TextStyle(fontSize: 20)),
                         ),
                       )
                     ],
@@ -386,7 +386,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     print('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no Permission')),
+        const SnackBar(content: Text('no Permission')),
       );
     }
   }

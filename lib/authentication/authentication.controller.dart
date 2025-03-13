@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lockstate/data/index.dart';
 import 'package:lockstate/services/auth_service.dart';
 import 'package:momentum/momentum.dart';
+import 'package:lockstate/utils/globals_jas.dart' as globals;
 
 import 'index.dart';
 
@@ -40,6 +41,26 @@ class AuthenticationController extends MomentumController<AuthenticationModel> {
     var authService = service<AuthService>();
     authService.logout();
     model.update();
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    globals.emailSucess = false;
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: globals.email);
+
+      print('SUCESS CASE');
+
+      globals.emailSucess = true;
+
+      // Handle success, e.g., show a success message
+    } on FirebaseAuthException catch (e) {
+      // Handle errors, e.g., show an error message
+      print(e.message);
+
+      if (!globals.emailSucess) {
+        globals.e = e;
+      } else {}
+    }
   }
 
   @override
