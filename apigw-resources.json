@@ -1,0 +1,26 @@
+{
+    "items": [
+        {
+            "id": "2dffv2",
+            "parentId": "89drl2nfbf",
+            "pathPart": "alexaAuth",
+            "path": "/alexaAuth",
+            "resourceMethods": {
+                "GET": {}
+            }
+        },
+        {
+            "id": "89drl2nfbf",
+            "path": "/"
+        },
+        {
+            "id": "mmjqev",
+            "parentId": "89drl2nfbf",
+            "pathPart": "alexaToken",
+            "path": "/alexaToken",
+            "resourceMethods": {
+                "POST": {}
+            }
+        }
+    ]
+}

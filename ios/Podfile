@@ -1,53 +1,65 @@
-# Uncomment this line to define a global platform for your project
-platform :ios, '13.0'
+# ---------------------------------------------------------------------------
+#  Podfile for Runner  – Xcode 16 / iOS 18 SDK workaround
+#  – pins gRPC 1.62.5 (last 1.62.x available on trunk)
+#  – patches the offending ‘template’ keyword at build time
+# ---------------------------------------------------------------------------
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+platform :ios, '14.0'          # ← gRPC-Core 1.62.5 needs ≥14
+
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-
-
 project 'Runner', {
-  'Debug' => :debug,
+  'Debug'   => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
 
 def flutter_root
-  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-  unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
-  end
+  xcconfig = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  raise "#{xcconfig} missing; run ‘flutter pub get’ first" unless File.exist?(xcconfig)
 
-  File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/FLUTTER_ROOT\=(.*)/)
-    return matches[1].strip if matches
+  File.foreach(xcconfig) do |line|
+    return line[/FLUTTER_ROOT=(.*)$/, 1] if line.start_with?('FLUTTER_ROOT=')
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+  raise 'FLUTTER_ROOT not found – delete Generated.xcconfig then run flutter pub get'
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
-
 flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  # —   Pin the gRPC pods — #
+  pod 'gRPC-C++',  '1.62.5'
+  pod 'gRPC-Core', '1.62.5'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
-    if target.name == 'BoringSSL-GRPC'
-      target.source_build_phase.files.each do |file|
-        if file.settings && file.settings['COMPILER_FLAGS']
-          flags = file.settings['COMPILER_FLAGS'].split
-          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
-          file.settings['COMPILER_FLAGS'] = flags.join(' ')
+  installer.pods_project.targets.each do |t|
+    flutter_additional_ios_build_settings(t)
+
+    # Optional cleanup: allow BoringSSL warnings to surface
+    if t.name == 'BoringSSL-GRPC'
+      t.source_build_phase.files.each do |f|
+        if f.settings&.dig('COMPILER_FLAGS')
+          f.settings['COMPILER_FLAGS'] = f.settings['COMPILER_FLAGS']
+                                          .split
+                                          .reject { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
+                                          .join(' ')
         end
       end
     end
   end
-end
 
+  # —   HOT-PATCH the Clang-19 error in basic_seq.h — #
+  seq_header = 'Pods/gRPC-Core/src/core/lib/promise/detail/basic_seq.h'
+  if File.exist?(seq_header)
+    text = File.read(seq_header)
+    patched = text.gsub('Traits::template CallSeqFactory', 'Traits::CallSeqFactory')
+    File.write(seq_header, patched) unless text == patched
+  end
+end

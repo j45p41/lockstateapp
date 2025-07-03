@@ -1,0 +1,25 @@
+{
+  "manifest": {
+    "manifestVersion": "1.0",
+    "apis": {
+      "smartHome": {
+        "protocolVersion": "3",
+        "endpoint": {
+          "uri": "https://us-central1-lockstate-e72fc.cloudfunctions.net/alexaSmartHome"
+        }
+      }
+    },
+    "publishingInformation": {
+      "locales": {
+        "en-GB": {
+          "name": "Locksure Door Monitor",
+          "summary": "Lockstate sensor for Alexa."
+        }
+      }
+    },
+    "privacyAndCompliance": {
+      "isExportCompliant": true
+    },
+    "vendorId": "M2KB1TY529INC9"
+  }
+}

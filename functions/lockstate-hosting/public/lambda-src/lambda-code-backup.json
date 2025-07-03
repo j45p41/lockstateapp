@@ -1,0 +1,52 @@
+{
+    "Configuration": {
+        "FunctionName": "lockstate-alexa-skill",
+        "FunctionArn": "arn:aws:lambda:eu-west-1:487228065075:function:lockstate-alexa-skill",
+        "Runtime": "nodejs18.x",
+        "Role": "arn:aws:iam::487228065075:role/service-role/locksureSmartHomeProxy-role-nqgraabh",
+        "Handler": "index.handler",
+        "CodeSize": 20375875,
+        "Description": "",
+        "Timeout": 30,
+        "MemorySize": 512,
+        "LastModified": "2025-07-02T15:08:34.000+0000",
+        "CodeSha256": "LpaK0BdFTth9ULROuVlOk7F/SFZeNeUojZ+acCj5TW4=",
+        "Version": "$LATEST",
+        "Environment": {
+            "Variables": {
+                "LWA_TOKEN_URL": "https://api.amazon.com/auth/o2/token",
+                "LWA_AUTH_URL": "https://www.amazon.com/ap/oa",
+                "ALEXA_CLIENT_ID": "amzn1.application-oa2-client.ddbcc3bfaf604d1980b699300a623698",
+                "ALEXA_CLIENT_SECRET": "amzn1.oa2-cs.v1.6b02e945a9e3e041a43abdb405a1e76f80081db17080e5cca01962b90e21f815"
+            }
+        },
+        "TracingConfig": {
+            "Mode": "PassThrough"
+        },
+        "RevisionId": "390baa99-95bd-4666-bca2-aba7f23b103d",
+        "State": "Active",
+        "LastUpdateStatus": "Successful",
+        "PackageType": "Zip",
+        "Architectures": [
+            "x86_64"
+        ],
+        "EphemeralStorage": {
+            "Size": 512
+        },
+        "SnapStart": {
+            "ApplyOn": "None",
+            "OptimizationStatus": "Off"
+        },
+        "RuntimeVersionConfig": {
+            "RuntimeVersionArn": "arn:aws:lambda:eu-west-1::runtime:db8a276f0276d75e613561e145383f976a1c35bfcb66258399f0c49e6e24f08b"
+        },
+        "LoggingConfig": {
+            "LogFormat": "Text",
+            "LogGroup": "/aws/lambda/lockstate-alexa-skill"
+        }
+    },
+    "Code": {
+        "RepositoryType": "S3",
+        "Location": "https://awslambda-eu-west-1-tasks.s3.eu-west-1.amazonaws.com/snapshots/487228065075/lockstate-alexa-skill-61a5bdd3-78c1-4fc5-82d2-e712eff0678e?versionId=5hXQkoEeCFJ88HSMs0eLD8xST40eFSLp&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMSJGMEQCIDQxcy4K3SrUIqdRwbojVMrvZTKaNtsOF4ExroQRa86HAiALIL9gNC%2FjxfLBkdDVz4hEibQHw7wgq4DU5qSk9ExcWiqSAgju%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAQaDDk1NDM2OTA4MjUxMSIMuND%2FrsfSkV7Td1B7KuYBpyaHDDhELuYBOYUxbvK5QDnXaIEdrvM%2FsDZkZhBTLhrob4R5jTIQrIm7BkCL9llzkkj98dmjOAOkslBBc5ja4YGKwLhrjhzwkvCZ3N8Iy9fVHEeU3CP9bN%2BqzJ8rww7ej6sR4Vy8OjBuVlPjmJ2bk1v9R1Jy9xPcKOiFWRnwR5KSfRRG1umkdrIGjxlcH6BM9ObRI2YkmbVqdv7A6RemeEQP%2B5onYTu3onDF7vOy0BUh4GK86vF2gv3%2B5x%2F6ojfB0kUse2SEdX6HO8IZcsPhbtfQVZWFPTeQKmDJ28JfpZGON1kul1kwsdeUwwY6kAEbVOb8HRLYJXUv%2BVWrJ4dt%2FzHulI5fraZp95Lumy8VlKFyRNCjRhlWRSAD23pN3KK%2Fg4Jyu7jgliqreewICr%2FoTeiFDfZyTO0KqBklMPw0%2FT%2B2QO0TmXbjE2%2FQGLwgxS4JfnoQWu6oHz1fcDMr8HJ7r5Mmh4tw8KcIiG0akj%2B9U%2BFk2dukjQi%2FhsAoJamx6W8%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250702T152212Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIA54NGUQSHV7E2LH7M%2F20250702%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Signature=b09d5f87515a144103922a382ec7dd2614e61e5df04b5dd55a18f77dfdcb790f"
+    }
+}

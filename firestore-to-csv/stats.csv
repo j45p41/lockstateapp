@@ -1,0 +1,105 @@
+/*  Lock‑sure Alexa Smart‑Home proxy – Node 18 ES‑modules
+    ----------------------------------------------------
+    • AcceptGrant          ACKs account‑linking
+    • Discovery            returns one dummy contact‑sensor
+    • ReportState          gets OPEN/CLOSED from Cloud Function
+*/
+
+export const handler = async (event) => {
+  const { namespace, name } = event.directive.header;
+
+  if (namespace === 'Alexa.Authorization' && name === 'AcceptGrant') {
+    return await onAcceptGrant(event);
+  }
+  if (namespace === 'Alexa.Discovery' && name === 'Discover') {
+    return await onDiscovery(event);
+  }
+  if (namespace === 'Alexa' && name === 'ReportState') {
+    return await onReportState(event);
+  }
+  throw new Error(`Unhandled directive ${namespace}.${name}`);
+};
+
+/* ─── 1. AcceptGrant ─── */
+async function onAcceptGrant(event) {
+  return {
+    event: {
+      header: {
+        namespace      : 'Alexa.Authorization',
+        name           : 'AcceptGrant.Response',
+        payloadVersion : '3',
+        messageId      : crypto.randomUUID()
+      },
+      payload: {}
+    }
+  };
+}
+
+/* ─── 2. Discovery – dummy endpoint ─── */
+async function onDiscovery(event) {
+  return {
+    event: {
+      header: {
+        namespace      : 'Alexa.Discovery',
+        name           : 'Discover.Response',
+        payloadVersion : '3',
+        messageId      : event.directive.header.messageId + '#rsp'
+      },
+      payload: {
+        endpoints: [{
+          endpointId       : 'frontDoorSensor',
+          manufacturerName : 'Locksure (demo)',
+          friendlyName     : 'Front Door',
+          description      : 'Battery door sensor',
+          displayCategories: ['CONTACT_SENSOR'],
+          cookie           : {},
+          capabilities     : [
+            { type: 'AlexaInterface', interface: 'Alexa',               version: '3' },
+            { type: 'AlexaInterface', interface: 'Alexa.ContactSensor', version: '3' }
+          ]
+        }]
+      }
+    }
+  };
+}
+
+/* ─── 3. ReportState – fetch state from Cloud‑Function ─── */
+async function onReportState(event) {
+  const endpointId = event.directive.endpoint.endpointId; // frontDoorSensor
+  const url = `${process.env.FIREBASE_URL}?deviceId=${encodeURIComponent(endpointId)}`;
+
+  let detectionState = 'UNKNOWN';
+  try {
+    const json = await fetch(url).then(r => r.json());
+    detectionState = json.state === 'OPEN'
+      ? 'DETECTED'
+      : json.state === 'CLOSED'
+        ? 'NOT_DETECTED'
+        : 'UNKNOWN';
+  } catch (err) {
+    console.error('fetch error', err);
+  }
+
+  return {
+    context: {
+      properties: [{
+        namespace  : 'Alexa.ContactSensor',
+        name       : 'detectionState',
+        value      : detectionState,
+        timeOfSample             : new Date().toISOString(),
+        uncertaintyInMilliseconds: 500
+      }]
+    },
+    event: {
+      header: {
+        namespace       : 'Alexa',
+        name            : 'StateReport',
+        payloadVersion  : '3',
+        correlationToken: event.directive.header.correlationToken,
+        messageId       : event.directive.header.messageId + '#rsp'
+      },
+      endpoint: { endpointId },
+      payload : {}
+    }
+  };
+}

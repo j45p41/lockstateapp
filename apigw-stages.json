@@ -1,0 +1,14 @@
+{
+    "item": [
+        {
+            "deploymentId": "5dbve1",
+            "stageName": "prod",
+            "cacheClusterEnabled": false,
+            "cacheClusterStatus": "NOT_AVAILABLE",
+            "methodSettings": {},
+            "tracingEnabled": false,
+            "createdDate": "2025-07-01T23:36:38+01:00",
+            "lastUpdatedDate": "2025-07-02T15:44:23+01:00"
+        }
+    ]
+}

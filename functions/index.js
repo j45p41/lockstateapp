@@ -1,195 +1,225 @@
 /**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Lock-sure Cloud Functions – Alexa integration (Auth Code Grant)
+ * 2025-06-30
  */
-
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
-
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const { Messaging } = require('firebase-admin/messaging');
+const admin     = require('firebase-admin');
+const crypto    = require('crypto');
+const logger    = require('firebase-functions/logger');
+const fetch     = globalThis.fetch || ((...args) =>
+  import('node-fetch').then(m => m.default(...args)));
+const qs        = require('querystring');
+const DEFAULT_LWA_TOKEN_URL = 'https://api.amazon.com/auth/o2/token';
 
 admin.initializeApp();
 
-exports.sendNotification = functions.firestore
-    .document('/notifications/{docId}')
-    .onCreate(async (snap, context) => {
-        const data = snap.data();
-        const deviceName = data.deviceName;
-        const lockState = data.message.uplink_message.decoded_payload.lockState;
-        const userId = data.userId;
+// pull secrets from Firebase config: run `firebase functions:config:set alexa.client_id="..."` etc.
+const {
+  client_id:        ALEXA_CLIENT_ID,
+  client_secret:    ALEXA_CLIENT_SECRET,
+  lwa_auth_url:     LWA_AUTH_URL,
+  lwa_token_url:    LWA_TOKEN_URL,
+  token_lookup_url: TOKEN_LOOKUP_URL,
+  list_rooms_url:   LIST_ROOMS_URL,
+  firebase_url:     FIREBASE_URL,
+} = functions.config().alexa;
 
-        if (!userId) return;
+// fallback if config omission
+const finalLwaTokenUrl = LWA_TOKEN_URL || DEFAULT_LWA_TOKEN_URL;
 
-        const userDoc = await admin.firestore()
-            .collection('users')
-            .doc(userId)
-            .get();
+// simple UID validation
+const isValidUid = t => typeof t === 'string' && /^[A-Za-z0-9]{28}$/.test(t);
 
-        if (!userDoc.exists) return;
+/**
+ * Exchange an LWA access_token → Firebase UID
+ */
+async function uidFromAccessToken(token) {
+  if (isValidUid(token)) return token;
+  if (!token.startsWith('Atza|')) return null;
 
-        const userData = userDoc.data();
-        let fcmIds = userData.fcmId || [];
-        
-        if (!Array.isArray(fcmIds)) return;
-
-        // Filter out invalid tokens
-        fcmIds = fcmIds.filter(token => 
-            token && typeof token === 'string' && token.length >= 100
-        );
-
-        if (fcmIds.length === 0) return;
-
-        let lockStateString;
-        switch (lockState) {
-            case 1: lockStateString = 'LOCKED'; break;
-            case 2: lockStateString = 'UNLOCKED'; break;
-            case 3: lockStateString = 'OPEN'; break;
-            case 4: lockStateString = 'CLOSED'; break;
-            default: lockStateString = 'Unknown';
-        }
-
-        // Send notifications to valid tokens
-        for (const fcmId of fcmIds) {
-            try {
-                await admin.messaging().send({
-                    token: fcmId.trim(),
-                    notification: {
-                        title: 'Locksure',
-                        body: `${deviceName} Door is ${lockStateString}`,
-                    },
-                    android: {
-                        priority: 'high',
-                    },
-                    apns: {
-                        payload: {
-                            aps: {
-                                contentAvailable: true,
-                            },
-                        },
-                    }
-                });
-            } catch (error) {
-                if (error.code === 'messaging/invalid-registration-token' ||
-                    error.code === 'messaging/registration-token-not-registered') {
-                    await admin.firestore()
-                        .collection('users')
-                        .doc(userId)
-                        .update({
-                            fcmId: fcmIds.filter(t => t !== fcmId)
-                        });
-                }
-            }
-        }
-    });
-
-exports.alexaDoorsStatus = functions.https.onRequest(async (request, response) => {
-  const intentName = request.body.request.intent.name;
-  
-  switch (intentName) {
-    case 'CheckDoorsIntent':
-      return handleCheckDoorsIntent(request, response);
-    
-    case 'AMAZON.HelpIntent':
-      return response.json({
-        version: '1.0',
-        response: {
-          outputSpeech: {
-            type: 'PlainText',
-            text: 'You can ask me to check if your doors are locked by saying "are my doors locked" or "check door status".'
-          }
-        }
-      });
-    
-    case 'AMAZON.StopIntent':
-    case 'AMAZON.CancelIntent':
-      return response.json({
-        version: '1.0',
-        response: {
-          outputSpeech: {
-            type: 'PlainText',
-            text: 'Goodbye!'
-          },
-          shouldEndSession: true
-        }
-      });
-    
-    default:
-      return response.json({
-        version: '1.0',
-        response: {
-          outputSpeech: {
-            type: 'PlainText',
-            text: 'Sorry, I didn\'t understand that command. You can ask me to check your doors by saying "are my doors locked".'
-          }
-        }
-      });
+  const res = await fetch(TOKEN_LOOKUP_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ accessToken: token }),
+  });
+  if (!res.ok) {
+    logger.error('token lookup failed', await res.text());
+    throw new Error('Bad accessToken');
   }
+  const { uid } = await res.json();
+  if (!isValidUid(uid)) throw new Error('Invalid UID from lookup');
+  return uid;
+}
+
+// Smart-Home capabilities block (unchanged)
+const CAPS = [
+  { type:'AlexaInterface', interface:'Alexa', version:'3' },
+  {
+    type:'AlexaInterface', interface:'Alexa.LockController', version:'3',
+    properties:{ supported:[{name:'lockState'}], retrievable:true, proactivelyReported:false }
+  },
+  {
+    type:'AlexaInterface', interface:'Alexa.ContactSensor', version:'3',
+    properties:{ supported:[{name:'detectionState'}], retrievable:true, proactivelyReported:false }
+  },
+  {
+    type:'AlexaInterface', interface:'Alexa.EndpointHealth', version:'3',
+    properties:{ supported:[{name:'connectivity'}], retrievable:true, proactivelyReported:false }
+  },
+];
+
+// 1) Notifications (unchanged)
+exports.sendNotification = functions.firestore
+  .document('/notifications/{docId}')
+  .onCreate(async snap => {
+    const { userId: uid, message, deviceName } = snap.data();
+    if (!isValidUid(uid)) return;
+    const state = message?.uplink_message?.decoded_payload?.lockState;
+    const label = {1:'LOCKED',2:'UNLOCKED',3:'OPEN',4:'CLOSED'}[state] || 'Unknown';
+    const userSnap = await admin.firestore().collection('users').doc(uid).get();
+    const tokens   = (userSnap.data()?.fcmId || []).filter(t => typeof t==='string' && t.length>100);
+    await Promise.all(tokens.map(tok =>
+      admin.messaging().send({
+        token: tok,
+        notification:{ title:'Locksure', body:`${deviceName} door is ${label}` },
+        android:{ priority:'high' },
+        apns:{ payload:{ aps:{ contentAvailable:true } } },
+      }).catch(e => {
+        if (e.code?.includes('registration-token')) {
+          admin.firestore().doc(`users/${uid}`)
+            .update({ fcmId: admin.firestore.FieldValue.arrayRemove(tok) });
+        }
+      })
+    ));
+  });
+
+// 2) Smart-Home endpoints (unchanged)
+exports.alexaSmartHome = functions.https.onRequest(async (req, res) => {
+  const { userId, roomId } = req.query;
+  if (!userId || !roomId) return res.status(400).json({ error:'userId+roomId required' });
+  const doc = await admin.firestore().doc(`rooms/${roomId}`).get();
+  if (!doc.exists || doc.data().userId !== userId)
+    return res.status(404).json({ error:'room not found' });
+  res.json({ state: doc.data().state || 0 });
+});
+exports.listRooms = functions.https.onRequest(async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error:'userId required' });
+  const snap = await admin.firestore().collection('rooms')
+    .where('userId','==',userId).get();
+  res.json(snap.docs.map(d=>({ roomId:d.id, name:d.data().name || d.id })));
 });
 
-async function handleCheckDoorsIntent(request, response) {
-  const userId = request.body.userId;
-  
-  try {
-    const roomsSnapshot = await admin.firestore()
-      .collection('rooms')
-      .where('userId', '==', userId)
-      .get();
+// 3) OAuth2 Auth Code Grant — Authorization endpoint
+exports.alexaAuth = functions.https.onRequest(async (req, res) => {
+  const { redirect_uri, state, code: lwaCode } = req.query;
+  console.log('🔍 Query Params:', req.query);
 
-    const unlockedDoors = [];
-    let allLocked = true;
-    
-    roomsSnapshot.forEach(doc => {
-      const room = doc.data();
-      if (room.state !== 1) { // If not locked
-        allLocked = false;
-        unlockedDoors.push(room.name);
-      }
-    });
-
-    if (allLocked) {
-      return response.json({
-        version: '1.0',
-        response: {
-          outputSpeech: {
-            type: 'PlainText',
-            text: 'Yes, all doors are locked.'
-          }
-        }
-      });
-    } else {
-      const speechText = `Door ${unlockedDoors.join(' and ')} ${unlockedDoors.length === 1 ? 'is' : 'are'} unlocked.`;
-      return response.json({
-        version: '1.0',
-        response: {
-          outputSpeech: {
-            type: 'PlainText',
-            text: speechText
-          }
-        }
-      });
+  // ── PHASE 1: redirect the user to LWA for sign-in & consent ──
+  if (!lwaCode) {
+    if (!redirect_uri || !state) {
+      return res.status(400).send('Missing redirect_uri or state');
     }
-  } catch (error) {
-    return response.json({
-      version: '1.0',
-      response: {
-        outputSpeech: {
-          type: 'PlainText',
-          text: 'Sorry, I had trouble checking your doors.'
-        }
-      }
+    const params = qs.stringify({
+      client_id:     ALEXA_CLIENT_ID,
+      scope:         'profile',
+      response_type: 'code',         // ← Auth Code Grant
+      redirect_uri:  redirect_uri,   // LWA will come back here
+      state:         state,          // preserve original Alexa state
     });
+    return res.redirect(`${LWA_AUTH_URL}?${params}`);
   }
-}
+
+  // ── PHASE 2: LWA has given us an authorization code ──
+  // Exchange that for an LWA access_token
+  let lwaToken, uid;
+  try {
+    const tokenRes = await fetch(finalLwaTokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type:    'authorization_code',
+        code:          lwaCode,
+        client_id:     ALEXA_CLIENT_ID,
+        client_secret: ALEXA_CLIENT_SECRET,
+        redirect_uri,
+      })
+    });
+
+    if (!tokenRes.ok) {
+      const err = await tokenRes.text();
+      console.error('❌ LWA token exchange failed:', err);
+      throw new Error(err);
+    }
+
+    const tokenJson = await tokenRes.json();
+    console.log('✅ LWA access token received:', tokenJson.access_token);
+
+    lwaToken = tokenJson.access_token;
+    uid = await uidFromAccessToken(lwaToken);
+    console.log('✅ Firebase UID resolved:', uid);
+
+  } catch (e) {
+    console.error('❌ Failed in /alexaAuth:', e.message || e);
+    return res.status(400).send('invalid_grant');
+  }
+
+  // Generate our one-time skill code, store mapping → { uid, lwaToken }
+  const skillCode = crypto.randomBytes(16).toString('hex');
+  console.log('🔐 alexaAuth generated skillCode:', { uid, skillCode });
+  await admin.firestore().collection('alexaCodes').doc(skillCode).set({
+    uid,
+    accessToken: lwaToken,
+    created:     admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Redirect back to Alexa's redirect_uri with our code + original state
+  const dest = new URL(redirect_uri);
+  dest.searchParams.set('code',  skillCode);
+  dest.searchParams.set('state', state);
+  console.log('🔗 Redirecting to:', dest.toString());
+  return res.redirect(dest.toString());
+});
+
+// 4) Token endpoint — Alexa calls this to swap code → Firebase UID
+exports.alexaToken = functions.https.onRequest(async (req, res) => {
+  console.log('alexaToken called:', req.method, req.body, req.headers);
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  const auth = (req.headers.authorization||'').split(' ')[1] || '';
+  const [cid,secret] = Buffer.from(auth,'base64').toString().split(':');
+  if (cid!==ALEXA_CLIENT_ID||secret!==ALEXA_CLIENT_SECRET) {
+    return res.status(401).send('Bad client credentials');
+  }
+  const { code } = req.body || {};
+  if (!code) return res.status(400).json({ error:'invalid_request' });
+  const snap = await admin.firestore().doc(`alexaCodes/${code}`).get();
+  if (!snap.exists) return res.status(400).json({ error:'invalid_grant' });
+  return res.json({
+    access_token: snap.data().uid,
+    token_type:   'bearer',
+    expires_in:   3600
+  });
+});
+
+// 5) Token Lookup — for Flutter in-app linking
+exports.alexaTokenLookup = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  const { accessToken } = req.body||{};
+  if (!accessToken?.startsWith('Atza|')) {
+    return res.status(400).json({ error:'bad accessToken' });
+  }
+  const q = await admin.firestore().collection('alexaCodes')
+    .where('accessToken','==',accessToken).limit(1).get();
+  if (q.empty) return res.status(404).json({ error:'not linked yet' });
+  res.json({ uid: q.docs[0].data().uid });
+});
+
+// 6) Flutter helper: mark a user as linked
+exports.alexaLinkUser = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  const { userId } = req.body||{};
+  if (!isValidUid(userId)) return res.status(400).send('bad uid');
+  await admin.firestore().doc(`users/${userId}`)
+    .set({ alexaLinked:true },{ merge:true });
+  res.json({ ok:true });
+});

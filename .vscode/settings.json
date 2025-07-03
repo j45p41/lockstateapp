@@ -1,4 +1,5 @@
 {
   "dart.flutterSdkPath": "/Users/jaspal/Development/flutter",
-  "cmake.sourceDirectory": "/Users/jaspal/development/lockstateapp/android/windows/runner"
+  "cmake.sourceDirectory": "/Users/jaspal/development/lockstateapp/android/windows/runner",
+  "bitoAI.codeCompletion.enableAutoCompletion": false
 }

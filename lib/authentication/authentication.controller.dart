@@ -59,7 +59,7 @@ class AuthenticationController extends MomentumController<AuthenticationModel> {
 
       if (!globals.emailSucess) {
         globals.e = e;
-      } else {}
+      }
     }
   }
 

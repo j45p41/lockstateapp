@@ -1,0 +1,8 @@
+{
+  "httpMethod": "GET",
+  "path": "/alexaAuth",
+  "queryStringParameters": {
+    "state": "test-uid",
+    "redirect_uri": "https://layla.amazon.com/api/skill/link/M2KB1TY529INC9"
+  }
+} 

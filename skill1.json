@@ -1,0 +1,17 @@
+{
+  "manifest": {
+    "apis": {
+      "smartHome": {
+        "protocolVersion": "3"
+      }
+    },
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "locales": {
+        "en-GB": {
+          "name": "Locksure Door Monitor"
+        }
+      }
+    }
+  }
+}

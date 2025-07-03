@@ -16,8 +16,6 @@ import 'package:lockstate/utils/color_utils.dart';
 import 'package:momentum/momentum.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 
-
-
 String? fcmId;
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("background message ${message.data}");
@@ -28,7 +26,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  
+
   // Load user settings if user is logged in
   if (FirebaseAuth.instance.currentUser != null) {
     await loadInitialUserSettings();
@@ -45,8 +43,10 @@ Future<void> loadInitialUserSettings() async {
         .get();
 
     if (userDoc.exists) {
-      globals.showSignalStregth = userDoc.data()?['showSignalStrength'] ?? false;
-      globals.showBatteryPercentage = userDoc.data()?['showBatteryPercentage'] ?? false;
+      globals.showSignalStrength =
+          userDoc.data()?['showSignalStrength'] ?? false;
+      globals.showBatteryPercentage =
+          userDoc.data()?['showBatteryPercentage'] ?? false;
     } else {
       // Create default settings if they don't exist
       await FirebaseFirestore.instance
@@ -56,14 +56,14 @@ Future<void> loadInitialUserSettings() async {
         'showSignalStrength': false,
         'showBatteryPercentage': false,
       }, SetOptions(merge: true));
-      
-      globals.showSignalStregth = false;
+
+      globals.showSignalStrength = false;
       globals.showBatteryPercentage = false;
     }
   } catch (e) {
     print('Error loading initial user settings: $e');
     // Set defaults if there's an error
-    globals.showSignalStregth = false;
+    globals.showSignalStrength = false;
     globals.showBatteryPercentage = false;
   }
 }
@@ -104,6 +104,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSwatch()
             .copyWith(secondary: const Color(ColorUtils.color4)),
       ),
+      debugShowCheckedModeBanner: false,
       home: const Authenticate(),
     );
   }
@@ -127,7 +128,6 @@ class _AuthenticateState extends State<Authenticate> {
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .get();
 
-
       print("*******getUser auth************ ${doc['connectionType']}");
       setState(() {
         isConnectionTypeSet =
@@ -150,7 +150,7 @@ class _AuthenticateState extends State<Authenticate> {
         builder: (context, snapshot) {
           print("Authenticate ${snapshot.data}");
 
- globals.snapdata = snapshot.data.toString();
+          globals.snapdata = snapshot.data.toString();
 
           const HomeScreen();
           isConnectionTypeSet = true;
@@ -168,12 +168,5 @@ class _AuthenticateState extends State<Authenticate> {
                   : const SelectConnectionScreen()
               : const LoginScreen();
         });
-
-
   }
-
-
 }
-
-
-

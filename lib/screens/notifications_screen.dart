@@ -71,7 +71,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           stream: FirebaseFirestore.instance
               .collection('notifications')
               .orderBy('received_at', descending: true)
-              .where("userId", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+              .where("userId",
+                  isEqualTo: FirebaseAuth.instance.currentUser!.uid)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
@@ -110,18 +111,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               json.encode(data[index + j].data()));
 
 // if(historyItemPrevious.message.uplinkMessage.decodedPayload.lockState < 2)
-                              
-                          if (historyItem.roomId == nextHistoryItem.roomId 
+
+                          if (historyItem.roomId == nextHistoryItem.roomId
                               // &&
                               // historyItemPrevious.message.uplinkMessage.decodedPayload.lockState < 2
-                              
+
                               ) {
                             historyItemPrevious = nextHistoryItem;
 
                             // Handle RSSI
                             if (historyItem.radioPowerLevel < -500) {
                               rssi = ' [${historyItem.radioPowerLevel + 500}R]';
-                            } else if (!globals.showSignalStregth) {
+                            } else if (!globals.showSignalStrength) {
                               rssi = "";
                             } else {
                               rssi = ' [${historyItem.radioPowerLevel}]';
@@ -137,8 +138,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             }
 
                             // Check if signal has been repeated
-                            if (historyItem.message.uplinkMessage
-                                    .decodedPayload.lockState ==
+                            if (historyItem.message.uplinkMessage.decodedPayload
+                                    .lockState ==
                                 historyItemPrevious.message.uplinkMessage
                                     .decodedPayload.lockState) {
                               doorSignalMissed = true;
@@ -151,7 +152,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                       // Check if historyItemPrevious is null
                       if (historyItemPrevious == null) {
-                        return const SizedBox.shrink(); // Skip this item if null
+                        return const SizedBox
+                            .shrink(); // Skip this item if null
                       }
 
                       var batVolts = (100 *
@@ -186,7 +188,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               flex: 4,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Color(historyItem.message.uplinkMessage.decodedPayload.lockState == 0
+                                  color: Color(historyItem.message.uplinkMessage
+                                              .decodedPayload.lockState ==
+                                          0
                                       ? ColorUtils.colorGrey
                                       : historyItem.message.uplinkMessage.decodedPayload.lockState ==
                                                   2 &&
@@ -269,14 +273,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             Expanded(
                               flex: 4,
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                                 child: Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 7.2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7.2),
                                   color: const Color.fromARGB(255, 64, 64, 64),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       // First row: Time
                                       Text(
@@ -284,7 +291,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             .toLocal()
                                             .toString()
                                             .split(' ')[1]
-                                            .substring(0, 8),  // Get HH:MM:SS
+                                            .substring(0, 8), // Get HH:MM:SS
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -299,7 +306,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             .toLocal()
                                             .toString()
                                             .split(' ')[0]
-                                            .replaceFirst('2024-', ''),  // Get YYYY-MM-DD
+                                            .replaceFirst(
+                                                '2024-', ''), // Get YYYY-MM-DD
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -340,20 +348,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           historyItem.deviceName,
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold
-                                          ),
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                       const SizedBox(width: 5),
                                       Icon(
-                                        batVolts > 90 
+                                        batVolts > 90
                                             ? Icons.battery_full_rounded
-                                            : batVolts > 75 
+                                            : batVolts > 75
                                                 ? Icons.battery_5_bar_rounded
                                                 : Icons.battery_alert_rounded,
                                         size: 18,
-                                        color: batVolts > 75 
+                                        color: batVolts > 75
                                             ? Colors.greenAccent[400]
                                             : Colors.amber,
                                       ),
@@ -374,14 +381,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       const Icon(
                                         Icons.lock_clock,
                                         size: 18,
-                                        color: Color.fromARGB(255, 205, 176, 13),
+                                        color:
+                                            Color.fromARGB(255, 205, 176, 13),
                                       ),
                                       Text(
-                                        _formatDuration(
-                                          historyItem.message.receivedAt.difference(
-                                            historyItemPrevious.message.receivedAt
-                                          )
-                                        ),
+                                        _formatDuration(historyItem
+                                            .message.receivedAt
+                                            .difference(historyItemPrevious
+                                                .message.receivedAt)),
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -394,9 +401,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     LayoutBuilder(
                                       builder: (context, constraints) {
                                         final suffix = _getTimeSuffix(
-                                          historyItemPrevious.message.uplinkMessage.decodedPayload.lockState
-                                        );
-                                        
+                                            historyItemPrevious
+                                                .message
+                                                .uplinkMessage
+                                                .decodedPayload
+                                                .lockState);
+
                                         final textPainter = TextPainter(
                                           text: TextSpan(
                                             text: suffix,
@@ -409,7 +419,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           textDirection: TextDirection.ltr,
                                         )..layout();
 
-                                        if (textPainter.width <= constraints.maxWidth - 40) {
+                                        if (textPainter.width <=
+                                            constraints.maxWidth - 40) {
                                           return Text(
                                             suffix,
                                             style: const TextStyle(
@@ -423,9 +434,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     )
                                   else
                                     Text(
-                                      _getTimeSuffix(
-                                        historyItemPrevious.message.uplinkMessage.decodedPayload.lockState
-                                      ),
+                                      _getTimeSuffix(historyItemPrevious
+                                          .message
+                                          .uplinkMessage
+                                          .decodedPayload
+                                          .lockState),
                                       style: const TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.bold,
@@ -447,31 +460,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         // Create list of week data
                         List<WeekData> weeks = [
                           WeekData(
-                            startDate: DateTime.now().subtract(const Duration(days: 28)),
-                            endDate: DateTime.now().subtract(const Duration(days: 21)),
+                            startDate: DateTime.now()
+                                .subtract(const Duration(days: 28)),
+                            endDate: DateTime.now()
+                                .subtract(const Duration(days: 21)),
                           ),
                           WeekData(
-                            startDate: DateTime.now().subtract(const Duration(days: 21)),
-                            endDate: DateTime.now().subtract(const Duration(days: 14)),
+                            startDate: DateTime.now()
+                                .subtract(const Duration(days: 21)),
+                            endDate: DateTime.now()
+                                .subtract(const Duration(days: 14)),
                           ),
                           WeekData(
-                            startDate: DateTime.now().subtract(const Duration(days: 14)),
-                            endDate: DateTime.now().subtract(const Duration(days: 7)),
+                            startDate: DateTime.now()
+                                .subtract(const Duration(days: 14)),
+                            endDate: DateTime.now()
+                                .subtract(const Duration(days: 7)),
                           ),
                           WeekData(
-                            startDate: DateTime.now().subtract(const Duration(days: 7)),
+                            startDate: DateTime.now()
+                                .subtract(const Duration(days: 7)),
                             endDate: DateTime.now(),
                           ),
                         ];
 
                         // Calculate durations and filter out weeks with no data
                         List<WeekData> weeksWithData = weeks.where((week) {
-                          week.duration = _calculateDuration(data, 2, week.startDate, week.endDate);
+                          week.duration = _calculateDuration(
+                              data, 2, week.startDate, week.endDate);
                           return week.duration.inSeconds > 0;
                         }).toList();
 
                         if (weeksWithData.isEmpty) {
-                          return const SizedBox.shrink(); // Hide entire container if no data
+                          return const SizedBox
+                              .shrink(); // Hide entire container if no data
                         }
 
                         return Row(
@@ -486,7 +508,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const RotatedBox(
-                                quarterTurns: 3,  // Rotate 90 degrees counter-clockwise
+                                quarterTurns:
+                                    3, // Rotate 90 degrees counter-clockwise
                                 child: Center(
                                   child: Text(
                                     'Unlocked by Week',
@@ -511,64 +534,82 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     final now = DateTime.now();
                                     // Define the four week periods
                                     final weekPeriods = [
-                                      // 21-28 days ago
-                                      WeekData(
-                                        startDate: now.subtract(const Duration(days: 28)),
-                                        endDate: now.subtract(const Duration(days: 21)),
-                                      ),
+                                      // // 21-28 days ago
+                                      // WeekData(
+                                      //   startDate: now.subtract(const Duration(days: 28)),
+                                      //   endDate: now.subtract(const Duration(days: 21)),
+                                      // ),
                                       // 14-21 days ago
                                       WeekData(
-                                        startDate: now.subtract(const Duration(days: 21)),
-                                        endDate: now.subtract(const Duration(days: 14)),
+                                        startDate: now
+                                            .subtract(const Duration(days: 21)),
+                                        endDate: now
+                                            .subtract(const Duration(days: 14)),
                                       ),
                                       // 7-14 days ago
                                       WeekData(
-                                        startDate: now.subtract(const Duration(days: 14)),
-                                        endDate: now.subtract(const Duration(days: 7)),
+                                        startDate: now
+                                            .subtract(const Duration(days: 14)),
+                                        endDate: now
+                                            .subtract(const Duration(days: 7)),
                                       ),
                                       // Current 7 days
                                       WeekData(
-                                        startDate: now.subtract(const Duration(days: 7)),
+                                        startDate: now
+                                            .subtract(const Duration(days: 7)),
                                         endDate: now,
                                       ),
                                     ];
 
                                     // Calculate durations and filter out periods with no data
                                     List<WeekData> periodsWithData = [];
-                                    
+
                                     for (var period in weekPeriods) {
                                       Duration duration = Duration.zero;
-                                      
+
                                       // Calculate total duration for unlocked state (state 2) in this period
-                                      for (int i = 0; i < data.length - 1; i++) {
-                                        var currentItem = historyFromJson(json.encode(data[i].data()));
-                                        var nextItem = historyFromJson(json.encode(data[i + 1].data()));
-                                        
+                                      for (int i = 0;
+                                          i < data.length - 1;
+                                          i++) {
+                                        var currentItem = historyFromJson(
+                                            json.encode(data[i].data()));
+                                        var nextItem = historyFromJson(
+                                            json.encode(data[i + 1].data()));
+
                                         // Skip if event is outside our period
-                                        if (nextItem.message.receivedAt.isBefore(period.startDate)) {
+                                        if (nextItem.message.receivedAt
+                                            .isBefore(period.startDate)) {
                                           break;
                                         }
-                                        if (currentItem.message.receivedAt.isAfter(period.endDate)) {
+                                        if (currentItem.message.receivedAt
+                                            .isAfter(period.endDate)) {
                                           continue;
                                         }
-                                        
+
                                         // Add duration if state is unlocked (2)
-                                        if (nextItem.message.uplinkMessage.decodedPayload.lockState == 2) {
-                                          var eventStart = nextItem.message.receivedAt;
-                                          var eventEnd = currentItem.message.receivedAt;
-                                          
+                                        if (nextItem.message.uplinkMessage
+                                                .decodedPayload.lockState ==
+                                            2) {
+                                          var eventStart =
+                                              nextItem.message.receivedAt;
+                                          var eventEnd =
+                                              currentItem.message.receivedAt;
+
                                           // Clip duration to period boundaries
-                                          if (eventStart.isBefore(period.startDate)) {
+                                          if (eventStart
+                                              .isBefore(period.startDate)) {
                                             eventStart = period.startDate;
                                           }
-                                          if (eventEnd.isAfter(period.endDate)) {
+                                          if (eventEnd
+                                              .isAfter(period.endDate)) {
                                             eventEnd = period.endDate;
                                           }
-                                          
-                                          duration += eventEnd.difference(eventStart);
+
+                                          duration +=
+                                              eventEnd.difference(eventStart);
                                         }
                                       }
-                                      
+
                                       if (duration.inSeconds > 0) {
                                         period.duration = duration;
                                         periodsWithData.add(period);
@@ -581,7 +622,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                                     return Row(
                                       children: [
-                                        for (int i = 0; i < periodsWithData.length; i++) ...[
+                                        for (int i = 0;
+                                            i < periodsWithData.length;
+                                            i++) ...[
                                           if (i > 0) const SizedBox(width: 5),
                                           Expanded(
                                             child: _buildWeekDurationSummary(
@@ -589,9 +632,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               2,
                                               "Unlocked",
                                               ColorUtils.colorAmber,
-                                              startDate: periodsWithData[i].startDate,
-                                              endDate: periodsWithData[i].endDate,
-                                              duration: periodsWithData[i].duration,
+                                              startDate:
+                                                  periodsWithData[i].startDate,
+                                              endDate:
+                                                  periodsWithData[i].endDate,
+                                              duration:
+                                                  periodsWithData[i].duration,
                                             ),
                                           ),
                                         ],
@@ -608,37 +654,38 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 ],
               ),
-            
             );
           }),
     );
   }
 
-  String _formatTimeDifference(DateTime current, DateTime previous, History currentItem, History previousItem) {
+  String _formatTimeDifference(DateTime current, DateTime previous,
+      History currentItem, History previousItem) {
     Duration difference = current.difference(previous);
-    
+
     int totalMinutes = difference.inMinutes;
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
     int seconds = difference.inSeconds % 60;
 
     List<String> parts = [];
-    
+
     if (totalMinutes >= 60) {
       parts.add('${hours}h');
       parts.add('${minutes}m');
     } else if (minutes > 0) {
       parts.add('${minutes}m');
     }
-    
+
     if (seconds > 0 || parts.isEmpty) {
       parts.add('${seconds}s');
     }
 
     // Add state suffix based on previous item's state
     String timePart = parts.join(' ');
-    int previousState = previousItem.message.uplinkMessage.decodedPayload.lockState;
-    
+    int previousState =
+        previousItem.message.uplinkMessage.decodedPayload.lockState;
+
     switch (previousState) {
       case 1:
         return '$timePart since locked';
@@ -686,16 +733,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // Calculate previous period duration
     DateTime previousStart = startDate.subtract(endDate.difference(startDate));
     DateTime previousEnd = startDate;
-    Duration previousDuration = _calculateDuration(data, stateType, previousStart, previousEnd);
-    
+    Duration previousDuration =
+        _calculateDuration(data, stateType, previousStart, previousEnd);
+
     // Determine if current duration is higher or lower than previous period
     bool isIncreased = duration.inMinutes > previousDuration.inMinutes;
-    double percentChange = previousDuration.inMinutes > 0 
-        ? ((duration.inMinutes - previousDuration.inMinutes) / previousDuration.inMinutes * 100).abs()
+    double percentChange = previousDuration.inMinutes > 0
+        ? ((duration.inMinutes - previousDuration.inMinutes) /
+                previousDuration.inMinutes *
+                100)
+            .abs()
         : 0;
 
     // Check if this is the earliest period (28-21 days ago)
-    bool isEarliestPeriod = startDate.difference(DateTime.now()).inDays.abs() > 21;
+    bool isEarliestPeriod =
+        startDate.difference(DateTime.now()).inDays.abs() > 21;
 
     return Container(
       padding: const EdgeInsets.all(5),
@@ -753,7 +805,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   String _formatTotalDuration(Duration duration) {
     int hours = duration.inHours;
     int minutes = (duration.inMinutes % 60);
-    
+
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     } else if (minutes > 0) {
@@ -806,7 +858,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         var currentTime = unlockTime;
         while (currentTime.isBefore(lockTime)) {
           final hour = currentTime.hour;
-          
+
           // Calculate end of current hour or lock time, whichever comes first
           final hourEnd = DateTime(
             currentTime.year,
@@ -815,11 +867,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             hour + 1,
           );
           final endTime = lockTime.isBefore(hourEnd) ? lockTime : hourEnd;
-          
+
           // Add duration to appropriate hour
           final duration = endTime.difference(currentTime);
           hourlyDurations[hour] = hourlyDurations[hour]! + duration;
-          
+
           // Move to next hour
           currentTime = hourEnd;
         }
@@ -827,14 +879,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
 
     // Convert durations to hours for display
-    final hourlyHours = hourlyDurations.map((hour, duration) => 
-      MapEntry(hour, duration.inMinutes / 60.0));
+    final hourlyHours = hourlyDurations
+        .map((hour, duration) => MapEntry(hour, duration.inMinutes / 60.0));
 
     // Filter out hours with no data
     final activeHours = hourlyHours.entries
-      .where((entry) => entry.value > 0)
-      .map((entry) => entry.key)
-      .toList()..sort();
+        .where((entry) => entry.value > 0)
+        .map((entry) => entry.key)
+        .toList()
+      ..sort();
 
     if (activeHours.isEmpty) {
       Navigator.pop(context);
@@ -849,7 +902,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         .map((duration) => duration.inMinutes)
         .reduce(max)
         .toDouble();
-    
+
     // Calculate appropriate Y-axis scale
     final yAxisMax = _calculateYAxisMax(maxMinutes);
     final yAxisInterval = _calculateYAxisInterval(yAxisMax);
@@ -957,7 +1010,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         x: index,
                         barRods: [
                           BarChartRodData(
-                            toY: hourlyDurations[activeHours[index]]!.inMinutes.toDouble(),
+                            toY: hourlyDurations[activeHours[index]]!
+                                .inMinutes
+                                .toDouble(),
                             color: Color(color),
                             width: 16,
                             borderRadius: BorderRadius.circular(2),
@@ -990,24 +1045,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     DateTime endDate,
   ) {
     Duration totalDuration = Duration.zero;
-    
+
     for (int i = 0; i < data.length - 1; i++) {
       var currentItem = historyFromJson(json.encode(data[i].data()));
       var nextItem = historyFromJson(json.encode(data[i + 1].data()));
-      
+
       if (nextItem.message.receivedAt.isBefore(startDate)) {
         break;
       }
-      
+
       if (nextItem.message.receivedAt.isAfter(endDate)) {
         continue;
       }
-      
-      if (nextItem.message.uplinkMessage.decodedPayload.lockState == stateType) {
-        totalDuration += currentItem.message.receivedAt.difference(nextItem.message.receivedAt);
+
+      if (nextItem.message.uplinkMessage.decodedPayload.lockState ==
+          stateType) {
+        totalDuration += currentItem.message.receivedAt
+            .difference(nextItem.message.receivedAt);
       }
     }
-    
+
     return totalDuration;
   }
 

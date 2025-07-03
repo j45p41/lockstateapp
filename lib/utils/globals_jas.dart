@@ -10,9 +10,9 @@ String currentUser = "";
 bool gotSettings = false;
 bool gotLightSettings = false;
 Color _lightSettingColour = const Color.fromARGB(0, 255, 255, 255);
-bool showSignalStregth = true;
-FirebaseAuthException e = e;
+bool showSignalStrength = false;
 String email = '';
 bool emailSucess = false;
 String snapdata = '';
-bool showBatteryPercentage = true;
+bool showBatteryPercentage = false;
+FirebaseAuthException? e; // Added to store Firebase auth exceptions

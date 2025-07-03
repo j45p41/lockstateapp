@@ -32,35 +32,39 @@ class _forgot_password_screen extends State<forgot_password_screen> {
     try {
       await authService.sendPasswordResetEmail(globals.email);
 
-      if(!globals.emailSucess){
+      // Check if widget is still mounted before using context
+      if (!mounted) return;
+
+      if (!globals.emailSucess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(globals.e?.message ?? 'An error occurred'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Email Sent - please check your inbox"),
+          ),
+        );
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ));
+      }
+
+      if (globals.e?.message.toString() == 'Password Reset Email Sent') {
+        print('SUCESS CASE');
+      }
+    } catch (e) {
+      // Check if widget is still mounted before using context
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(globals.e.message.toString()),
+          content: Text('An unexpected error occurred: ${e.toString()}'),
         ),
       );
-    } else{
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email Sent - please check your inbox"),
-        ),
-      );
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ));
-
-
     }
-
-    if (globals.e.message.toString() == 'Password Reset Email Sent') {
-      print('SUCESS CASE');
-    }
-  }catch(e){
-
-
-  }
-  
-  
   }
 
   @override
@@ -114,7 +118,8 @@ class _forgot_password_screen extends State<forgot_password_screen> {
                       height: 10,
                     ),
                     TextFormField(
-                      style: const TextStyle(color: Color(ColorUtils.colorWhite)),
+                      style:
+                          const TextStyle(color: Color(ColorUtils.colorWhite)),
                       decoration: InputDecoration(
                         labelText: "Email",
                         enabledBorder: UnderlineInputBorder(
@@ -124,15 +129,16 @@ class _forgot_password_screen extends State<forgot_password_screen> {
                               width: 1,
                               style: BorderStyle.solid),
                         ),
-                        labelStyle:
-                            const TextStyle(color: Color(ColorUtils.colorWhite)),
+                        labelStyle: const TextStyle(
+                            color: Color(ColorUtils.colorWhite)),
                         border: UnderlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.white, width: 1),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         hintText: "Enter your email address",
-                        hintStyle:
-                            const TextStyle(color: Color(ColorUtils.colorWhite)),
+                        hintStyle: const TextStyle(
+                            color: Color(ColorUtils.colorWhite)),
                       ),
                       // onSaved: (newValue) => email = newValue!,
                       onChanged: (newValue) => globals.email = newValue,
