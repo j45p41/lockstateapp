@@ -1,0 +1,6 @@
+{
+  "path": "/alexaSmartHome",
+  "httpMethod": "POST",
+  "headers": { "content-type": "application/json" },
+  "body": "{\"directive\":{\"header\":{\"namespace\":\"Alexa.Discovery\",\"name\":\"Discover\",\"payloadVersion\":\"3\",\"messageId\":\"abc-123\"},\"payload\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"6ue1XtW8cndXJQyHydNo86PW1p43\"}}}}"
+}

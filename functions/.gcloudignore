@@ -1,0 +1,7 @@
+# ─── ignore EVERYTHING ─────────────────────────────
+**
+
+# ─── except what the function actually needs ───────
+!alexaChangeReport.js
+!package.json
+!package-lock.json

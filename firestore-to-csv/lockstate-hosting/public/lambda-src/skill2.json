@@ -1,0 +1,37 @@
+{
+    "manifest": {
+      "apis": {
+        "smartHome": {
+          "endpoint": {
+            "uri": "arn:aws:lambda:eu-west-1:487228065075:function:locksureSmartHomeProxy"
+          },
+          "protocolVersion": "3",
+          "regions": {
+            "EU": {
+              "endpoint": {
+                "uri": "arn:aws:lambda:eu-west-1:487228065075:function:locksureSmartHomeProxy"
+              }
+            }
+          }
+        }
+      },
+      "manifestVersion": "1.0",
+      "permissions": [],
+      "publishingInformation": {
+        "locales": {
+          "en-GB": {
+            "name": "Locksure Door Monitor Test"
+          }
+        }
+      },
+      "accountLinkingRequest": {
+        "type": "AUTH_CODE",
+        "authorizationUrl": "https://18glpgnilb.execute-api.eu-west-1.amazonaws.com/prod/alexaAuth",
+        "accessTokenUrl": "https://18glpgnilb.execute-api.eu-west-1.amazonaws.com/prod/alexaToken",
+        "clientId": "amzn1.application-oa2-client.ddbcc3bfaf604d1980b699300a623698",
+        "scopes": [
+          "alexa:all"
+        ]
+      }
+    }
+  }

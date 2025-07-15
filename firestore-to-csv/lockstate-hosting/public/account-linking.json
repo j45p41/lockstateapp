@@ -1,0 +1,22 @@
+{
+  "type": "AUTH_CODE",
+  "authorizationUrl": "https://www.amazon.com/ap/oa",
+  "accessTokenUrl": "https://api.amazon.com/auth/o2/token",
+  "clientId": "amzn1.application-oa2-client.dbcbc3bfa640d1980b699300a623698",
+  "clientSecret": "amzn1.oa2-cs.v1.6b02e945a9e3e041a43abdb405a1e76f80081db17080e5cca01962b90e21f815",
+  "scopes": ["profile"],
+  "domains": [
+    "lockstate-e72fc.web.app",
+    "us-central1-lockstate-e72fc.cloudfunctions.net",
+    "18glpgnilb.execute-api.eu-west-1.amazonaws.com"
+  ],
+  "accessTokenScheme": "HTTP_BASIC",
+  "redirectUrls": [
+    "https://layla.amazon.com/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://alexa.amazon.co.jp/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://pitangui.amazon.com/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://layla.amazon.com/api/skill/link/M2X8ITY529INC9",
+    "https://alexa.amazon.co.jp/api/skill/link/M2X8ITY529INC9",
+    "https://pitangui.amazon.com/api/skill/link/M2X8ITY529INC9"
+  ]
+} 

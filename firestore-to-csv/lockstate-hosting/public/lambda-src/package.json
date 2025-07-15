@@ -1,0 +1,13 @@
+{
+    "name": "locksure-lambda",
+    "version": "1.0.0",
+    "main": "index.mjs",
+    "type": "module",
+    "scripts": {
+        "deploy": "zip -r lambda.zip index.cjs package.json package-lock.json node_modules lockstate-e72fc-66f29588f54f.json && aws lambda update-function-code --function-name locksureSmartHomeProxyV2 --zip-file fileb://lambda.zip"
+    },
+    "dependencies": {
+        "firebase-admin": "^11.10.1",
+        "node-fetch": "^3.3.2"
+    }
+}

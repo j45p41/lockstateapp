@@ -929,7 +929,96 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ),
                                             const SizedBox(
-                                              height: 10,
+                                              height: 5,
+                                            ),
+                                            FutureBuilder<QuerySnapshot>(
+                                              future: FirebaseFirestore.instance
+                                                  .collection('notifications')
+                                                  .where('roomId',
+                                                      isEqualTo: room.roomId)
+                                                  .orderBy('received_at',
+                                                      descending: true)
+                                                  .limit(1)
+                                                  .get(),
+                                              builder:
+                                                  (context, notifSnapshot) {
+                                                if (notifSnapshot
+                                                        .connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const CircularProgressIndicator();
+                                                }
+                                                if (notifSnapshot.hasError ||
+                                                    !notifSnapshot.hasData ||
+                                                    notifSnapshot
+                                                        .data!.docs.isEmpty) {
+                                                  return Column(
+                                                    children: [
+                                                      const Text(
+                                                        'Last Operation:',
+                                                        style: TextStyle(
+                                                            fontSize: 11,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      const SizedBox(height: 1),
+                                                      const Text(
+                                                        'Not Set',
+                                                        style: TextStyle(
+                                                            fontSize: 11,
+                                                            color:
+                                                                Colors.black),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+                                                final notif = notifSnapshot
+                                                        .data!.docs.first
+                                                        .data()
+                                                    as Map<String, dynamic>;
+                                                final msg = notif['message']
+                                                    as Map<String, dynamic>?;
+                                                String? isoString = msg != null
+                                                    ? msg['received_at']
+                                                        as String?
+                                                    : null;
+                                                DateTime? date;
+                                                if (isoString != null) {
+                                                  try {
+                                                    date = DateTime.parse(
+                                                        isoString);
+                                                  } catch (e) {
+                                                    print(
+                                                        'Failed to parse message.received_at: $isoString');
+                                                  }
+                                                }
+                                                final formatted = date != null
+                                                    ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}'
+                                                    : 'Unknown';
+                                                return Column(
+                                                  children: [
+                                                    const Text(
+                                                      'Last Operation:',
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    const SizedBox(height: 1),
+                                                    Text(
+                                                      formatted,
+                                                      style: const TextStyle(
+                                                          fontSize: 11,
+                                                          color: Colors.black),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
                                             ),
                                             Column(
                                               children: [
@@ -1301,313 +1390,464 @@ class _HomeScreenState extends State<HomeScreen> {
                                       // border: Border.all(
                                       //     color: Theme.of(context).accentColor),
                                     ),
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(15),
-                                            margin: const EdgeInsets.only(
-                                              top: 20,
+                                    child: Stack(
+                                      children: [
+                                        // Shared icon in top corner
+                                        Positioned(
+                                          top: 5,
+                                          right: 5,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.green,
+                                              shape: BoxShape.circle,
                                             ),
-                                            decoration: BoxDecoration(
-                                                color: const Color(
-                                                    ColorUtils.colorWhite),
-                                                shape: BoxShape.circle,
-                                                boxShadow: const [
-                                                  BoxShadow(
-                                                    color: Colors.grey,
-                                                    offset: Offset(
-                                                        0.0, 1.0), //(x,y)
-                                                    blurRadius: 6.0,
-                                                  ),
-                                                ],
-                                                border: Border.all(
-                                                    color: Color(room.state == 1
-                                                        ? ColorUtils.colorGrey
-                                                        : room.state == 2 &&
-                                                                globals.lightSetting ==
-                                                                    1
-                                                            ? ColorUtils
-                                                                .colorRed
-                                                            : room.state == 1 &&
-                                                                    globals.lightSetting ==
-                                                                        1
-                                                                ? ColorUtils
-                                                                    .colorGreen
-                                                                : room.state ==
-                                                                            3 &&
-                                                                        globals.lightSetting ==
-                                                                            1
-                                                                    ? ColorUtils
-                                                                        .colorRed
-                                                                    : room.state ==
-                                                                            0
-                                                                        ? ColorUtils
-                                                                            .colorGrey
-                                                                        : room.state == 2 &&
-                                                                                globals.lightSetting == 2
-                                                                            ? ColorUtils.colorAmber
-                                                                            : room.state == 1 && globals.lightSetting == 2
-                                                                                ? ColorUtils.colorBlue
-                                                                                : room.state == 3 && globals.lightSetting == 3
-                                                                                    ? ColorUtils.colorRed
-                                                                                    : room.state == 2 && globals.lightSetting == 3
-                                                                                        ? ColorUtils.colorAmber
-                                                                                        : room.state == 1 && globals.lightSetting == 3
-                                                                                            ? ColorUtils.colorCyan
-                                                                                            : room.state == 3 && globals.lightSetting == 3
-                                                                                                ? ColorUtils.colorRed
-                                                                                                : ColorUtils.colorRed),
-                                                    width: 1)),
-                                            child: Center(
-                                              child: Stack(
-                                                alignment: Alignment.center,
-                                                children: [
-                                                  Icon(
-                                                    room.state == 1
-                                                        ? Icons.lock
-                                                        : Icons.lock_open,
-                                                    size: 100,
-                                                    color: Color(room.state == 0
-                                                        ? ColorUtils.colorGrey
-                                                        : room.state == 2 &&
-                                                                globals.lightSetting ==
-                                                                    1
-                                                            ? ColorUtils
-                                                                .colorRed
-                                                            : room.state == 1 &&
-                                                                    globals.lightSetting ==
-                                                                        1
-                                                                ? ColorUtils
-                                                                    .colorGreen
-                                                                : room.state ==
-                                                                            3 &&
-                                                                        globals.lightSetting ==
-                                                                            1
-                                                                    ? ColorUtils
-                                                                        .colorRed
-                                                                    : room.state ==
-                                                                            0
-                                                                        ? ColorUtils
-                                                                            .colorGrey
-                                                                        : room.state == 2 &&
-                                                                                globals.lightSetting == 2
-                                                                            ? ColorUtils.colorAmber
-                                                                            : room.state == 1 && globals.lightSetting == 2
-                                                                                ? ColorUtils.colorBlue
-                                                                                : room.state == 3 && globals.lightSetting == 3
-                                                                                    ? ColorUtils.colorRed
-                                                                                    : room.state == 2 && globals.lightSetting == 3
-                                                                                        ? ColorUtils.colorAmber
-                                                                                        : room.state == 1 && globals.lightSetting == 3
-                                                                                            ? ColorUtils.colorCyan
-                                                                                            : room.state == 3 && globals.lightSetting == 3
-                                                                                                ? ColorUtils.colorRed
-                                                                                                : ColorUtils.colorRed),
-                                                  ),
-                                                  if (room
-                                                      .sharedWith.isNotEmpty)
-                                                    Container(),
-                                                ],
-                                              ),
+                                            child: const Icon(
+                                              Icons.share,
+                                              color: Colors.white,
+                                              size: 16,
                                             ),
                                           ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text(
-                                            room.name,
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 1,
-                                          ),
-                                          ShareRequestStatus(
-                                              roomId: room.roomId),
-                                          const SizedBox(
-                                            height: 1,
-                                          ),
-                                          Text(
-                                            room.state == 0
-                                                ? "Not Set"
-                                                : room.state == 2
-                                                    ? "Unlocked"
-                                                    : room.state == 1
-                                                        ? "Locked"
-                                                        : room.state == 3
-                                                            ? "Unlocked / Open"
-                                                            : "Closed",
-                                            style: const TextStyle(
-                                              color: Color(
-                                                ColorUtils.color4,
-                                              ),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Row(
+                                        ),
+                                        SingleChildScrollView(
+                                          child: Column(
                                             mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                                MainAxisAlignment.start,
                                             children: [
-                                              ElevatedButton(
-                                                onPressed: () async {
-                                                  // Show confirmation dialog
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                            'Remove Shared Access'),
-                                                        content: const Text(
-                                                            'Are you sure you want to remove your access to this shared room?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop(); // Close dialog
-                                                            },
-                                                            child: const Text(
-                                                                'Cancel'),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed:
-                                                                () async {
-                                                              try {
-                                                                // Remove current user from sharedWith array
-                                                                await FirebaseFirestore
-                                                                    .instance
-                                                                    .collection(
-                                                                        'rooms')
-                                                                    .doc(room
-                                                                        .roomId)
-                                                                    .update({
-                                                                  'sharedWith':
-                                                                      FieldValue
-                                                                          .arrayRemove([
-                                                                    FirebaseAuth
-                                                                        .instance
-                                                                        .currentUser!
-                                                                        .uid
-                                                                  ])
-                                                                });
-
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(); // Close dialog
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                      content: Text(
-                                                                          'Access removed successfully')),
-                                                                );
-                                                              } catch (e) {
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(); // Close dialog
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  SnackBar(
-                                                                      content: Text(
-                                                                          'Error removing access: $e')),
-                                                                );
-                                                              }
-                                                            },
-                                                            child: const Text(
-                                                                'Remove Access',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .red)),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    fixedSize:
-                                                        const Size.square(5),
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 1,
-                                                        vertical: 1),
-                                                    textStyle: const TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                child: const Icon(
-                                                  Icons.delete,
-                                                  color: Colors.red,
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(15),
+                                                margin: const EdgeInsets.only(
+                                                  top: 20,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                    color: const Color(
+                                                        ColorUtils.colorWhite),
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: const [
+                                                      BoxShadow(
+                                                        color: Colors.grey,
+                                                        offset: Offset(
+                                                            0.0, 1.0), //(x,y)
+                                                        blurRadius: 6.0,
+                                                      ),
+                                                    ],
+                                                    border: Border.all(
+                                                        color: Color(room
+                                                                    .state ==
+                                                                1
+                                                            ? ColorUtils
+                                                                .colorGrey
+                                                            : room.state == 2 &&
+                                                                    globals.lightSetting ==
+                                                                        1
+                                                                ? ColorUtils
+                                                                    .colorRed
+                                                                : room.state ==
+                                                                            1 &&
+                                                                        globals.lightSetting ==
+                                                                            1
+                                                                    ? ColorUtils
+                                                                        .colorGreen
+                                                                    : room.state ==
+                                                                                3 &&
+                                                                            globals.lightSetting ==
+                                                                                1
+                                                                        ? ColorUtils
+                                                                            .colorRed
+                                                                        : room.state ==
+                                                                                0
+                                                                            ? ColorUtils.colorGrey
+                                                                            : room.state == 2 && globals.lightSetting == 2
+                                                                                ? ColorUtils.colorAmber
+                                                                                : room.state == 1 && globals.lightSetting == 2
+                                                                                    ? ColorUtils.colorBlue
+                                                                                    : room.state == 3 && globals.lightSetting == 3
+                                                                                        ? ColorUtils.colorRed
+                                                                                        : room.state == 2 && globals.lightSetting == 3
+                                                                                            ? ColorUtils.colorAmber
+                                                                                            : room.state == 1 && globals.lightSetting == 3
+                                                                                                ? ColorUtils.colorCyan
+                                                                                                : room.state == 3 && globals.lightSetting == 3
+                                                                                                    ? ColorUtils.colorRed
+                                                                                                    : ColorUtils.colorRed),
+                                                        width: 1)),
+                                                child: Center(
+                                                  child: Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Icon(
+                                                        room.state == 1
+                                                            ? Icons.lock
+                                                            : Icons.lock_open,
+                                                        size: 100,
+                                                        color: Color(room
+                                                                    .state ==
+                                                                0
+                                                            ? ColorUtils
+                                                                .colorGrey
+                                                            : room.state == 2 &&
+                                                                    globals.lightSetting ==
+                                                                        1
+                                                                ? ColorUtils
+                                                                    .colorRed
+                                                                : room.state ==
+                                                                            1 &&
+                                                                        globals.lightSetting ==
+                                                                            1
+                                                                    ? ColorUtils
+                                                                        .colorGreen
+                                                                    : room.state ==
+                                                                                3 &&
+                                                                            globals.lightSetting ==
+                                                                                1
+                                                                        ? ColorUtils
+                                                                            .colorRed
+                                                                        : room.state ==
+                                                                                0
+                                                                            ? ColorUtils.colorGrey
+                                                                            : room.state == 2 && globals.lightSetting == 2
+                                                                                ? ColorUtils.colorAmber
+                                                                                : room.state == 1 && globals.lightSetting == 2
+                                                                                    ? ColorUtils.colorBlue
+                                                                                    : room.state == 3 && globals.lightSetting == 3
+                                                                                        ? ColorUtils.colorRed
+                                                                                        : room.state == 2 && globals.lightSetting == 3
+                                                                                            ? ColorUtils.colorAmber
+                                                                                            : room.state == 1 && globals.lightSetting == 3
+                                                                                                ? ColorUtils.colorCyan
+                                                                                                : room.state == 3 && globals.lightSetting == 3
+                                                                                                    ? ColorUtils.colorRed
+                                                                                                    : ColorUtils.colorRed),
+                                                      ),
+                                                      if (room.sharedWith
+                                                          .isNotEmpty)
+                                                        Container(),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                          const SizedBox(
-                                            height: 15,
-                                          ),
-                                          FutureBuilder<QuerySnapshot>(
-                                            future: FirebaseFirestore.instance
-                                                .collection('users')
-                                                .where(FieldPath.documentId,
-                                                    whereIn: room.sharedWith)
-                                                .get(),
-                                            builder: (context, userSnapshot) {
-                                              if (userSnapshot
-                                                      .connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return const CircularProgressIndicator();
-                                              }
-                                              if (userSnapshot.hasError ||
-                                                  !userSnapshot.hasData) {
-                                                return const Text(
-                                                    'Error loading emails');
-                                              }
-                                              final emails = userSnapshot
-                                                  .data!.docs
-                                                  .map((doc) =>
-                                                      doc['email'] as String)
-                                                  .join(', ');
-                                              return Column(
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                room.name,
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 1,
+                                              ),
+                                              ShareRequestStatus(
+                                                  roomId: room.roomId),
+                                              const SizedBox(
+                                                height: 1,
+                                              ),
+                                              Text(
+                                                room.state == 0
+                                                    ? "Not Set"
+                                                    : room.state == 2
+                                                        ? "Unlocked"
+                                                        : room.state == 1
+                                                            ? "Locked"
+                                                            : room.state == 3
+                                                                ? "Unlocked / Open"
+                                                                : "Closed",
+                                                style: const TextStyle(
+                                                  color: Color(
+                                                    ColorUtils.color4,
+                                                  ),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            5.0),
-                                                    child: Center(
-                                                      child: Text(
-                                                        'This Door Belongs To: $emails',
-                                                        style: const TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 12,
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
+                                                  ElevatedButton(
+                                                    onPressed: () async {
+                                                      // Show confirmation dialog
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return AlertDialog(
+                                                            title: const Text(
+                                                                'Remove Shared Access'),
+                                                            content: const Text(
+                                                                'Are you sure you want to remove your access to this shared room?'),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop(); // Close dialog
+                                                                },
+                                                                child: const Text(
+                                                                    'Cancel'),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed:
+                                                                    () async {
+                                                                  try {
+                                                                    // Remove current user from sharedWith array
+                                                                    await FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            'rooms')
+                                                                        .doc(room
+                                                                            .roomId)
+                                                                        .update({
+                                                                      'sharedWith':
+                                                                          FieldValue
+                                                                              .arrayRemove([
+                                                                        FirebaseAuth
+                                                                            .instance
+                                                                            .currentUser!
+                                                                            .uid
+                                                                      ])
+                                                                    });
+
+                                                                    Navigator.of(
+                                                                            context)
+                                                                        .pop(); // Close dialog
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      const SnackBar(
+                                                                          content:
+                                                                              Text('Access removed successfully')),
+                                                                    );
+                                                                  } catch (e) {
+                                                                    Navigator.of(
+                                                                            context)
+                                                                        .pop(); // Close dialog
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      SnackBar(
+                                                                          content:
+                                                                              Text('Error removing access: $e')),
+                                                                    );
+                                                                  }
+                                                                },
+                                                                child: const Text(
+                                                                    'Remove Access',
+                                                                    style: TextStyle(
+                                                                        color: Colors
+                                                                            .red)),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors
+                                                            .white,
+                                                        fixedSize: const Size
+                                                            .square(5),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 1,
+                                                                vertical: 1),
+                                                        textStyle:
+                                                            const TextStyle(
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                    child: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
                                                     ),
                                                   ),
                                                 ],
-                                              );
-                                            },
+                                              ),
+                                              const SizedBox(
+                                                height: 7,
+                                              ),
+                                              FutureBuilder<QuerySnapshot>(
+                                                future: FirebaseFirestore
+                                                    .instance
+                                                    .collection('users')
+                                                    .where(FieldPath.documentId,
+                                                        whereIn:
+                                                            room.sharedWith)
+                                                    .get(),
+                                                builder:
+                                                    (context, userSnapshot) {
+                                                  if (userSnapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const CircularProgressIndicator();
+                                                  }
+                                                  if (userSnapshot.hasError ||
+                                                      !userSnapshot.hasData) {
+                                                    return const Text(
+                                                        'Error loading emails');
+                                                  }
+                                                  final emails = userSnapshot
+                                                      .data!.docs
+                                                      .map((doc) => doc['email']
+                                                          as String)
+                                                      .join(', ');
+                                                  return Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(5.0),
+                                                        child: Center(
+                                                          child: Text(
+                                                            'This Door Belongs To: $emails',
+                                                            style:
+                                                                const TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 12,
+                                                            ),
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      FutureBuilder<
+                                                          QuerySnapshot>(
+                                                        future: FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'notifications')
+                                                            .where('roomId',
+                                                                isEqualTo:
+                                                                    room.roomId)
+                                                            .orderBy(
+                                                                'received_at',
+                                                                descending:
+                                                                    true)
+                                                            .limit(1)
+                                                            .get(),
+                                                        builder: (context,
+                                                            notifSnapshot) {
+                                                          if (notifSnapshot
+                                                                  .connectionState ==
+                                                              ConnectionState
+                                                                  .waiting) {
+                                                            return const CircularProgressIndicator();
+                                                          }
+                                                          if (notifSnapshot.hasError ||
+                                                              !notifSnapshot
+                                                                  .hasData ||
+                                                              notifSnapshot
+                                                                  .data!
+                                                                  .docs
+                                                                  .isEmpty) {
+                                                            return Column(
+                                                              children: [
+                                                                const Text(
+                                                                  'Last Operation:',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          11,
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold),
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 1),
+                                                                const Text(
+                                                                  'Not Set',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          11,
+                                                                      color: Colors
+                                                                          .black),
+                                                                ),
+                                                              ],
+                                                            );
+                                                          }
+                                                          final notif =
+                                                              notifSnapshot
+                                                                      .data!
+                                                                      .docs
+                                                                      .first
+                                                                      .data()
+                                                                  as Map<String,
+                                                                      dynamic>;
+                                                          final msg =
+                                                              notif['message']
+                                                                  as Map<String,
+                                                                      dynamic>?;
+                                                          String? isoString =
+                                                              msg != null
+                                                                  ? msg['received_at']
+                                                                      as String?
+                                                                  : null;
+                                                          DateTime? date;
+                                                          if (isoString !=
+                                                              null) {
+                                                            try {
+                                                              date = DateTime
+                                                                  .parse(
+                                                                      isoString);
+                                                            } catch (e) {
+                                                              print(
+                                                                  'Failed to parse message.received_at: $isoString');
+                                                            }
+                                                          }
+                                                          final formatted = date !=
+                                                                  null
+                                                              ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}'
+                                                              : 'Unknown';
+                                                          return Column(
+                                                            children: [
+                                                              const Text(
+                                                                'Last Operation:',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        11,
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 1),
+                                                              Text(
+                                                                formatted,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        11,
+                                                                    color: Colors
+                                                                        .black),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                              const SizedBox(height: 1),
+                                            ],
                                           ),
-                                          const SizedBox(height: 1),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );

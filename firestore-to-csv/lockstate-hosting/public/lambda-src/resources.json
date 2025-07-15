@@ -1,0 +1,27 @@
+{
+    "items": [
+        {
+            "id": "1vp6fx",
+            "parentId": "wdx8kmgw70",
+            "pathPart": "alexaToken",
+            "path": "/alexaToken",
+            "resourceMethods": {
+                "POST": {}
+            }
+        },
+        {
+            "id": "5pxbgn",
+            "parentId": "wdx8kmgw70",
+            "pathPart": "alexaAuth",
+            "path": "/alexaAuth",
+            "resourceMethods": {
+                "GET": {},
+                "POST": {}
+            }
+        },
+        {
+            "id": "wdx8kmgw70",
+            "path": "/"
+        }
+    ]
+}

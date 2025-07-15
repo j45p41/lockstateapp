@@ -1,0 +1,26 @@
+{
+  "vendorId": "M2KB1TY529INC9",
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-GB": { "name": "Locksure Door Monitor V2" },
+        "en-US": { "name": "Locksure Door Monitor V2" }
+      }
+    },
+    "apis": {
+      "smartHome": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:eu-west-1:487228065075:function:locksureSmartHomeProxyV2"
+        },
+        "protocolVersion": "3"
+      }
+    },
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "isChildDirected": false,
+      "usesPersonalInfo": false,
+      "isExportCompliant": true
+    }
+  }
+}

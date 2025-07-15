@@ -1,0 +1,56 @@
+{
+  "discovery_test": {
+    "directive": {
+      "header": {
+        "namespace": "Alexa.Discovery",
+        "name": "Discover",
+        "payloadVersion": "3",
+        "messageId": "test-discovery-123"
+      },
+      "payload": {
+        "scope": {
+          "type": "BearerToken",
+          "token": "6ue1XtW8cndXJQyHydNo86PW1p43"
+        }
+      }
+    }
+  },
+  "state_report_test": {
+    "directive": {
+      "header": {
+        "namespace": "Alexa.LockController",
+        "name": "ReportState",
+        "payloadVersion": "3",
+        "messageId": "test-state-report-123",
+        "correlationToken": "test-correlation-token"
+      },
+      "endpoint": {
+        "endpointId": "RcW0lotdwT3Eq4fCvuKw",
+        "scope": {
+          "type": "BearerToken",
+          "token": "6ue1XtW8cndXJQyHydNo86PW1p43"
+        }
+      },
+      "payload": {}
+    }
+  },
+  "alexa_state_report_test": {
+    "directive": {
+      "header": {
+        "namespace": "Alexa",
+        "name": "ReportState",
+        "payloadVersion": "3",
+        "messageId": "test-alexa-state-report-123",
+        "correlationToken": "test-correlation-token"
+      },
+      "endpoint": {
+        "endpointId": "RcW0lotdwT3Eq4fCvuKw",
+        "scope": {
+          "type": "BearerToken",
+          "token": "6ue1XtW8cndXJQyHydNo86PW1p43"
+        }
+      },
+      "payload": {}
+    }
+  }
+} 

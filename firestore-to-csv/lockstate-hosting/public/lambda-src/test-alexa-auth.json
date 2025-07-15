@@ -1,0 +1,7 @@
+{
+  "httpMethod": "GET",
+  "path": "/alexaAuth",
+  "queryStringParameters": {
+    "state": "test123"
+  }
+} 

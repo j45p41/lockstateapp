@@ -22,7 +22,7 @@ const String kListRoomsEndpoint =
 
 // Alexa gives you this under "Alexa Redirect URLs"
 const String kAlexaRedirectUrl =
-    'https://layla.amazon.com/api/skill/link/M2KB1TY529INC9';
+    'https://layla.amazon.com/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998';
 
 bool gotSettings = false;
 
@@ -335,159 +335,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void debugAlexa(String message) {
+    print('[ALEXA-DEBUG] ' + message);
+  }
+
   Future<void> linkAlexaAccount() async {
-    print('[Alexa] Attempting to link Alexa account…');
+    debugAlexa('--- Alexa linking started ---');
+
+    // Check if user is signed in
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugAlexa('User not signed in');
+      await showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text('Sign In Required'),
+          content: Text(
+              'Please sign in or create an account in the app before linking with Alexa.'),
+        ),
+      );
+      return;
+    }
+    final uid = user.uid;
+    final firebaseEmail = user.email ?? '';
+    debugAlexa(
+        'User signed in: UID=\u001b[1m$uid\u001b[0m, email=$firebaseEmail');
 
     try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      print('[Alexa] Using Firebase UID: $uid');
-
-      // Always show dialog to collect/update Amazon email address
-      amazonUserIdController.text = amazonUserId ?? '';
-      String? emailResult;
-      bool validEmail = false;
-      while (!validEmail) {
-        emailResult = await showDialog<String>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Amazon Email Address'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'To link your Alexa account, please enter your Amazon email address. '
-                    'You must use this same email when logging in to Amazon.',
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Amazon Email Address',
-                      hintText: 'example@email.com',
-                    ),
-                    controller: amazonUserIdController,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.of(context).pop(amazonUserIdController.text),
-                  child: const Text('Continue'),
-                ),
-              ],
-            );
-          },
+      // Save the Alexa link status to Firestore
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'alexaLinked': true,
+          'email': firebaseEmail,
+          'uid': uid,
+        }, SetOptions(merge: true));
+        debugAlexa('Alexa link status written to Firestore');
+      } catch (e) {
+        debugAlexa('Error writing to Firestore: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save Alexa link status: $e')),
         );
-
-        if (emailResult == null || emailResult.isEmpty) {
-          print('[Alexa] User cancelled Amazon email input');
-          return;
-        }
-
-        // Simple email validation
-        final emailPattern = RegExp(r'^.+@.+\..+$');
-        if (emailPattern.hasMatch(emailResult)) {
-          validEmail = true;
-        } else {
-          await showDialog(
-            context: context,
-            builder: (context) => const AlertDialog(
-              title: Text('Invalid Email'),
-              content: Text('Please enter a valid email address.'),
-            ),
-          );
-          amazonUserIdController.text = emailResult;
-        }
+        return;
       }
-      // Save the (possibly updated) Amazon email
-      amazonUserId = emailResult;
-      await FirebaseFirestore.instance.collection('users').doc(uid).set(
-          {'amazonID': amazonUserId, 'amazonUserId': amazonUserId},
-          SetOptions(merge: true));
 
-      // --- NEW: Create or update Firestore user record with Amazon info ---
-      final user = FirebaseAuth.instance.currentUser;
-      final amazonId = amazonUserId;
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'amazonID': amazonId,
-        'amazonUserId': amazonUserId,
-        'alexaLinked': false, // Set to true after successful linking
-        'email': user?.email,
-        'uid': uid,
-      }, SetOptions(merge: true));
-      print('[Alexa] Firestore user record updated with Amazon info');
-      // --- END NEW ---
+      setState(() {
+        amazonUserId = firebaseEmail;
+      });
 
-      // Show reminder dialog before launching LWA
+      // Show instructions dialog using Firebase email
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Amazon Login Reminder'),
-          content: Text(
-              'When you are redirected to Amazon, please log in using this email address:\n\n'
-              '${amazonUserId ?? ''}\n\nThis ensures your Alexa account is linked correctly.'),
+          title: const Text('Alexa Linking Instructions'),
+          content: Text('Your Locksure email: $firebaseEmail\n\n'
+              '1. Open the Alexa app on your phone.\n'
+              '2. Search for the "Locksure" skill.\n'
+              '3. Tap "Enable" to add the skill.\n'
+              '4. When prompted, use the email above to log in.\n\n'
+              'After linking, return to the Alexa app or say "Alexa, discover devices" to complete setup.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Continue'),
+              child: const Text('OK'),
             ),
           ],
         ),
       );
-
-      // Launch the OAuth flow in a browser
-      const apiBase =
-          'https://zhvhk616nh.execute-api.eu-west-1.amazonaws.com/prod';
-      const alexaRedirect =
-          'https://layla.amazon.com/api/skill/link/M2KB1TY529INC9';
-
-      final authUrl = Uri.parse('$apiBase/alexaAuth').replace(queryParameters: {
-        'state': uid,
-        'redirect_uri': alexaRedirect,
-      });
-
-      print('[Alexa] Launching OAuth URL: $authUrl');
-
-      final launched = await launchUrl(
-        authUrl,
-        mode: LaunchMode.externalApplication,
-      );
-
-      if (!launched) {
-        throw 'Could not launch OAuth URL';
-      }
-
-      print(
-          '[Alexa] ✅ OAuth page opened – waiting for user to complete linking');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Complete the Alexa linking in your browser, then return to the app.'),
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
-
-      // After successful linking, the user should return to the app
-      // and we can optionally check the linking status
-      await Future.delayed(const Duration(seconds: 2));
-      await checkAlexaLinkStatus();
     } catch (e) {
-      print('[Alexa] ❌ Error linking Alexa account: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error linking Alexa: $e')));
-      }
+      debugAlexa('Error linking account: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to link Amazon account: $e')),
+      );
     }
   }
 
@@ -927,32 +845,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             color: Colors.white, fontSize: titleSize - 5),
                       ),
                     ),
-                    isAlexaLinked
-                        ? ElevatedButton(
-                            onPressed: () async {
-                              await _unlinkAlexaAccount();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                  73, 255, 7, 7), // red-ish
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                            ),
-                            child: const Text("Unlink",
-                                style: TextStyle(fontSize: 14)),
-                          )
-                        : ElevatedButton(
-                            onPressed: () async {
-                              await linkAlexaAccount();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                            ),
-                            child: const Text("Link Account",
-                                style: TextStyle(fontSize: 14)),
-                          ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await linkAlexaAccount();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text("Link Account",
+                          style: TextStyle(fontSize: 14)),
+                    ),
                   ],
                 ),
               ),

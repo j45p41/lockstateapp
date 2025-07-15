@@ -1,0 +1,21 @@
+{
+    "type": "AWS",
+    "httpMethod": "POST",
+    "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:487228065075:function:locksureSmartHomeProxy/invocations",
+    "requestTemplates": {
+        "application/x-www-form-urlencoded": "     {\n       \"body\": \"$input.body\"\n     }"
+    },
+    "passthroughBehavior": "WHEN_NO_MATCH",
+    "contentHandling": "CONVERT_TO_TEXT",
+    "timeoutInMillis": 29000,
+    "cacheNamespace": "5pxbgn",
+    "cacheKeyParameters": [],
+    "integrationResponses": {
+        "200": {
+            "statusCode": "200",
+            "responseTemplates": {
+                "application/json": null
+            }
+        }
+    }
+}

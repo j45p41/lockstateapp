@@ -1,0 +1,16 @@
+{
+  "type": "AUTH_CODE",
+  "authorizationUrl": "https://www.amazon.com/ap/oa",
+  "accessTokenUrl": "https://api.amazon.com/auth/o2/token",
+  "clientId": "amzn1.application-oa2-client.ddbcc3bfaf604d1980b699300a623698",
+  "clientSecret": "amzn1.oa2-cs.v1.6b02e945a9e3e041a43abdb405a1e76f80081db17080e5cca01962b90e21f815",
+  "redirectUrls": [
+    "https://layla.amazon.com/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://alexa.amazon.co.jp/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://pitangui.amazon.com/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://layla.amazon.co.uk/api/skill/link/89751fb9-1b7f-4c40-8c9f-a5231bdb3998",
+    "https://layla.amazon.com/api/skill/link/M2KB1TY529INC9",
+    "https://pitangui.amazon.com/api/skill/link/M2KB1TY529INC9",
+    "https://18glpgnilb.execute-api.eu-west-1.amazonaws.com/prod/alexaCallback"
+  ]
+} 

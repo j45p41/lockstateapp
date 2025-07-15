@@ -1,0 +1,18 @@
+{
+    "name": "locksure-lambda",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "index.mjs",
+    "scripts": {
+        "test": "node test-lambda.js",
+        "test:skill": "node automated-skill-test.js",
+        "deploy": "zip -r lambda.zip index.mjs package.json package-lock.json node_modules lockstate-e72fc-66f29588f54f.json && aws lambda update-function-code --function-name locksureSmartHomeProxy --zip-file fileb://lambda.zip"
+    },
+    "dependencies": {
+      "firebase-admin": "^11.10.1",
+      "node-fetch": "^3.3.2"
+    },
+    "devDependencies": {
+      "@aws-sdk/client-lambda": "^3.0.0"
+    }
+  }

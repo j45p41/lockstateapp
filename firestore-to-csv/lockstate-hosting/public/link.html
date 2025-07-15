@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Locksure – Link Account</title>
+<style>
+  body {font-family:sans-serif;margin:2rem;text-align:center}
+  #signin-btn {margin-top:3rem}
+</style>
+
+<!-- Login-with-Amazon SDK -->
+<script src="https://assets.loginwithamazon.com/sdk/na/login1.js"></script>
+
+<script>
+/*** 1.  Initialise the Amazon SDK ***/
+window.onAmazonLoginReady = () => {
+  amazon.Login.setClientId('amzn1.application-oa2-client.ddbcc3bfaf604d1980b699300a623698');           // ← paste from console
+  amazon.Login.setUseCookie(true);
+};
+
+/*** 2.  Helper: exchange the auth code for an access token on your server-side
+ *      (for demo we simply send it back to Alexa by closing the tab).        ***/
+function onLwaSuccess(response) {
+  // In production: POST response.code to your Cloud Function to finish linking
+  document.body.textContent = 'Account linked – you can close this window.';
+  setTimeout(() => window.close(), 1500);
+}
+
+function onLwaError(err) {
+  document.body.textContent = 'Linking failed: ' + err.error;
+}
+
+/*** 3.  If we were just redirected back from Amazon, handle the `code` ***/
+const url = new URL(window.location);
+if (url.searchParams.get('code')) {
+  onLwaSuccess({code: url.searchParams.get('code')});
+} else {
+  // 4.  First visit: show the “Sign in with Amazon” button
+  window.addEventListener('DOMContentLoaded', () => {
+    amazon.Login.authorize(
+      {
+        scope    : 'profile',                // or 'profile postal_code'
+        state    : url.searchParams.get('state') || 'alexa',
+        redirect_uri : url.origin + url.pathname   // this same link.html
+      },
+      onLwaSuccess
+    );
+  });
+}
+</script>
+</head>
+<body>
+  <noscript>Please enable JavaScript to link your account.</noscript>
+  <p id="status">Loading …</p>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{
+  "sessionId": "b6f3da9e-eb65-4c37-9c64-05610883149c",
+  "timestamp": "2025-07-03T20:48:28.437Z",
+  "results": [
+    {
+      "timestamp": "2025-07-03T20:48:27.842Z",
+      "message": "🚀 Starting Firebase UID Flow Tests",
+      "data": null
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.849Z",
+      "message": "Session ID",
+      "data": "b6f3da9e-eb65-4c37-9c64-05610883149c"
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.850Z",
+      "message": "🧪 Starting: OAuth Flow with Firebase UID",
+      "data": null
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.850Z",
+      "message": "Generated OAuth URL with Firebase UID as state",
+      "data": {
+        "authUrl": "https://0dpfo4tmbd.execute-api.eu-west-1.amazonaws.com/prod/alexaAuth?redirect_uri=https%3A%2F%2Fyour-app.com%2Falexa-callback&state=testFirebaseUid123456789012345678",
+        "state": "testFirebaseUid123456789012345678"
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.850Z",
+      "message": "OAuth URL verification",
+      "data": {
+        "hasClientId": false,
+        "hasScope": false,
+        "hasResponseType": false,
+        "hasRedirectUri": true,
+        "hasState": true,
+        "stateIsFirebaseUID": true
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.850Z",
+      "message": "✅ Passed: OAuth Flow with Firebase UID",
+      "data": {
+        "authUrl": "https://0dpfo4tmbd.execute-api.eu-west-1.amazonaws.com/prod/alexaAuth?redirect_uri=https%3A%2F%2Fyour-app.com%2Falexa-callback&state=testFirebaseUid123456789012345678",
+        "verification": {
+          "hasClientId": false,
+          "hasScope": false,
+          "hasResponseType": false,
+          "hasRedirectUri": true,
+          "hasState": true,
+          "stateIsFirebaseUID": true
+        }
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:27.850Z",
+      "message": "🧪 Starting: Device Discovery with Firebase UID",
+      "data": null
+    },
+    {
+      "timestamp": "2025-07-03T20:48:28.319Z",
+      "message": "Created test room in Firestore",
+      "data": {
+        "roomId": "test-room-b6f3da9e-eb65-4c37-9c64-05610883149c",
+        "name": "TEST FRONT DOOR",
+        "userId": "testFirebaseUid123456789012345678",
+        "state": 1,
+        "createdAt": {}
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:28.319Z",
+      "message": "Sending discovery request",
+      "data": {
+        "directive": {
+          "header": {
+            "namespace": "Alexa.Discovery",
+            "name": "Discover",
+            "payloadVersion": "3",
+            "messageId": "b276ba3b-ab78-484b-b423-33979f575ac7"
+          },
+          "payload": {
+            "scope": {
+              "type": "BearerToken",
+              "token": "testFirebaseUid123456789012345678"
+            }
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:28.437Z",
+      "message": "❌ Failed: Device Discovery with Firebase UID",
+      "data": {
+        "error": "Discovery request failed: 403 Forbidden",
+        "stack": "Error: Discovery request failed: 403 Forbidden\n    at file:///Users/jaspal/development/lockstateapp/functions/lockstate-hosting/public/lambda-src/test-firebase-uid-flow.js:134:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async AlexaIntegrationTest.testStep (file:///Users/jaspal/development/lockstateapp/functions/lockstate-hosting/public/lambda-src/test-firebase-uid-flow.js:45:22)\n    at async AlexaIntegrationTest.testDeviceDiscoveryWithFirebaseUID (file:///Users/jaspal/development/lockstateapp/functions/lockstate-hosting/public/lambda-src/test-firebase-uid-flow.js:88:12)\n    at async AlexaIntegrationTest.runAllTests (file:///Users/jaspal/development/lockstateapp/functions/lockstate-hosting/public/lambda-src/test-firebase-uid-flow.js:326:7)"
+      }
+    },
+    {
+      "timestamp": "2025-07-03T20:48:28.437Z",
+      "message": "💥 Test suite failed",
+      "data": {
+        "error": "Discovery request failed: 403 Forbidden"
+      }
+    }
+  ]
+}

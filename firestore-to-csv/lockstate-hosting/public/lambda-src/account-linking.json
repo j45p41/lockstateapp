@@ -1,0 +1,15 @@
+{
+  "type": "AUTH_CODE",
+  "authorizationUrl": "https://ayb2a2m447.execute-api.eu-west-1.amazonaws.com/prod/alexaAuth",
+  "accessTokenUrl": "https://ayb2a2m447.execute-api.eu-west-1.amazonaws.com/prod/alexaToken",
+  "clientId": "amzn1.application-oa2-client.ddbcc3bfaf604d1980b699300a623698",
+  "clientSecret": "amzn1.oa2-cs.v1.6b02e945a9e3e041a43abdb405a1e76f80081db17080e5cca01962b90e21f815",
+  "accessTokenScheme": "HTTP_BASIC",
+  "scopes": ["profile"],
+  "domains": [
+    "layla.amazon.com",
+    "alexa.amazon.com",
+    "pitangui.amazon.com"
+  ],
+  "defaultTokenExpirationInSeconds": 3600
+}

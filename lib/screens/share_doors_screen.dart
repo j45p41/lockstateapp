@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lockstate/utils/globals_jas.dart' as globals;
 
 class ShareRoomPage extends StatefulWidget {
   final String roomId;
   final String roomName;
 
-  const ShareRoomPage({Key? key, required this.roomId, required this.roomName}) : super(key: key);
+  const ShareRoomPage({Key? key, required this.roomId, required this.roomName})
+      : super(key: key);
 
   @override
   _ShareRoomPageState createState() => _ShareRoomPageState();
@@ -20,7 +22,7 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
   Future<void> sendShareRequest() async {
     try {
       final recipientEmail = _userEmailController.text.trim();
-      
+
       // Check if email exists in database
       final userQuery = await FirebaseFirestore.instance
           .collection('users')
@@ -37,13 +39,14 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
       // Check if user already has access
       if (_sharedEmails.contains(recipientEmail)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('This User Already Has Access To This Door')),
+          const SnackBar(
+              content: Text('This User Already Has Access To This Door')),
         );
         return;
       }
 
       final currentUser = FirebaseAuth.instance.currentUser!;
-      
+
       // Create share request
       final request = {
         'roomId': widget.roomId,
@@ -55,12 +58,14 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
         'timestamp': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseFirestore.instance
-          .collection('shareRequests')
-          .add(request);
+      await FirebaseFirestore.instance.collection('shareRequests').add(request);
+
+      // Store the last used email in global variable
+      globals.email = recipientEmail;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Share request sent and awaiting confirmation')),
+        const SnackBar(
+            content: Text('Share request sent and awaiting confirmation')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -72,59 +77,34 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
 
   Future<void> fetchSharedUsers() async {
     try {
-      // Get the current user's ID
-      final currentUser = FirebaseAuth.instance.currentUser!;
-      final currentUserId = currentUser.uid;
-
-      final recipientRoomDoc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .where('userId', isEqualTo: currentUserId)
-          .get();
-      // Update the room document to add the recipient to the sharedWith list
-
-      final recipientRoom = recipientRoomDoc.docs.first;
-      final recipientRoomID = recipientRoom.data()['roomId'];
-      final recipientRoomIDDoc = recipientRoom.id;
-
-      print("recipientRoomID:");
-      print(recipientRoomID.toString());
-      print("recipientRoomDoc:");
-      print(recipientRoomDoc.toString());
-
-      print('fetchSharedUsers() called');
+      // Fetch the specific room by ID
       final roomDoc = await FirebaseFirestore.instance
           .collection('rooms')
-          .doc(recipientRoomID)
+          .doc(widget.roomId)
           .get();
-      print('roomDoc: $roomDoc');
 
       if (roomDoc.exists) {
-        final sharedWith = roomDoc.data()!['sharedWith'] as List<dynamic>;
-        print('sharedWith: $sharedWith');
+        final sharedWith =
+            roomDoc.data()?['sharedWith'] as List<dynamic>? ?? [];
 
         // Fetch email addresses for each shared user
-        final sharedUserDocs = await FirebaseFirestore.instance
-            .collection('users')
-            .where('uid', whereIn: sharedWith)
-            .get();
-        print('sharedUserDocs: $sharedUserDocs');
+        List<String> sharedEmails = [];
+        if (sharedWith.isNotEmpty) {
+          final sharedUserDocs = await FirebaseFirestore.instance
+              .collection('users')
+              .where('uid', whereIn: sharedWith)
+              .get();
 
-        final sharedEmails = sharedUserDocs.docs
-            .map((doc) => doc.data()['email'] as String)
-            .toList();
-        print('sharedEmails: $sharedEmails');
+          sharedEmails = sharedUserDocs.docs
+              .map((doc) => doc.data()['email'] as String)
+              .toList();
+        }
 
         setState(() {
           _sharedEmails = sharedEmails;
         });
       }
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rooms Fetched Successfully')),
-      );
     } catch (e) {
-      // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No Rooms Currently Shared')),
       );
@@ -135,24 +115,27 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
     try {
       // Show confirmation dialog
       bool confirmDelete = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Confirm Removal'),
-            content: Text('Are you sure you want to remove access for $email?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Remove', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          );
-        },
-      ) ?? false;
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Confirm Removal'),
+                content:
+                    Text('Are you sure you want to remove access for $email?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Remove',
+                        style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
 
       if (!confirmDelete) return;
 
@@ -161,7 +144,7 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
           .collection('users')
           .where('email', isEqualTo: email)
           .get();
-      
+
       if (userDoc.docs.isEmpty) {
         print('User not found for email: $email'); // Debug print
         throw Exception('User not found');
@@ -171,7 +154,8 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
       print('User ID for $email: $userId'); // Debug print
 
       // Update the room document
-      final roomDocRef = FirebaseFirestore.instance.collection('rooms').doc(widget.roomId);
+      final roomDocRef =
+          FirebaseFirestore.instance.collection('rooms').doc(widget.roomId);
       final roomDoc = await roomDocRef.get();
 
       if (!roomDoc.exists) {
@@ -194,7 +178,8 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
       });
 
       // Remove room from the user's shared rooms list
-      final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+      final userDocRef =
+          FirebaseFirestore.instance.collection('users').doc(userId);
       await userDocRef.update({
         'sharedRooms': FieldValue.arrayRemove([widget.roomId]),
       });
@@ -221,6 +206,10 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
     super.initState();
     print('initState() called');
     fetchSharedUsers(); // Call fetchSharedUsers() here to load shared users initially
+    // Autofill from global variable if available
+    if (globals.email.isNotEmpty) {
+      _userEmailController.text = globals.email;
+    }
   }
 
   @override
@@ -257,7 +246,8 @@ class _ShareRoomPageState extends State<ShareRoomPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
               child: const Text('Send Share Request'),
             ),

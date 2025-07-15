@@ -1,0 +1,185 @@
+{
+    "items": [
+        {
+            "id": "0dpfo4tmbd",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-01T23:36:34+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "policy": "{\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\":\\\"*\\\",\\\"Action\\\":\\\"execute-api:Invoke\\\",\\\"Resource\\\":\\\"arn:aws:execute-api:eu-west-1:487228065075:0dpfo4tmbd\\/prod\\/GET\\/alexaAuth\\\"}]}",
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "89drl2nfbf"
+        },
+        {
+            "id": "18glpgnilb",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:24:35+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "wdx8kmgw70"
+        },
+        {
+            "id": "6kob6r1ta8",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:20:53+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "sauxujug99"
+        },
+        {
+            "id": "dwyl4exlt5",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:18:08+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "mqq60r9ddd"
+        },
+        {
+            "id": "pi7vzwfxml",
+            "name": "locksure-alexa-api-working",
+            "description": "API Gateway for Alexa account linking - working version",
+            "createdDate": "2025-07-02T12:43:21+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "a4c643y870"
+        },
+        {
+            "id": "t088qhtgt2",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:22:20+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "5eloqh65oj"
+        },
+        {
+            "id": "u43zobjm96",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:19:31+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "9dwcygg7x3"
+        },
+        {
+            "id": "uryd4d0tmb",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-02T00:01:05+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "g0osdnbb74"
+        },
+        {
+            "id": "w4otxeodvg",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-02T13:01:54+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "3kv9suzpea"
+        },
+        {
+            "id": "wxxm2x8gl7",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:26:02+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "kuhrk0kj10"
+        },
+        {
+            "id": "xwti8sxuee",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-02T13:31:10+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "b9yzm8nbt2"
+        },
+        {
+            "id": "zhvhk616nh",
+            "name": "locksure-alexa-api",
+            "description": "API Gateway for Alexa account linking",
+            "createdDate": "2025-07-03T11:28:03+01:00",
+            "apiKeySource": "HEADER",
+            "endpointConfiguration": {
+                "types": [
+                    "EDGE"
+                ],
+                "ipAddressType": "ipv4"
+            },
+            "disableExecuteApiEndpoint": false,
+            "rootResourceId": "fq7p49qk87"
+        }
+    ]
+}
