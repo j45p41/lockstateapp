@@ -72,12 +72,38 @@ const CAPS = [
 exports.sendNotification = functions.firestore
   .document('/notifications/{docId}')
   .onCreate(async snap => {
-    const { userId: uid, message, deviceName } = snap.data();
+    const { userId: uid, message, deviceName, deviceId, roomId } = snap.data();
     if (!isValidUid(uid)) return;
+    
+    // No rate limiting - send notifications immediately
+    
+    // Check user notification preferences
+    const userSnap = await admin.firestore().collection('users').doc(uid).get();
+    const userData = userSnap.data();
+    
+    // Check if user has disabled notifications
+    if (userData?.notificationSettings?.enabled === false) {
+      console.log(`Notifications disabled for user ${uid}`);
+      return;
+    }
+    
     const state = message?.uplink_message?.decoded_payload?.lockState;
     const label = {1:'LOCKED',2:'UNLOCKED',3:'OPEN',4:'CLOSED'}[state] || 'Unknown';
-    const userSnap = await admin.firestore().collection('users').doc(uid).get();
-    const tokens   = (userSnap.data()?.fcmId || []).filter(t => typeof t==='string' && t.length>100);
+    
+    console.log(`🔔 Processing notification: state=${state}, label=${label}, deviceName=${deviceName}`);
+    
+    // Check if user wants notifications for this specific state
+    const allowedStates = userData?.notificationSettings?.allowedStates || [1, 2]; // Default: only Locked and Unlocked
+    console.log(`📋 User allowed states: ${allowedStates}, checking if ${state} is included`);
+    
+    if (!allowedStates.includes(state)) {
+      console.log(`❌ Notification skipped for state ${state}, not in allowed states: ${allowedStates}`);
+      return;
+    }
+    
+    console.log(`✅ State ${state} is allowed, proceeding with notification`);
+    
+    const tokens   = (userData?.fcmId || []).filter(t => typeof t==='string' && t.length>100);
     await Promise.all(tokens.map(tok =>
       admin.messaging().send({
         token: tok,

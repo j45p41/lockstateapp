@@ -15,6 +15,7 @@ import 'package:momentum/momentum.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 import 'package:lockstate/widgets/share_request_status.dart';
 import 'package:lockstate/widgets/share_request_handler.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 // var globals.lightSetting = 3; // Added by Jas to allow for different colour schemes need to move to globals
 
@@ -97,12 +98,50 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     listenForShareRequests();
     listenForRequestResponses();
+    initializeDisplayOrder();
   }
 
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  // Initialize displayOrder for existing rooms that don't have it
+  Future<void> initializeDisplayOrder() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+
+      // Get all rooms for the current user
+      final roomsSnapshot = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('userId', isEqualTo: currentUser.uid)
+          .get();
+
+      // Check if any rooms don't have displayOrder
+      bool needsUpdate = false;
+      for (var doc in roomsSnapshot.docs) {
+        if (!doc.data().containsKey('displayOrder')) {
+          needsUpdate = true;
+          break;
+        }
+      }
+
+      if (needsUpdate) {
+        // Update all rooms with displayOrder based on their current order
+        final batch = FirebaseFirestore.instance.batch();
+        for (int i = 0; i < roomsSnapshot.docs.length; i++) {
+          final doc = roomsSnapshot.docs[i];
+          batch.update(doc.reference, {'displayOrder': i});
+        }
+        await batch.commit();
+        print(
+            'Initialized displayOrder for ${roomsSnapshot.docs.length} rooms');
+      }
+    } catch (e) {
+      print('Error initializing displayOrder: $e');
+    }
   }
 
   buildBottomNavigationBar() {
@@ -354,23 +393,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                         FirebaseAuth.instance.currentUser!.uid)
                                 .snapshots(),
                             builder: (context, snapshot) {
-                              var data = snapshot.data;
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
                                 return const Center(
                                   child: CircularProgressIndicator(),
                                 );
                               }
-                              if (snapshot.data == null) {
+
+                              if (snapshot.hasError) {
+                                print('Error loading rooms: ${snapshot.error}');
+                                return const Center(
+                                  child: Text("Error loading rooms"),
+                                );
+                              }
+
+                              if (snapshot.data == null ||
+                                  snapshot.data!.docs.isEmpty) {
                                 return const Center(
                                   child: Text("No Rooms Registered"),
                                 );
                               }
 
-                              return GridView.builder(
-                                padding: const EdgeInsets.all(
-                                  15,
-                                ),
+                              // Sort rooms by displayOrder if available, otherwise by creation order
+                              var sortedDocs = snapshot.data!.docs.toList();
+                              sortedDocs.sort((a, b) {
+                                final aOrder = a.data()['displayOrder'] ?? 0;
+                                final bOrder = b.data()['displayOrder'] ?? 0;
+                                return aOrder.compareTo(bOrder);
+                              });
+
+                              // var data = snapshot.data; // Unused variable
+
+                              return ReorderableGridView.builder(
+                                padding: const EdgeInsets.all(15),
                                 gridDelegate:
                                     const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
@@ -378,12 +433,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisSpacing: 20,
                                   mainAxisSpacing: 20,
                                 ),
-                                scrollDirection: Axis.vertical,
-                                itemCount: data!.docs.length,
+                                itemCount: sortedDocs.length,
+                                onReorder: (oldIndex, newIndex) async {
+                                  // Handle reordering logic here
+                                  print(
+                                      'Reordered from $oldIndex to $newIndex');
+
+                                  // Get the current list of rooms
+                                  List<
+                                          QueryDocumentSnapshot<
+                                              Map<String, dynamic>>> rooms =
+                                      sortedDocs;
+
+                                  // Remove the item from the old position and insert at new position
+                                  if (oldIndex < newIndex) {
+                                    newIndex -= 1;
+                                  }
+
+                                  final item = rooms.removeAt(oldIndex);
+                                  rooms.insert(newIndex, item);
+
+                                  // Update displayOrder for all rooms
+                                  for (int i = 0; i < rooms.length; i++) {
+                                    await FirebaseFirestore.instance
+                                        .collection('rooms')
+                                        .doc(rooms[i].id)
+                                        .update({'displayOrder': i});
+                                  }
+
+                                  print(
+                                      'Updated display order for ${rooms.length} rooms');
+                                },
                                 itemBuilder: (context, index) {
-                                  var doc = data.docs[index];
+                                  var doc = sortedDocs[index];
                                   var room = Room.fromDocument(doc);
                                   return GestureDetector(
+                                    key: ValueKey(room.roomId),
                                     onTap: () async {
                                       int powerLevel1 = 2;
                                       int powerLevel2 = 2;
@@ -1297,21 +1382,41 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                             print("=========================\n");
 
-                            var data = snapshot.data;
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
                                 child: CircularProgressIndicator(),
                               );
                             }
-                            if (snapshot.data == null || data!.docs.isEmpty) {
+
+                            if (snapshot.hasError) {
+                              print(
+                                  'Error loading shared rooms: ${snapshot.error}');
+                              return const Center(
+                                child: Text("Error loading shared rooms",
+                                    style: TextStyle(color: Colors.white)),
+                              );
+                            }
+
+                            if (snapshot.data == null ||
+                                snapshot.data!.docs.isEmpty) {
                               return const Center(
                                 child: Text("No Shared Rooms",
                                     style: TextStyle(color: Colors.white)),
                               );
                             }
 
-                            return GridView.builder(
+                            // Sort shared rooms by displayOrder if available, otherwise by creation order
+                            var sortedSharedDocs = snapshot.data!.docs.toList();
+                            sortedSharedDocs.sort((a, b) {
+                              final aOrder = a.data()['displayOrder'] ?? 0;
+                              final bOrder = b.data()['displayOrder'] ?? 0;
+                              return aOrder.compareTo(bOrder);
+                            });
+
+                            // var data = snapshot.data; // Unused variable
+
+                            return ReorderableGridView.builder(
                               padding: const EdgeInsets.all(15),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1320,11 +1425,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisSpacing: 20,
                                 mainAxisSpacing: 20,
                               ),
-                              itemCount: data.docs.length,
+                              itemCount: sortedSharedDocs.length,
+                              onReorder: (oldIndex, newIndex) async {
+                                // Handle reordering logic here
+                                print(
+                                    'Reordered shared room from $oldIndex to $newIndex');
+
+                                // Get the current list of shared rooms
+                                List<
+                                        QueryDocumentSnapshot<
+                                            Map<String, dynamic>>> rooms =
+                                    sortedSharedDocs;
+
+                                // Remove the item from the old position and insert at new position
+                                if (oldIndex < newIndex) {
+                                  newIndex -= 1;
+                                }
+
+                                final item = rooms.removeAt(oldIndex);
+                                rooms.insert(newIndex, item);
+
+                                // Update displayOrder for all shared rooms
+                                for (int i = 0; i < rooms.length; i++) {
+                                  await FirebaseFirestore.instance
+                                      .collection('rooms')
+                                      .doc(rooms[i].id)
+                                      .update({'displayOrder': i});
+                                }
+
+                                print(
+                                    'Updated display order for ${rooms.length} shared rooms');
+                              },
                               itemBuilder: (context, index) {
-                                var doc = data.docs[index];
+                                var doc = sortedSharedDocs[index];
                                 var room = Room.fromDocument(doc);
                                 return GestureDetector(
+                                  key: ValueKey(room.roomId),
                                   // onTap: () {
                                   //   Navigator.of(context)
                                   //       .push(MaterialPageRoute(

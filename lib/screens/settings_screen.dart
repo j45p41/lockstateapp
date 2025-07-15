@@ -70,6 +70,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool isAlexaLinked = false;
   String? amazonUserId;
 
+  bool showSignalStrength = false;
+  bool showBatteryPercentage = false;
+  bool notificationsEnabled = true;
+  List<int> allowedNotificationStates = [
+    1,
+    2
+  ]; // Only Locked and Unlocked states
+
   void getSettingsFromFirestore() async {
     // getInitialSettings(); //temp
 
@@ -203,6 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     loadUserSettings(); // Load settings when screen initializes
     super.initState();
     checkAlexaLinkStatus();
+    loadSettings();
   }
 
   Future<void> checkAlexaLinkStatus() async {
@@ -830,6 +839,158 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 height: 10,
               ),
 
+              // NOTIFICATION SETTINGS
+              Container(
+                width: 300,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Enable Notifications",
+                        style: TextStyle(
+                            color: Colors.white, fontSize: titleSize - 5),
+                      ),
+                    ),
+                    Switch(
+                      value: notificationsEnabled,
+                      onChanged: (bool state) {
+                        setState(() {
+                          notificationsEnabled = state;
+                        });
+                        saveSettings();
+                      },
+                      activeColor: Colors.green,
+                      inactiveTrackColor: const Color.fromARGB(73, 255, 7, 7),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              if (notificationsEnabled) ...[
+                Container(
+                  width: 300,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Notify for Door States:",
+                        style: TextStyle(
+                            color: Colors.white, fontSize: titleSize - 7),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: allowedNotificationStates.contains(1)
+                                    ? const Color.fromARGB(73, 255, 7, 7)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color.fromARGB(73, 255, 7, 7),
+                                  width: 1,
+                                ),
+                              ),
+                              child: CheckboxListTile(
+                                title: const Text("Locked",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold)),
+                                value: allowedNotificationStates.contains(1),
+                                onChanged: (value) {
+                                  toggleNotificationState(1);
+                                  saveSettings();
+                                },
+                                activeColor:
+                                    const Color.fromARGB(73, 255, 7, 7),
+                                checkColor: Colors.white,
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: allowedNotificationStates.contains(2)
+                                    ? const Color.fromARGB(73, 255, 7, 7)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color.fromARGB(73, 255, 7, 7),
+                                  width: 1,
+                                ),
+                              ),
+                              child: CheckboxListTile(
+                                title: const Text("Unlocked",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold)),
+                                value: allowedNotificationStates.contains(2),
+                                onChanged: (value) {
+                                  toggleNotificationState(2);
+                                  saveSettings();
+                                },
+                                activeColor:
+                                    const Color.fromARGB(73, 255, 7, 7),
+                                checkColor: Colors.white,
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Commented out Open and Closed states
+                      /*
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text("Open",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 12)),
+                              value: allowedNotificationStates.contains(3),
+                              onChanged: (value) {
+                                toggleNotificationState(3);
+                                saveSettings();
+                              },
+                              activeColor: Colors.green,
+                              checkColor: Colors.white,
+                            ),
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text("Closed",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 12)),
+                              value: allowedNotificationStates.contains(4),
+                              onChanged: (value) {
+                                toggleNotificationState(4);
+                                saveSettings();
+                              },
+                              activeColor: Colors.green,
+                              checkColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      */
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+
               // ALEXA LINKING
 
               Container(
@@ -1144,6 +1305,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void confirm() {
     Navigator.of(context).pop(controller.text);
+  }
+
+  Future<void> loadSettings() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data()!;
+        setState(() {
+          showSignalStrength = data['showSignalStrength'] ?? false;
+          showBatteryPercentage = data['showBatteryPercentage'] ?? false;
+          notificationsEnabled =
+              data['notificationSettings']?['enabled'] ?? true;
+          allowedNotificationStates = List<int>.from(
+              data['notificationSettings']?['allowedStates'] ?? [1, 2]);
+        });
+      }
+    } catch (e) {
+      print('Error loading settings: $e');
+    }
+  }
+
+  Future<void> saveSettings() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({
+        'showSignalStrength': showSignalStrength,
+        'showBatteryPercentage': showBatteryPercentage,
+        'notificationSettings': {
+          'enabled': notificationsEnabled,
+          'allowedStates': allowedNotificationStates,
+        }
+      });
+
+      // Update globals
+      globals.showSignalStrength = showSignalStrength;
+      globals.showBatteryPercentage = showBatteryPercentage;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Settings saved successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving settings: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void toggleNotificationState(int state) {
+    setState(() {
+      if (allowedNotificationStates.contains(state)) {
+        allowedNotificationStates.remove(state);
+      } else {
+        allowedNotificationStates.add(state);
+      }
+    });
   }
 }
 

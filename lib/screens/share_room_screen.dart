@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class ShareRoomScreen extends StatefulWidget {
   final String roomId;
   final String roomName;
@@ -18,7 +22,7 @@ class _ShareRoomScreenState extends State<ShareRoomScreen> {
   Future<void> sendShareRequest() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser!;
-      
+
       // Create share request
       final request = {
         'roomId': widget.roomId,
@@ -30,12 +34,11 @@ class _ShareRoomScreenState extends State<ShareRoomScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseFirestore.instance
-          .collection('shareRequests')
-          .add(request);
+      await FirebaseFirestore.instance.collection('shareRequests').add(request);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Share request sent and awaiting confirmation')),
+        const SnackBar(
+            content: Text('Share request sent and awaiting confirmation')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -69,4 +72,4 @@ class _ShareRoomScreenState extends State<ShareRoomScreen> {
       ),
     );
   }
-} 
+}

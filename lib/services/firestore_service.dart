@@ -25,10 +25,20 @@ class FirestoreService extends MomentumService {
   }
 
   addRoom(String userId, String roomName) async {
+    // Get the current number of rooms for this user to set displayOrder
+    final roomsSnapshot = await firestore
+        .collection('rooms')
+        .where('userId', isEqualTo: userId)
+        .get();
+    
+    final displayOrder = roomsSnapshot.docs.length;
+    
     await firestore.collection('rooms').add({
       'userId': userId,
       'name': roomName,
       'state': 0,
+      'displayOrder': displayOrder,
+      'sharedWith': [],
 
       // 'lockState': '',
       // 'doorState': '',

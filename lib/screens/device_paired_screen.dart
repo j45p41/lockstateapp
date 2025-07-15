@@ -261,7 +261,10 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
       print("Adding room with ID: ${roomsIds[i]}");
       FirebaseFirestore.instance.collection('rooms').add({
         'name': roomNames[index],
-        'userId': FirebaseAuth.instance.currentUser!.uid
+        'userId': FirebaseAuth.instance.currentUser!.uid,
+        'state': 0,
+        'displayOrder': index - 1, // Use index - 1 since index starts at 1
+        'sharedWith': []
       }).then((doc) {
         FirebaseFirestore.instance
             .collection('rooms')
