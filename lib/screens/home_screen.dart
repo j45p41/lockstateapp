@@ -931,15 +931,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                             const SizedBox(
                                               height: 5,
                                             ),
-                                            FutureBuilder<QuerySnapshot>(
-                                              future: FirebaseFirestore.instance
+                                            StreamBuilder<QuerySnapshot>(
+                                              stream: FirebaseFirestore.instance
                                                   .collection('notifications')
                                                   .where('roomId',
                                                       isEqualTo: room.roomId)
                                                   .orderBy('received_at',
                                                       descending: true)
                                                   .limit(1)
-                                                  .get(),
+                                                  .snapshots(),
                                               builder:
                                                   (context, notifSnapshot) {
                                                 if (notifSnapshot
@@ -1723,9 +1723,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                      FutureBuilder<
+                                                      StreamBuilder<
                                                           QuerySnapshot>(
-                                                        future: FirebaseFirestore
+                                                        stream: FirebaseFirestore
                                                             .instance
                                                             .collection(
                                                                 'notifications')
@@ -1737,7 +1737,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 descending:
                                                                     true)
                                                             .limit(1)
-                                                            .get(),
+                                                            .snapshots(),
                                                         builder: (context,
                                                             notifSnapshot) {
                                                           if (notifSnapshot
