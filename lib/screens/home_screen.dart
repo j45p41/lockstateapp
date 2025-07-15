@@ -1073,9 +1073,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   try {
                                                     date = DateTime.parse(
                                                         isoString);
+                                                    // Add 1 hour for BST
+                                                    date = date.add(
+                                                        const Duration(
+                                                            hours: 1));
                                                   } catch (e) {
                                                     print(
-                                                        'Failed to parse message.received_at: $isoString');
+                                                        'Failed to parse message.received_at: '
+                                                        '[31m$isoString[0m');
                                                   }
                                                 }
                                                 final formatted = date != null
@@ -1939,9 +1944,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               date = DateTime
                                                                   .parse(
                                                                       isoString);
+                                                              // Add 1 hour for BST
+                                                              date = date.add(
+                                                                  const Duration(
+                                                                      hours:
+                                                                          1));
                                                             } catch (e) {
                                                               print(
-                                                                  'Failed to parse message.received_at: $isoString');
+                                                                  'Failed to parse message.received_at: '
+                                                                  '[31m$isoString[0m');
                                                             }
                                                           }
                                                           final formatted = date !=

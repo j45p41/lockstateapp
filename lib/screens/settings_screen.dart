@@ -871,8 +871,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               if (notificationsEnabled) ...[
                 Container(
-                  width: 300,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  width: 350,
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -911,11 +911,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     const Color.fromARGB(73, 255, 7, 7),
                                 checkColor: Colors.white,
                                 contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                dense: true,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
@@ -943,7 +944,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     const Color.fromARGB(73, 255, 7, 7),
                                 checkColor: Colors.white,
                                 contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                dense: true,
                               ),
                             ),
                           ),
