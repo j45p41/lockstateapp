@@ -11,6 +11,7 @@ import 'package:lockstate/screens/notifications_screen.dart';
 import 'package:lockstate/screens/settings_screen.dart';
 import 'package:lockstate/screens/share_doors_screen.dart';
 import 'package:lockstate/utils/color_utils.dart';
+import 'package:lockstate/utils/battery_utils.dart';
 import 'package:momentum/momentum.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 import 'package:lockstate/widgets/share_request_status.dart';
@@ -99,12 +100,32 @@ class _HomeScreenState extends State<HomeScreen> {
     listenForShareRequests();
     listenForRequestResponses();
     initializeDisplayOrder();
+    loadUserSettings();
   }
 
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  // Load user settings from Firestore
+  Future<void> loadUserSettings() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          globals.showBatteryPercentage =
+              userDoc.data()?['showBatteryPercentage'] ?? false;
+        });
+      }
+    } catch (e) {
+      print('Error loading user settings: $e');
+    }
   }
 
   // Initialize displayOrder for existing rooms that don't have it
@@ -119,25 +140,21 @@ class _HomeScreenState extends State<HomeScreen> {
           .where('userId', isEqualTo: currentUser.uid)
           .get();
 
-      // Check if any rooms don't have displayOrder
-      bool needsUpdate = false;
-      for (var doc in roomsSnapshot.docs) {
+      // Only update rooms that don't have displayOrder
+      final batch = FirebaseFirestore.instance.batch();
+      bool hasUpdates = false;
+
+      for (int i = 0; i < roomsSnapshot.docs.length; i++) {
+        final doc = roomsSnapshot.docs[i];
         if (!doc.data().containsKey('displayOrder')) {
-          needsUpdate = true;
-          break;
+          batch.update(doc.reference, {'displayOrder': i});
+          hasUpdates = true;
         }
       }
 
-      if (needsUpdate) {
-        // Update all rooms with displayOrder based on their current order
-        final batch = FirebaseFirestore.instance.batch();
-        for (int i = 0; i < roomsSnapshot.docs.length; i++) {
-          final doc = roomsSnapshot.docs[i];
-          batch.update(doc.reference, {'displayOrder': i});
-        }
+      if (hasUpdates) {
         await batch.commit();
-        print(
-            'Initialized displayOrder for ${roomsSnapshot.docs.length} rooms');
+        print('Initialized displayOrder for rooms that were missing it');
       }
     } catch (e) {
       print('Error initializing displayOrder: $e');
@@ -825,198 +842,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         // border: Border.all(
                                         //     color: Theme.of(context).accentColor),
                                       ),
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(15),
-                                              margin: const EdgeInsets.only(
-                                                top: 20,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                  color: const Color(
-                                                      ColorUtils.colorWhite),
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: const [
-                                                    BoxShadow(
-                                                      color: Colors.grey,
-                                                      offset: Offset(
-                                                          0.0, 1.0), //(x,y)
-                                                      blurRadius: 6.0,
-                                                    ),
-                                                  ],
-                                                  border: Border.all(
-                                                      color: Color(room.state ==
-                                                              1
-                                                          ? ColorUtils.colorGrey
-                                                          : room.state == 2 &&
-                                                                  globals.lightSetting ==
-                                                                      1
-                                                              ? ColorUtils
-                                                                  .colorRed
-                                                              : room.state ==
-                                                                          1 &&
-                                                                      globals.lightSetting ==
-                                                                          1
-                                                                  ? ColorUtils
-                                                                      .colorGreen
-                                                                  : room.state ==
-                                                                              3 &&
-                                                                          globals.lightSetting ==
-                                                                              1
-                                                                      ? ColorUtils
-                                                                          .colorRed
-                                                                      : room.state ==
-                                                                              0
-                                                                          ? ColorUtils
-                                                                              .colorGrey
-                                                                          : room.state == 2 && globals.lightSetting == 2
-                                                                              ? ColorUtils.colorAmber
-                                                                              : room.state == 1 && globals.lightSetting == 2
-                                                                                  ? ColorUtils.colorBlue
-                                                                                  : room.state == 3 && globals.lightSetting == 3
-                                                                                      ? ColorUtils.colorRed
-                                                                                      : room.state == 2 && globals.lightSetting == 3
-                                                                                          ? ColorUtils.colorAmber
-                                                                                          : room.state == 1 && globals.lightSetting == 3
-                                                                                              ? ColorUtils.colorCyan
-                                                                                              : room.state == 3 && globals.lightSetting == 3
-                                                                                                  ? ColorUtils.colorRed
-                                                                                                  : ColorUtils.colorRed),
-                                                      width: 1)),
-                                              child: Center(
-                                                child: Stack(
-                                                  alignment: Alignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      room.state == 1
-                                                          ? Icons.lock
-                                                          : Icons.lock_open,
-                                                      size: 100,
-                                                      color: Color(room.state ==
-                                                              0
-                                                          ? ColorUtils.colorGrey
-                                                          : room.state == 2 &&
-                                                                  globals.lightSetting ==
-                                                                      1
-                                                              ? ColorUtils
-                                                                  .colorRed
-                                                              : room.state ==
-                                                                          1 &&
-                                                                      globals.lightSetting ==
-                                                                          1
-                                                                  ? ColorUtils
-                                                                      .colorGreen
-                                                                  : room.state ==
-                                                                              3 &&
-                                                                          globals.lightSetting ==
-                                                                              1
-                                                                      ? ColorUtils
-                                                                          .colorRed
-                                                                      : room.state ==
-                                                                              0
-                                                                          ? ColorUtils
-                                                                              .colorGrey
-                                                                          : room.state == 2 && globals.lightSetting == 2
-                                                                              ? ColorUtils.colorAmber
-                                                                              : room.state == 1 && globals.lightSetting == 2
-                                                                                  ? ColorUtils.colorBlue
-                                                                                  : room.state == 3 && globals.lightSetting == 3
-                                                                                      ? ColorUtils.colorRed
-                                                                                      : room.state == 2 && globals.lightSetting == 3
-                                                                                          ? ColorUtils.colorAmber
-                                                                                          : room.state == 1 && globals.lightSetting == 3
-                                                                                              ? ColorUtils.colorCyan
-                                                                                              : room.state == 3 && globals.lightSetting == 3
-                                                                                                  ? ColorUtils.colorRed
-                                                                                                  : ColorUtils.colorRed),
-                                                    ),
-                                                    if (currentIndex != 1 &&
-                                                        room.sharedWith
-                                                            .isNotEmpty)
-                                                      Transform.translate(
-                                                        offset:
-                                                            const Offset(0, 60),
-                                                        child: Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(6),
-                                                          decoration:
-                                                              const BoxDecoration(
-                                                            color: Colors.green,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          constraints:
-                                                              const BoxConstraints(
-                                                            minWidth: 30,
-                                                            minHeight: 30,
-                                                          ),
-                                                          child: Text(
-                                                            room.sharedWith
-                                                                .length
-                                                                .toString(),
-                                                            style:
-                                                                const TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                            textAlign: TextAlign
-                                                                .center,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              room.name,
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 1,
-                                            ),
-                                            ShareRequestStatus(
-                                                roomId: room.roomId),
-                                            const SizedBox(
-                                              height: 1,
-                                            ),
-                                            Text(
-                                              room.state == 0
-                                                  ? "Not Set"
-                                                  : room.state == 2
-                                                      ? "Unlocked"
-                                                      : room.state == 1
-                                                          ? "Locked"
-                                                          : room.state == 3
-                                                              ? "Unlocked / Open"
-                                                              : "Closed",
-                                              style: const TextStyle(
-                                                color: Color(
-                                                  ColorUtils.color4,
-                                                ),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            StreamBuilder<QuerySnapshot>(
+                                      child: Stack(
+                                        children: [
+                                          // Battery icon in top right corner
+                                          Positioned(
+                                            top: 5,
+                                            right: 5,
+                                            child: StreamBuilder<QuerySnapshot>(
                                               stream: FirebaseFirestore.instance
                                                   .collection('notifications')
                                                   .where('roomId',
@@ -1026,214 +858,619 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   .limit(1)
                                                   .snapshots(),
                                               builder:
-                                                  (context, notifSnapshot) {
-                                                if (notifSnapshot
-                                                        .connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return const CircularProgressIndicator();
-                                                }
-                                                if (notifSnapshot.hasError ||
-                                                    !notifSnapshot.hasData ||
-                                                    notifSnapshot
-                                                        .data!.docs.isEmpty) {
-                                                  return Column(
-                                                    children: [
-                                                      const Text(
-                                                        'Last Operation:',
-                                                        style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: Colors.black,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                      const SizedBox(height: 1),
-                                                      const Text(
-                                                        'Not Set',
-                                                        style: TextStyle(
-                                                            fontSize: 11,
-                                                            color:
-                                                                Colors.black),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }
-                                                final notif = notifSnapshot
-                                                        .data!.docs.first
-                                                        .data()
-                                                    as Map<String, dynamic>;
-                                                final msg = notif['message']
-                                                    as Map<String, dynamic>?;
-                                                String? isoString = msg != null
-                                                    ? msg['received_at']
-                                                        as String?
-                                                    : null;
-                                                DateTime? date;
-                                                if (isoString != null) {
-                                                  try {
-                                                    date = DateTime.parse(
-                                                        isoString);
-                                                    // Add 1 hour for BST
-                                                    date = date.add(
-                                                        const Duration(
-                                                            hours: 1));
-                                                  } catch (e) {
+                                                  (context, batterySnapshot) {
+                                                // Debug: Print snapshot state
+                                                print(
+                                                    'Battery snapshot for room ${room.roomId}:');
+                                                print(
+                                                    '  Has data: ${batterySnapshot.hasData}');
+                                                print(
+                                                    '  Connection state: ${batterySnapshot.connectionState}');
+                                                print(
+                                                    '  Docs count: ${batterySnapshot.data?.docs.length ?? 0}');
+
+                                                if (batterySnapshot.hasData &&
+                                                    batterySnapshot.data!.docs
+                                                        .isNotEmpty) {
+                                                  final notif = batterySnapshot
+                                                          .data!.docs.first
+                                                          .data()
+                                                      as Map<String, dynamic>;
+                                                  print(
+                                                      '  Notification data: $notif');
+
+                                                  final msg = notif['message']
+                                                      as Map<String, dynamic>?;
+                                                  print('  Message: $msg');
+
+                                                  if (msg != null &&
+                                                      msg['uplink_message'] !=
+                                                          null) {
+                                                    final uplinkMessage = msg[
+                                                            'uplink_message']
+                                                        as Map<String, dynamic>;
                                                     print(
-                                                        'Failed to parse message.received_at: '
-                                                        '[31m$isoString[0m');
+                                                        '  Uplink message: $uplinkMessage');
+
+                                                    final decodedPayload =
+                                                        uplinkMessage[
+                                                                'decoded_payload']
+                                                            as Map<String,
+                                                                dynamic>?;
+                                                    print(
+                                                        '  Decoded payload: $decodedPayload');
+
+                                                    if (decodedPayload !=
+                                                            null &&
+                                                        decodedPayload[
+                                                                'batVolts'] !=
+                                                            null) {
+                                                      final rawBatVolts =
+                                                          decodedPayload[
+                                                                  'batVolts']
+                                                              as int;
+                                                      print(
+                                                          '  Raw battery volts: $rawBatVolts');
+
+                                                      final batVolts = BatteryUtils
+                                                          .calculateBatteryPercentage(
+                                                              rawBatVolts);
+                                                      print(
+                                                          '  Calculated battery: $batVolts%');
+
+                                                      return Stack(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        children: [
+                                                          Icon(
+                                                            batVolts > 90
+                                                                ? Icons
+                                                                    .battery_full_rounded
+                                                                : batVolts > 75
+                                                                    ? Icons
+                                                                        .battery_5_bar_rounded
+                                                                    : Icons
+                                                                        .battery_alert_rounded,
+                                                            size: 30,
+                                                            color: batVolts > 75
+                                                                ? Colors
+                                                                    .greenAccent[400]
+                                                                : Colors.amber,
+                                                          ),
+                                                          if (globals
+                                                              .showBatteryPercentage)
+                                                            Text(
+                                                              '$batVolts',
+                                                              style:
+                                                                  const TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      );
+                                                    } else {
+                                                      print(
+                                                          '  No battery data found in decoded payload');
+                                                    }
+                                                  } else {
+                                                    print(
+                                                        '  No uplink message found');
                                                   }
+                                                } else {
+                                                  print(
+                                                      '  No notification data found');
                                                 }
-                                                final formatted = date != null
-                                                    ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}'
-                                                    : 'Unknown';
-                                                return Column(
+
+                                                // For testing, show a placeholder battery icon
+                                                return Stack(
+                                                  alignment: Alignment.center,
                                                   children: [
-                                                    const Text(
-                                                      'Last Operation:',
-                                                      style: TextStyle(
-                                                          fontSize: 11,
+                                                    Icon(
+                                                      Icons
+                                                          .battery_alert_rounded,
+                                                      size: 30,
+                                                      color: Colors.red,
+                                                    ),
+                                                    if (globals
+                                                        .showBatteryPercentage)
+                                                      const Text(
+                                                        '0',
+                                                        style: TextStyle(
                                                           color: Colors.black,
+                                                          fontSize: 15,
                                                           fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    const SizedBox(height: 1),
-                                                    Text(
-                                                      formatted,
-                                                      style: const TextStyle(
-                                                          fontSize: 11,
-                                                          color: Colors.black),
-                                                    ),
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
                                                   ],
                                                 );
                                               },
                                             ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            Column(
+                                          ),
+                                          SingleChildScrollView(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
                                               children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.all(15),
+                                                  margin: const EdgeInsets.only(
+                                                    top: 20,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                      color: const Color(ColorUtils
+                                                          .colorWhite),
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: const [
+                                                        BoxShadow(
+                                                          color: Colors.grey,
+                                                          offset: Offset(
+                                                              0.0, 1.0), //(x,y)
+                                                          blurRadius: 6.0,
+                                                        ),
+                                                      ],
+                                                      border: Border.all(
+                                                          color: Color(room
+                                                                      .state ==
+                                                                  1
+                                                              ? ColorUtils
+                                                                  .colorGrey
+                                                              : room.state ==
+                                                                          2 &&
+                                                                      globals.lightSetting ==
+                                                                          1
+                                                                  ? ColorUtils
+                                                                      .colorRed
+                                                                  : room.state ==
+                                                                              1 &&
+                                                                          globals.lightSetting ==
+                                                                              1
+                                                                      ? ColorUtils
+                                                                          .colorGreen
+                                                                      : room.state == 3 &&
+                                                                              globals.lightSetting ==
+                                                                                  1
+                                                                          ? ColorUtils
+                                                                              .colorRed
+                                                                          : room.state == 0
+                                                                              ? ColorUtils.colorGrey
+                                                                              : room.state == 2 && globals.lightSetting == 2
+                                                                                  ? ColorUtils.colorAmber
+                                                                                  : room.state == 1 && globals.lightSetting == 2
+                                                                                      ? ColorUtils.colorBlue
+                                                                                      : room.state == 3 && globals.lightSetting == 3
+                                                                                          ? ColorUtils.colorRed
+                                                                                          : room.state == 2 && globals.lightSetting == 3
+                                                                                              ? ColorUtils.colorAmber
+                                                                                              : room.state == 1 && globals.lightSetting == 3
+                                                                                                  ? ColorUtils.colorCyan
+                                                                                                  : room.state == 3 && globals.lightSetting == 3
+                                                                                                      ? ColorUtils.colorRed
+                                                                                                      : ColorUtils.colorRed),
+                                                          width: 1)),
+                                                  child: Center(
+                                                    child: Stack(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          room.state == 1
+                                                              ? Icons.lock
+                                                              : Icons.lock_open,
+                                                          size: 100,
+                                                          color: Color(room
+                                                                      .state ==
+                                                                  0
+                                                              ? ColorUtils
+                                                                  .colorGrey
+                                                              : room.state ==
+                                                                          2 &&
+                                                                      globals.lightSetting ==
+                                                                          1
+                                                                  ? ColorUtils
+                                                                      .colorRed
+                                                                  : room.state ==
+                                                                              1 &&
+                                                                          globals.lightSetting ==
+                                                                              1
+                                                                      ? ColorUtils
+                                                                          .colorGreen
+                                                                      : room.state == 3 &&
+                                                                              globals.lightSetting ==
+                                                                                  1
+                                                                          ? ColorUtils
+                                                                              .colorRed
+                                                                          : room.state == 0
+                                                                              ? ColorUtils.colorGrey
+                                                                              : room.state == 2 && globals.lightSetting == 2
+                                                                                  ? ColorUtils.colorAmber
+                                                                                  : room.state == 1 && globals.lightSetting == 2
+                                                                                      ? ColorUtils.colorBlue
+                                                                                      : room.state == 3 && globals.lightSetting == 3
+                                                                                          ? ColorUtils.colorRed
+                                                                                          : room.state == 2 && globals.lightSetting == 3
+                                                                                              ? ColorUtils.colorAmber
+                                                                                              : room.state == 1 && globals.lightSetting == 3
+                                                                                                  ? ColorUtils.colorCyan
+                                                                                                  : room.state == 3 && globals.lightSetting == 3
+                                                                                                      ? ColorUtils.colorRed
+                                                                                                      : ColorUtils.colorRed),
+                                                        ),
+                                                        if (currentIndex != 1 &&
+                                                            room.sharedWith
+                                                                .isNotEmpty)
+                                                          Transform.translate(
+                                                            offset:
+                                                                const Offset(
+                                                                    0, 60),
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(6),
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                color: Colors
+                                                                    .green,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                              constraints:
+                                                                  const BoxConstraints(
+                                                                minWidth: 30,
+                                                                minHeight: 30,
+                                                              ),
+                                                              child: Text(
+                                                                room.sharedWith
+                                                                    .length
+                                                                    .toString(),
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Text(
+                                                  room.name,
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 1,
+                                                ),
+                                                ShareRequestStatus(
+                                                    roomId: room.roomId),
+                                                const SizedBox(
+                                                  height: 1,
+                                                ),
+                                                Text(
+                                                  room.state == 0
+                                                      ? "Not Set"
+                                                      : room.state == 2
+                                                          ? "Unlocked"
+                                                          : room.state == 1
+                                                              ? "Locked"
+                                                              : room.state == 3
+                                                                  ? "Unlocked / Open"
+                                                                  : "Closed",
+                                                  style: const TextStyle(
+                                                    color: Color(
+                                                      ColorUtils.color4,
+                                                    ),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 5,
+                                                ),
+                                                StreamBuilder<QuerySnapshot>(
+                                                  stream: FirebaseFirestore
+                                                      .instance
+                                                      .collection(
+                                                          'notifications')
+                                                      .where('roomId',
+                                                          isEqualTo:
+                                                              room.roomId)
+                                                      .orderBy('received_at',
+                                                          descending: true)
+                                                      .limit(1)
+                                                      .snapshots(),
+                                                  builder:
+                                                      (context, notifSnapshot) {
+                                                    if (notifSnapshot
+                                                            .connectionState ==
+                                                        ConnectionState
+                                                            .waiting) {
+                                                      return const CircularProgressIndicator();
+                                                    }
+                                                    if (notifSnapshot.hasError ||
+                                                        !notifSnapshot
+                                                            .hasData ||
+                                                        notifSnapshot.data!.docs
+                                                            .isEmpty) {
+                                                      return Column(
+                                                        children: [
+                                                          const Text(
+                                                            'Last Operation:',
+                                                            style: TextStyle(
+                                                                fontSize: 11,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 1),
+                                                          const Text(
+                                                            'Not Set',
+                                                            style: TextStyle(
+                                                                fontSize: 11,
+                                                                color: Colors
+                                                                    .black),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    }
+                                                    final notif = notifSnapshot
+                                                            .data!.docs.first
+                                                            .data()
+                                                        as Map<String, dynamic>;
+                                                    final msg = notif['message']
+                                                        as Map<String,
+                                                            dynamic>?;
+                                                    String? isoString =
+                                                        msg != null
+                                                            ? msg['received_at']
+                                                                as String?
+                                                            : null;
+                                                    DateTime? date;
+                                                    if (isoString != null) {
+                                                      try {
+                                                        date = DateTime.parse(
+                                                            isoString);
+                                                        // Add 1 hour for BST
+                                                        date = date.add(
+                                                            const Duration(
+                                                                hours: 1));
+                                                      } catch (e) {
+                                                        print(
+                                                            'Failed to parse message.received_at: '
+                                                            '[31m$isoString[0m');
+                                                      }
+                                                    }
+                                                    final formatted = date !=
+                                                            null
+                                                        ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}'
+                                                        : 'Unknown';
+                                                    return Column(
+                                                      children: [
+                                                        const Text(
+                                                          'Last Operation:',
+                                                          style: TextStyle(
+                                                              fontSize: 11,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 1),
+                                                        Text(
+                                                          formatted,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 11,
+                                                                  color: Colors
+                                                                      .black),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                ),
+                                                const SizedBox(
+                                                  height: 5,
+                                                ),
+                                                Column(
                                                   children: [
-                                                    ElevatedButton(
-                                                      onPressed: () async {
-                                                        final name =
-                                                            await openRenameDialog();
-                                                        if (name == null ||
-                                                            name.isEmpty)
-                                                          return;
-                                                        setState(
-                                                            () => this.name);
-                                                        FirebaseFirestore
-                                                            .instance
-                                                            .collection("rooms")
-                                                            .doc(room.roomId)
-                                                            .update({
-                                                          "name":
-                                                              name.toUpperCase()
-                                                        });
-
-                                                        final db =
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        ElevatedButton(
+                                                          onPressed: () async {
+                                                            final name =
+                                                                await openRenameDialog();
+                                                            if (name == null ||
+                                                                name.isEmpty)
+                                                              return;
+                                                            setState(() =>
+                                                                this.name);
                                                             FirebaseFirestore
-                                                                .instance;
-                                                        var result = await db
-                                                            .collection('users')
-                                                            .doc(room.userId)
-                                                            .collection(
-                                                                'devices')
-                                                            .where('roomId',
-                                                                isEqualTo:
+                                                                .instance
+                                                                .collection(
+                                                                    "rooms")
+                                                                .doc(
                                                                     room.roomId)
-                                                            .get();
-                                                        for (var res
-                                                            in result.docs) {
-                                                          print(res.id);
+                                                                .update({
+                                                              "name": name
+                                                                  .toUpperCase()
+                                                            });
 
-                                                          db
-                                                              .collection(
-                                                                  'devices')
-                                                              .doc(res.id
-                                                                  .toString())
-                                                              .get()
-                                                              .then((value) {
-                                                            print(value
-                                                                .get('isIndoor')
-                                                                .toString());
-                                                            bool isIndoor =
-                                                                value.get(
-                                                                    'isIndoor');
+                                                            final db =
+                                                                FirebaseFirestore
+                                                                    .instance;
+                                                            var result = await db
+                                                                .collection(
+                                                                    'users')
+                                                                .doc(
+                                                                    room.userId)
+                                                                .collection(
+                                                                    'devices')
+                                                                .where('roomId',
+                                                                    isEqualTo: room
+                                                                        .roomId)
+                                                                .get();
+                                                            for (var res
+                                                                in result
+                                                                    .docs) {
+                                                              print(res.id);
 
-                                                            if (isIndoor) {
-                                                              //                                                       db
-                                                              //     .collection(
-                                                              //         'devices')
-                                                              //     .doc(res.id
-                                                              //         .toString())
-                                                              //     .update({
-                                                              //   'deviceName':
-                                                              //       name + " INSIDE"
-                                                              // });
                                                               db
                                                                   .collection(
                                                                       'devices')
                                                                   .doc(res.id
                                                                       .toString())
-                                                                  .update({
-                                                                'deviceName': name
-                                                                    .toUpperCase()
-                                                              });
-                                                            } else {
-                                                              db
-                                                                  .collection(
-                                                                      'devices')
-                                                                  .doc(res.id
-                                                                      .toString())
-                                                                  .update({
-                                                                'deviceName':
-                                                                    "$name OUTSIDE"
+                                                                  .get()
+                                                                  .then(
+                                                                      (value) {
+                                                                print(value
+                                                                    .get(
+                                                                        'isIndoor')
+                                                                    .toString());
+                                                                bool isIndoor =
+                                                                    value.get(
+                                                                        'isIndoor');
+
+                                                                if (isIndoor) {
+                                                                  //                                                       db
+                                                                  //     .collection(
+                                                                  //         'devices')
+                                                                  //     .doc(res.id
+                                                                  //         .toString())
+                                                                  //     .update({
+                                                                  //   'deviceName':
+                                                                  //       name + " INSIDE"
+                                                                  // });
+                                                                  db
+                                                                      .collection(
+                                                                          'devices')
+                                                                      .doc(res
+                                                                          .id
+                                                                          .toString())
+                                                                      .update({
+                                                                    'deviceName':
+                                                                        name.toUpperCase()
+                                                                  });
+                                                                } else {
+                                                                  db
+                                                                      .collection(
+                                                                          'devices')
+                                                                      .doc(res
+                                                                          .id
+                                                                          .toString())
+                                                                      .update({
+                                                                    'deviceName':
+                                                                        "$name OUTSIDE"
+                                                                  });
+                                                                }
                                                               });
                                                             }
-                                                          });
-                                                        }
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors
-                                                              .white,
-                                                          fixedSize:
-                                                              const Size.square(
-                                                                  5),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 1,
-                                                                  vertical: 1),
-                                                          textStyle:
-                                                              const TextStyle(
+                                                          },
+                                                          style: ElevatedButton.styleFrom(
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                              fixedSize:
+                                                                  const Size
+                                                                      .square(
+                                                                      5),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          1,
+                                                                      vertical:
+                                                                          1),
+                                                              textStyle: const TextStyle(
                                                                   fontSize: 10,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold)),
-                                                      child: const Icon(
-                                                        Icons.edit,
-                                                        color: Colors.blue,
-                                                      ),
+                                                          child: const Icon(
+                                                            Icons.edit,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 10),
+                                                        ElevatedButton(
+                                                          onPressed: () {
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        ShareRoomPage(
+                                                                  roomId: room
+                                                                      .roomId,
+                                                                  roomName: room
+                                                                      .name, // Ensure roomName is provided
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors.white,
+                                                            fixedSize:
+                                                                const Size
+                                                                    .square(5),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        1,
+                                                                    vertical:
+                                                                        1),
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        10,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                          ),
+                                                          child: const Icon(
+                                                            Icons.share,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const SizedBox(width: 10),
+                                                    const SizedBox(height: 1),
                                                     ElevatedButton(
                                                       onPressed: () {
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                ShareRoomPage(
-                                                              roomId:
-                                                                  room.roomId,
-                                                              roomName: room
-                                                                  .name, // Ensure roomName is provided
-                                                            ),
-                                                          ),
-                                                        );
+                                                        showDeleteConfirmationDialog(
+                                                            room.roomId,
+                                                            room.userId);
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
@@ -1255,46 +1492,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         .bold),
                                                       ),
                                                       child: const Icon(
-                                                        Icons.share,
-                                                        color: Colors.blue,
+                                                        Icons.delete,
+                                                        color: Colors.red,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 1),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    showDeleteConfirmationDialog(
-                                                        room.roomId,
-                                                        room.userId);
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    fixedSize:
-                                                        const Size.square(5),
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 1,
-                                                        vertical: 1),
-                                                    textStyle: const TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  child: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
-                                                  ),
+                                                const SizedBox(
+                                                  height: 10,
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   );
@@ -1533,10 +1743,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     child: Stack(
                                       children: [
-                                        // Shared icon in top corner
+                                        // Shared icon in top left corner
                                         Positioned(
                                           top: 5,
-                                          right: 5,
+                                          left: 5,
                                           child: Container(
                                             padding: const EdgeInsets.all(4),
                                             decoration: const BoxDecoration(
@@ -1548,6 +1758,151 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               size: 16,
                                             ),
+                                          ),
+                                        ),
+                                        // Battery icon in top right corner
+                                        Positioned(
+                                          top: 5,
+                                          right: 5,
+                                          child: StreamBuilder<QuerySnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('notifications')
+                                                .where('roomId',
+                                                    isEqualTo: room.roomId)
+                                                .orderBy('received_at',
+                                                    descending: true)
+                                                .limit(1)
+                                                .snapshots(),
+                                            builder:
+                                                (context, batterySnapshot) {
+                                              // Debug: Print snapshot state for shared room
+                                              print(
+                                                  'SHARED Battery snapshot for room ${room.roomId}:');
+                                              print(
+                                                  '  Has data: ${batterySnapshot.hasData}');
+                                              print(
+                                                  '  Connection state: ${batterySnapshot.connectionState}');
+                                              print(
+                                                  '  Docs count: ${batterySnapshot.data?.docs.length ?? 0}');
+
+                                              if (batterySnapshot.hasData &&
+                                                  batterySnapshot
+                                                      .data!.docs.isNotEmpty) {
+                                                final notif = batterySnapshot
+                                                        .data!.docs.first
+                                                        .data()
+                                                    as Map<String, dynamic>;
+                                                print(
+                                                    '  SHARED Notification data: $notif');
+
+                                                final msg = notif['message']
+                                                    as Map<String, dynamic>?;
+                                                print('  SHARED Message: $msg');
+
+                                                if (msg != null &&
+                                                    msg['uplink_message'] !=
+                                                        null) {
+                                                  final uplinkMessage = msg[
+                                                          'uplink_message']
+                                                      as Map<String, dynamic>;
+                                                  print(
+                                                      '  SHARED Uplink message: $uplinkMessage');
+
+                                                  final decodedPayload =
+                                                      uplinkMessage[
+                                                              'decoded_payload']
+                                                          as Map<String,
+                                                              dynamic>?;
+                                                  print(
+                                                      '  SHARED Decoded payload: $decodedPayload');
+
+                                                  if (decodedPayload != null &&
+                                                      decodedPayload[
+                                                              'batVolts'] !=
+                                                          null) {
+                                                    final rawBatVolts =
+                                                        decodedPayload[
+                                                            'batVolts'] as int;
+                                                    print(
+                                                        '  SHARED Raw battery volts: $rawBatVolts');
+
+                                                    final batVolts = BatteryUtils
+                                                        .calculateBatteryPercentage(
+                                                            rawBatVolts);
+                                                    print(
+                                                        '  SHARED Calculated battery: $batVolts%');
+
+                                                    return Stack(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          batVolts > 90
+                                                              ? Icons
+                                                                  .battery_full_rounded
+                                                              : batVolts > 75
+                                                                  ? Icons
+                                                                      .battery_5_bar_rounded
+                                                                  : Icons
+                                                                      .battery_alert_rounded,
+                                                          size: 30,
+                                                          color: batVolts > 75
+                                                              ? Colors
+                                                                  .greenAccent[400]
+                                                              : Colors.amber,
+                                                        ),
+                                                        if (globals
+                                                            .showBatteryPercentage)
+                                                          Text(
+                                                            '$batVolts',
+                                                            style:
+                                                                const TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    );
+                                                  } else {
+                                                    print(
+                                                        '  SHARED No battery data found in decoded payload');
+                                                  }
+                                                } else {
+                                                  print(
+                                                      '  SHARED No uplink message found');
+                                                }
+                                              } else {
+                                                print(
+                                                    '  SHARED No notification data found');
+                                              }
+
+                                              // For testing, show a placeholder battery icon
+                                              return Stack(
+                                                alignment: Alignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.battery_alert_rounded,
+                                                    size: 30,
+                                                    color: Colors.red,
+                                                  ),
+                                                  if (globals
+                                                      .showBatteryPercentage)
+                                                    const Text(
+                                                      '0',
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                ],
+                                              );
+                                            },
                                           ),
                                         ),
                                         SingleChildScrollView(

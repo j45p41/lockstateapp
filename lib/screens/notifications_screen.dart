@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lockstate/model/history.dart';
 import 'package:lockstate/utils/color_utils.dart';
+import 'package:lockstate/utils/battery_utils.dart';
 import 'package:lockstate/utils/globals_jas.dart' as globals;
 import 'package:fl_chart/fl_chart.dart';
 
@@ -156,22 +157,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             .shrink(); // Skip this item if null
                       }
 
-                      // Battery calibration: 90% above 3800, 80% above 3750, then linear down to 0% at 3400
-                      var batVolts;
                       final rawBatVolts = historyItem
                           .message.uplinkMessage.decodedPayload.batVolts;
-                      if (rawBatVolts >= 3800) {
-                        batVolts = 90;
-                      } else if (rawBatVolts >= 3750) {
-                        batVolts = 80;
-                      } else if (rawBatVolts <= 3400) {
-                        batVolts = 0;
-                      } else {
-                        // Linear scale from 3750 to 3400 (350 point range)
-                        final range = 3750 - 3400; // 350
-                        final currentRange = rawBatVolts - 3400;
-                        batVolts = ((currentRange / range) * 80).round();
-                      }
+                      final batVolts =
+                          BatteryUtils.calculateBatteryPercentage(rawBatVolts);
 
                       return Container(
                         decoration: BoxDecoration(
