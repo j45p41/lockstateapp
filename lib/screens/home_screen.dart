@@ -548,7 +548,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             top: 5,
                                             right: 5,
                                             child: GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
                                               onTap: () async {
+                                                print(
+                                                    'BATTERY ICON TAPPED! Room: ${room.name}');
                                                 int powerLevel1 = 2;
                                                 int powerLevel2 = 2;
                                                 List<DocumentSnapshot>
@@ -1005,43 +1008,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         print(
                                                             '  Calculated battery: $batVolts%');
 
-                                                        return Stack(
-                                                          alignment:
-                                                              Alignment.center,
-                                                          children: [
-                                                            Icon(
-                                                              batVolts > 90
-                                                                  ? Icons
-                                                                      .battery_full_rounded
-                                                                  : batVolts >
-                                                                          75
-                                                                      ? Icons
-                                                                          .battery_5_bar_rounded
-                                                                      : Icons
-                                                                          .battery_alert_rounded,
-                                                              size: 30,
-                                                              color: batVolts >
-                                                                      75
-                                                                  ? Colors.greenAccent[
-                                                                      400]
-                                                                  : Colors
-                                                                      .amber,
-                                                            ),
-                                                            if (globals
-                                                                .showBatteryPercentage)
-                                                              Text(
-                                                                '$batVolts',
-                                                                style:
-                                                                    const TextStyle(
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontSize: 15,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
+                                                        return Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(10),
+                                                          child: Stack(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            children: [
+                                                              Icon(
+                                                                batVolts > 90
+                                                                    ? Icons
+                                                                        .battery_full_rounded
+                                                                    : batVolts >
+                                                                            75
+                                                                        ? Icons
+                                                                            .battery_5_bar_rounded
+                                                                        : Icons
+                                                                            .battery_alert_rounded,
+                                                                size: 30,
+                                                                color: batVolts >
+                                                                        75
+                                                                    ? Colors.greenAccent[
+                                                                        400]
+                                                                    : Colors
+                                                                        .amber,
                                                               ),
-                                                          ],
+                                                              if (globals
+                                                                  .showBatteryPercentage)
+                                                                Text(
+                                                                  '$batVolts',
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
                                                         );
                                                       } else {
                                                         print(
@@ -1057,27 +1066,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   }
 
                                                   // For testing, show a placeholder battery icon
-                                                  return Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .battery_alert_rounded,
-                                                        size: 30,
-                                                        color: Colors.red,
-                                                      ),
-                                                      if (globals
-                                                          .showBatteryPercentage)
-                                                        const Text(
-                                                          '0',
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
+                                                  return Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            10),
+                                                    child: Stack(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .battery_alert_rounded,
+                                                          size: 30,
+                                                          color: Colors.red,
                                                         ),
-                                                    ],
+                                                        if (globals
+                                                            .showBatteryPercentage)
+                                                          const Text(
+                                                            '0',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
                                                   );
                                                 },
                                               ),
