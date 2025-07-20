@@ -1179,46 +1179,151 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                         BatteryUtils.calculateBatteryPercentage(
                                                                             rawBatVolts);
 
-                                                                    return Stack(
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .center,
+                                                                    return Column(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .min,
                                                                       children: [
-                                                                        Icon(
-                                                                          batVolts > 90
-                                                                              ? Icons.battery_full_rounded
-                                                                              : batVolts > 75
-                                                                                  ? Icons.battery_5_bar_rounded
-                                                                                  : Icons.battery_alert_rounded,
-                                                                          size:
-                                                                              20,
-                                                                          color: batVolts > 75
-                                                                              ? Colors.greenAccent[400]
-                                                                              : Colors.amber,
-                                                                        ),
                                                                         if (globals
                                                                             .showBatteryPercentage)
                                                                           Text(
-                                                                            '$batVolts',
+                                                                            '$batVolts%',
                                                                             style:
                                                                                 const TextStyle(
                                                                               color: Colors.black,
-                                                                              fontSize: 10,
+                                                                              fontSize: 8,
                                                                               fontWeight: FontWeight.bold,
                                                                             ),
                                                                           ),
+                                                                        const SizedBox(
+                                                                            height:
+                                                                                2),
+                                                                        Container(
+                                                                          width:
+                                                                              25,
+                                                                          height:
+                                                                              12,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            border:
+                                                                                Border.all(color: Colors.black, width: 1),
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(2),
+                                                                          ),
+                                                                          child:
+                                                                              Stack(
+                                                                            children: [
+                                                                              // Battery level indicator
+                                                                              Container(
+                                                                                width: (batVolts / 100) * 23, // 23 is the inner width (25 - 2 for borders)
+                                                                                height: 10,
+                                                                                decoration: BoxDecoration(
+                                                                                  color: batVolts > 75
+                                                                                      ? Colors.green
+                                                                                      : batVolts > 25
+                                                                                          ? Colors.orange
+                                                                                          : Colors.red,
+                                                                                  borderRadius: BorderRadius.circular(1),
+                                                                                ),
+                                                                              ),
+                                                                              // Battery terminal (the little bump)
+                                                                              Positioned(
+                                                                                right: -2,
+                                                                                top: 2,
+                                                                                child: Container(
+                                                                                  width: 3,
+                                                                                  height: 8,
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: Colors.black,
+                                                                                    borderRadius: BorderRadius.circular(1),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
                                                                       ],
                                                                     );
                                                                   }
                                                                 }
                                                               }
                                                               // Fallback battery icon
-                                                              return const Icon(
-                                                                Icons
-                                                                    .battery_alert_rounded,
-                                                                size: 20,
-                                                                color:
-                                                                    Colors.red,
+                                                              return Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
+                                                                children: [
+                                                                  if (globals
+                                                                      .showBatteryPercentage)
+                                                                    const Text(
+                                                                      '0%',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: Colors
+                                                                            .black,
+                                                                        fontSize:
+                                                                            8,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          2),
+                                                                  Container(
+                                                                    width: 25,
+                                                                    height: 12,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      border: Border.all(
+                                                                          color: Colors
+                                                                              .black,
+                                                                          width:
+                                                                              1),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              2),
+                                                                    ),
+                                                                    child:
+                                                                        Stack(
+                                                                      children: [
+                                                                        // Empty battery level
+                                                                        Container(
+                                                                          width:
+                                                                              0,
+                                                                          height:
+                                                                              10,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            color:
+                                                                                Colors.red,
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(1),
+                                                                          ),
+                                                                        ),
+                                                                        // Battery terminal (the little bump)
+                                                                        Positioned(
+                                                                          right:
+                                                                              -2,
+                                                                          top:
+                                                                              2,
+                                                                          child:
+                                                                              Container(
+                                                                            width:
+                                                                                3,
+                                                                            height:
+                                                                                8,
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              color: Colors.black,
+                                                                              borderRadius: BorderRadius.circular(1),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               );
                                                             },
                                                           ),
