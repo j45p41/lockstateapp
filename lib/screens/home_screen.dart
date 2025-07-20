@@ -848,148 +848,540 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Positioned(
                                             top: 5,
                                             right: 5,
-                                            child: StreamBuilder<QuerySnapshot>(
-                                              stream: FirebaseFirestore.instance
-                                                  .collection('notifications')
-                                                  .where('roomId',
-                                                      isEqualTo: room.roomId)
-                                                  .orderBy('received_at',
-                                                      descending: true)
-                                                  .limit(1)
-                                                  .snapshots(),
-                                              builder:
-                                                  (context, batterySnapshot) {
-                                                // Debug: Print snapshot state
-                                                print(
-                                                    'Battery snapshot for room ${room.roomId}:');
-                                                print(
-                                                    '  Has data: ${batterySnapshot.hasData}');
-                                                print(
-                                                    '  Connection state: ${batterySnapshot.connectionState}');
-                                                print(
-                                                    '  Docs count: ${batterySnapshot.data?.docs.length ?? 0}');
+                                            child: GestureDetector(
+                                              onTap: () async {
+                                                int powerLevel1 = 2;
+                                                int powerLevel2 = 2;
+                                                List<DocumentSnapshot>
+                                                    deviceDocs = [];
+                                                Map<String, double>
+                                                    batteryLevels = {};
 
-                                                if (batterySnapshot.hasData &&
-                                                    batterySnapshot.data!.docs
-                                                        .isNotEmpty) {
-                                                  final notif = batterySnapshot
-                                                          .data!.docs.first
-                                                          .data()
-                                                      as Map<String, dynamic>;
+                                                try {
+                                                  // Fetch associated devices
+                                                  final devicesSnapshot =
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection('users')
+                                                          .doc(FirebaseAuth
+                                                              .instance
+                                                              .currentUser!
+                                                              .uid)
+                                                          .collection('devices')
+                                                          .where('roomId',
+                                                              isEqualTo:
+                                                                  room.roomId)
+                                                          .get();
+
+                                                  // Filter out devices ending with "99999"
+                                                  deviceDocs = devicesSnapshot
+                                                      .docs
+                                                      .where((doc) {
+                                                    String deviceId = doc.id;
+                                                    return !deviceId
+                                                        .endsWith('99999');
+                                                  }).toList();
+
                                                   print(
-                                                      '  Notification data: $notif');
+                                                      'Found ${deviceDocs.length} valid devices (excluding *99999)');
 
-                                                  final msg = notif['message']
-                                                      as Map<String, dynamic>?;
-                                                  print('  Message: $msg');
+                                                  // Fetch power levels and latest battery readings for each device
+                                                  for (var deviceDoc
+                                                      in deviceDocs) {
+                                                    // Fetch power level
+                                                    final device =
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'devices')
+                                                            .doc(deviceDoc.id)
+                                                            .get();
 
-                                                  if (msg != null &&
-                                                      msg['uplink_message'] !=
-                                                          null) {
-                                                    final uplinkMessage = msg[
-                                                            'uplink_message']
-                                                        as Map<String, dynamic>;
-                                                    print(
-                                                        '  Uplink message: $uplinkMessage');
+                                                    if (device.exists &&
+                                                        device
+                                                            .data()!
+                                                            .containsKey(
+                                                                'powerLevel')) {
+                                                      if (batteryLevels
+                                                          .isEmpty) {
+                                                        powerLevel1 =
+                                                            device.data()![
+                                                                'powerLevel'];
+                                                      } else {
+                                                        powerLevel2 =
+                                                            device.data()![
+                                                                'powerLevel'];
+                                                      }
+                                                    }
 
-                                                    final decodedPayload =
-                                                        uplinkMessage[
-                                                                'decoded_payload']
-                                                            as Map<String,
-                                                                dynamic>?;
-                                                    print(
-                                                        '  Decoded payload: $decodedPayload');
+                                                    // Fetch latest notification for battery level
+                                                    final latestNotification =
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'notifications')
+                                                            .where('deviceId',
+                                                                isEqualTo:
+                                                                    deviceDoc
+                                                                        .id)
+                                                            .get();
 
-                                                    if (decodedPayload !=
-                                                            null &&
-                                                        decodedPayload[
-                                                                'batVolts'] !=
-                                                            null) {
-                                                      final rawBatVolts =
-                                                          decodedPayload[
-                                                                  'batVolts']
-                                                              as int;
+                                                    if (latestNotification
+                                                        .docs.isNotEmpty) {
+                                                      // Sort the documents locally to get the latest one
+                                                      final sortedDocs =
+                                                          latestNotification
+                                                              .docs
+                                                            ..sort((a, b) => b
+                                                                .data()[
+                                                                    'received_at']
+                                                                .compareTo(a
+                                                                        .data()[
+                                                                    'received_at']));
+
+                                                      final notification =
+                                                          sortedDocs.first
+                                                              .data();
                                                       print(
-                                                          '  Raw battery volts: $rawBatVolts');
-
-                                                      final batVolts = BatteryUtils
-                                                          .calculateBatteryPercentage(
-                                                              rawBatVolts);
+                                                          'Device ID: ${deviceDoc.id}');
                                                       print(
-                                                          '  Calculated battery: $batVolts%');
+                                                          'Full notification data: $notification');
 
-                                                      return Stack(
-                                                        alignment:
-                                                            Alignment.center,
-                                                        children: [
-                                                          Icon(
-                                                            batVolts > 90
-                                                                ? Icons
-                                                                    .battery_full_rounded
-                                                                : batVolts > 75
-                                                                    ? Icons
-                                                                        .battery_5_bar_rounded
-                                                                    : Icons
-                                                                        .battery_alert_rounded,
-                                                            size: 30,
-                                                            color: batVolts > 75
-                                                                ? Colors
-                                                                    .greenAccent[400]
-                                                                : Colors.amber,
-                                                          ),
-                                                          if (globals
-                                                              .showBatteryPercentage)
-                                                            Text(
-                                                              '$batVolts',
-                                                              style:
-                                                                  const TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                        ],
-                                                      );
+                                                      // Get volts directly from the root level
+                                                      if (notification
+                                                          .containsKey(
+                                                              'volts')) {
+                                                        // Convert the voltage to a percentage or appropriate scale
+                                                        double volts = notification[
+                                                                    'volts']
+                                                                .toDouble() /
+                                                            1000; // Convert to volts (3818 -> 3.818V)
+                                                        batteryLevels[deviceDoc
+                                                            .id] = volts;
+                                                        print(
+                                                            'Battery voltage for device ${deviceDoc.id}: ${volts.toStringAsFixed(3)}V');
+                                                      } else {
+                                                        print(
+                                                            'No notifications found for device: ${deviceDoc.id}');
+                                                      }
                                                     } else {
                                                       print(
-                                                          '  No battery data found in decoded payload');
+                                                          'No notifications found for device: ${deviceDoc.id}');
+                                                    }
+                                                  }
+                                                } catch (e) {
+                                                  print(
+                                                      'Error fetching device data: $e');
+                                                }
+
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return StatefulBuilder(
+                                                        builder: (context,
+                                                            setState) {
+                                                      return AlertDialog(
+                                                        title: Text(
+                                                          room.name,
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        content: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            if (deviceDocs
+                                                                .isNotEmpty) ...[
+                                                              Text(
+                                                                'Indoor Battery Level: ${batteryLevels[deviceDocs[0].id]?.toStringAsFixed(1) ?? 'N/A'}V',
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            16),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 20),
+                                                              Text(
+                                                                'Please set power level to lowest working value to extend battery life.',
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            16),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 20),
+                                                              const Text(
+                                                                'Indoor Power Level:',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 1'),
+                                                                value: 1,
+                                                                groupValue:
+                                                                    powerLevel1,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel1 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 2'),
+                                                                value: 2,
+                                                                groupValue:
+                                                                    powerLevel1,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel1 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 3'),
+                                                                value: 3,
+                                                                groupValue:
+                                                                    powerLevel1,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel1 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ],
+                                                            if (deviceDocs
+                                                                    .length >
+                                                                1) ...[
+                                                              const SizedBox(
+                                                                  height: 20),
+                                                              Text(
+                                                                'Outdoor Battery Level: ${batteryLevels[deviceDocs[1].id]?.toStringAsFixed(1) ?? 'N/A'}V',
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            16),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 20),
+                                                              const Text(
+                                                                'Outdoor Power Level:',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 1'),
+                                                                value: 1,
+                                                                groupValue:
+                                                                    powerLevel2,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel2 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 2'),
+                                                                value: 2,
+                                                                groupValue:
+                                                                    powerLevel2,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel2 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                              RadioListTile<
+                                                                  int>(
+                                                                title: const Text(
+                                                                    'Level 3'),
+                                                                value: 3,
+                                                                groupValue:
+                                                                    powerLevel2,
+                                                                onChanged:
+                                                                    (value) {
+                                                                  setState(() {
+                                                                    powerLevel2 =
+                                                                        value!;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ],
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                            child: const Text(
+                                                                'Cancel'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed:
+                                                                () async {
+                                                              try {
+                                                                // Update first device
+                                                                if (deviceDocs
+                                                                    .isNotEmpty) {
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'devices')
+                                                                      .doc(deviceDocs[
+                                                                              0]
+                                                                          .id)
+                                                                      .update({
+                                                                    'powerLevel':
+                                                                        powerLevel1
+                                                                  });
+                                                                }
+
+                                                                // Update second device if it exists
+                                                                if (deviceDocs
+                                                                        .length >
+                                                                    1) {
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'devices')
+                                                                      .doc(deviceDocs[
+                                                                              1]
+                                                                          .id)
+                                                                      .update({
+                                                                    'powerLevel':
+                                                                        powerLevel2
+                                                                  });
+                                                                }
+
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                        'Power levels updated successfully'),
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .green,
+                                                                  ),
+                                                                );
+                                                              } catch (e) {
+                                                                print(
+                                                                    'Error updating power levels: $e');
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                        'Failed to update power levels'),
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .red,
+                                                                  ),
+                                                                );
+                                                              }
+                                                            },
+                                                            child: const Text(
+                                                                'Save'),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    });
+                                                  },
+                                                );
+                                              },
+                                              child:
+                                                  StreamBuilder<QuerySnapshot>(
+                                                stream: FirebaseFirestore
+                                                    .instance
+                                                    .collection('notifications')
+                                                    .where('roomId',
+                                                        isEqualTo: room.roomId)
+                                                    .orderBy('received_at',
+                                                        descending: true)
+                                                    .limit(1)
+                                                    .snapshots(),
+                                                builder:
+                                                    (context, batterySnapshot) {
+                                                  // Debug: Print snapshot state
+                                                  print(
+                                                      'Battery snapshot for room ${room.roomId}:');
+                                                  print(
+                                                      '  Has data: ${batterySnapshot.hasData}');
+                                                  print(
+                                                      '  Connection state: ${batterySnapshot.connectionState}');
+                                                  print(
+                                                      '  Docs count: ${batterySnapshot.data?.docs.length ?? 0}');
+
+                                                  if (batterySnapshot.hasData &&
+                                                      batterySnapshot.data!.docs
+                                                          .isNotEmpty) {
+                                                    final notif = batterySnapshot
+                                                            .data!.docs.first
+                                                            .data()
+                                                        as Map<String, dynamic>;
+                                                    print(
+                                                        '  Notification data: $notif');
+
+                                                    final msg = notif['message']
+                                                        as Map<String,
+                                                            dynamic>?;
+                                                    print('  Message: $msg');
+
+                                                    if (msg != null &&
+                                                        msg['uplink_message'] !=
+                                                            null) {
+                                                      final uplinkMessage =
+                                                          msg['uplink_message']
+                                                              as Map<String,
+                                                                  dynamic>;
+                                                      print(
+                                                          '  Uplink message: $uplinkMessage');
+
+                                                      final decodedPayload =
+                                                          uplinkMessage[
+                                                                  'decoded_payload']
+                                                              as Map<String,
+                                                                  dynamic>?;
+                                                      print(
+                                                          '  Decoded payload: $decodedPayload');
+
+                                                      if (decodedPayload !=
+                                                              null &&
+                                                          decodedPayload[
+                                                                  'batVolts'] !=
+                                                              null) {
+                                                        final rawBatVolts =
+                                                            decodedPayload[
+                                                                    'batVolts']
+                                                                as int;
+                                                        print(
+                                                            '  Raw battery volts: $rawBatVolts');
+
+                                                        final batVolts = BatteryUtils
+                                                            .calculateBatteryPercentage(
+                                                                rawBatVolts);
+                                                        print(
+                                                            '  Calculated battery: $batVolts%');
+
+                                                        return Stack(
+                                                          alignment:
+                                                              Alignment.center,
+                                                          children: [
+                                                            Icon(
+                                                              batVolts > 90
+                                                                  ? Icons
+                                                                      .battery_full_rounded
+                                                                  : batVolts >
+                                                                          75
+                                                                      ? Icons
+                                                                          .battery_5_bar_rounded
+                                                                      : Icons
+                                                                          .battery_alert_rounded,
+                                                              size: 30,
+                                                              color: batVolts >
+                                                                      75
+                                                                  ? Colors.greenAccent[
+                                                                      400]
+                                                                  : Colors
+                                                                      .amber,
+                                                            ),
+                                                            if (globals
+                                                                .showBatteryPercentage)
+                                                              Text(
+                                                                '$batVolts',
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        );
+                                                      } else {
+                                                        print(
+                                                            '  No battery data found in decoded payload');
+                                                      }
+                                                    } else {
+                                                      print(
+                                                          '  No uplink message found');
                                                     }
                                                   } else {
                                                     print(
-                                                        '  No uplink message found');
+                                                        '  No notification data found');
                                                   }
-                                                } else {
-                                                  print(
-                                                      '  No notification data found');
-                                                }
 
-                                                // For testing, show a placeholder battery icon
-                                                return Stack(
-                                                  alignment: Alignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      Icons
-                                                          .battery_alert_rounded,
-                                                      size: 30,
-                                                      color: Colors.red,
-                                                    ),
-                                                    if (globals
-                                                        .showBatteryPercentage)
-                                                      const Text(
-                                                        '0',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                                  // For testing, show a placeholder battery icon
+                                                  return Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .battery_alert_rounded,
+                                                        size: 30,
+                                                        color: Colors.red,
                                                       ),
-                                                  ],
-                                                );
-                                              },
+                                                      if (globals
+                                                          .showBatteryPercentage)
+                                                        const Text(
+                                                          '0',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
                                             ),
                                           ),
                                           SingleChildScrollView(
