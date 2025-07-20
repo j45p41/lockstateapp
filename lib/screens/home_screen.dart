@@ -303,16 +303,17 @@ class _HomeScreenState extends State<HomeScreen> {
           print('Device ID: ${deviceDoc.id}');
           print('Full notification data: $notification');
 
-          // Get volts directly from the root level
+          // Get raw battery value and convert to calibrated voltage
           if (notification.containsKey('volts')) {
-            // Convert the voltage to a percentage or appropriate scale
-            double volts = notification['volts'].toDouble() /
-                1000; // Convert to volts (3818 -> 3.818V)
-            batteryLevels[deviceDoc.id] = volts;
+            int rawValue = notification['volts'] as int;
+            // Calibrate: raw 0-4095 maps to 0-3.3V linearly
+            double calibratedVolts = (rawValue / 4095.0) * 3.3;
+            batteryLevels[deviceDoc.id] = calibratedVolts;
+            print('Raw battery value for device ${deviceDoc.id}: $rawValue');
             print(
-                'Battery voltage for device ${deviceDoc.id}: ${volts.toStringAsFixed(3)}V');
+                'Calibrated battery voltage for device ${deviceDoc.id}: ${calibratedVolts.toStringAsFixed(3)}V');
           } else {
-            print('No notifications found for device: ${deviceDoc.id}');
+            print('No battery data found for device: ${deviceDoc.id}');
           }
         } else {
           print('No notifications found for device: ${deviceDoc.id}');
@@ -337,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 if (deviceDocs.isNotEmpty) ...[
                   Text(
-                    'Indoor Battery Level: ${batteryLevels[deviceDocs[0].id]?.toStringAsFixed(1) ?? 'N/A'}V',
+                    'Indoor Battery Level: ${batteryLevels[deviceDocs[0].id]?.toStringAsFixed(3) ?? 'N/A'}V',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),
@@ -384,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (deviceDocs.length > 1) ...[
                   const SizedBox(height: 20),
                   Text(
-                    'Outdoor Battery Level: ${batteryLevels[deviceDocs[1].id]?.toStringAsFixed(1) ?? 'N/A'}V',
+                    'Outdoor Battery Level: ${batteryLevels[deviceDocs[1].id]?.toStringAsFixed(3) ?? 'N/A'}V',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),
