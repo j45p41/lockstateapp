@@ -584,6 +584,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(
                 height: 10,
               ),
+              Text(
+                "Hub Brightness",
+                style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Container(
+                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  child: Row(children: [
+                    Expanded(
+                        child: Column(children: [
+                      Slider(
+                        value: brightnessAlertSliderSetting,
+                        max: 100,
+                        divisions: 5,
+                        label: brightnessAlertSliderSetting.round().toString(),
+                        onChanged: (double value) {
+                          setState(() {
+                            brightnessAlertSliderSetting = value;
+                          });
+                        },
+                        onChangeEnd: (double value) {
+                          updateHubBrightness(value);
+                        },
+                      )
+                    ])),
+                  ])),
+              const SizedBox(
+                height: 10,
+              ),
               // Text(
               //   "Hub Alert Brightness",
               //   style: TextStyle(color: Colors.white, fontSize: titleSize - 5),
@@ -1374,6 +1405,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
         allowedNotificationStates.add(state);
       }
     });
+  }
+
+  Future<void> updateHubBrightness(double value) async {
+    setState(() {
+      brightnessSliderSetting = value;
+    });
+
+    try {
+                          final db = FirebaseFirestore.instance;
+                          var result = await db
+                              .collection('users')
+                              .doc(FirebaseAuth.instance.currentUser!.uid
+                                  .toString())
+                              .collection('devices')
+                              .get();
+                          result.docs.forEach((res) {
+                            print(res.id);
+
+                            FirebaseFirestore.instance
+                                .collection('devices')
+                                .doc(res.id.toString())
+                                .update({
+                              'brightnessAlertSliderSetting':
+                                  brightnessAlertSliderSetting
+                            });
+                          });
+
+      // Show temporary dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (context) => AlertDialog(
+            title: const Text('Hub Brightness Updated'),
+            content: const Text(
+                'Hub brightness will take effect on the next lock / unlock operation'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error updating hub brightness: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating hub brightness: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

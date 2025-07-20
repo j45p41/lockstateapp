@@ -2,22 +2,26 @@
 class BatteryUtils {
   /// Converts raw battery voltage to percentage based on calibration
   ///
-  /// Battery calibration: 90% above 3800, 80% above 3750, then linear down to 0% at 3400
+  /// Battery calibration based on experimental discharge curve:
+  /// - 100% for voltages >= 4000
+  /// - 90% for voltages >= 3800 (stable operating range)
+  /// - Linear scale from 3800 to 3400 (400 point range)
+  /// - 0% for voltages <= 3400
   ///
   /// @param rawBatVolts The raw battery voltage value from the device
-  /// @return The calculated battery percentage (0-90)
+  /// @return The calculated battery percentage (0-100)
   static int calculateBatteryPercentage(int rawBatVolts) {
-    if (rawBatVolts >= 3800) {
+    if (rawBatVolts >= 4000) {
+      return 100;
+    } else if (rawBatVolts >= 3800) {
       return 90;
-    } else if (rawBatVolts >= 3750) {
-      return 80;
     } else if (rawBatVolts <= 3400) {
       return 0;
     } else {
-      // Linear scale from 3750 to 3400 (350 point range)
-      final range = 3750 - 3400; // 350
+      // Linear scale from 3800 to 3400 (400 point range)
+      final range = 3800 - 3400; // 400
       final currentRange = rawBatVolts - 3400;
-      return ((currentRange / range) * 80).round();
+      return ((currentRange / range) * 90).round();
     }
   }
 

@@ -298,7 +298,8 @@ class _DevicePairedScreenState extends State<DevicePairedScreen> {
             dataController.addDevice(
                 roomsIds[i + 1],
                 FirebaseAuth.instance.currentUser!.uid,
-                '${roomNames[roomIndex]} OUTSIDE',
+                // '${roomNames[roomIndex]} OUTSIDE',
+                roomNames[roomIndex],
                 false,
                 doc.id);
             print("Outdoor device added for room: ${roomNames[roomIndex]}");
