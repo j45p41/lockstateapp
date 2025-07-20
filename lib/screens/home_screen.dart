@@ -1295,7 +1295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                                     '$batVolts%',
                                                                                     style: const TextStyle(
                                                                                       color: Colors.black,
-                                                                                      fontSize: 7,
+                                                                                      fontSize: 14,
                                                                                       fontWeight: FontWeight.bold,
                                                                                     ),
                                                                                   ),
@@ -1424,7 +1424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                               '0%',
                                                                               style: TextStyle(
                                                                                 color: Colors.black,
-                                                                                fontSize: 7,
+                                                                                fontSize: 14,
                                                                                 fontWeight: FontWeight.bold,
                                                                               ),
                                                                             ),
