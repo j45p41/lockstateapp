@@ -529,6 +529,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? null
                             : (v) {
                                 if (v == null) return;
+                                if (v == 1) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Low Power Warning'),
+                                      content: const Text(
+                                        'At the lowest power level, the device\'s '
+                                        'range is significantly reduced. If the device '
+                                        'stops responding, you may need to move the hub '
+                                        'closer to reconnect.\n\n'
+                                        'Adjust with care.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            setModalState(() {});
+                                            _setMatterPowerLevel(
+                                              deviceDocId: doc.id,
+                                              level: v,
+                                            );
+                                          },
+                                          child: const Text('Set Low Power'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  return;
+                                }
                                 setModalState(() {});
                                 _setMatterPowerLevel(
                                   deviceDocId: doc.id,
@@ -1898,7 +1931,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text('Indoor Power Level:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    RadioListTile<int>(title: const Text('Low'), subtitle: const Text('Best battery life, hub must be close'), value: 1, groupValue: powerLevel1, dense: true, onChanged: (v) { setState(() => powerLevel1 = v!); saveSettings(); }),
+                    RadioListTile<int>(title: const Text('Low'), subtitle: const Text('Best battery life, hub must be close'), value: 1, groupValue: powerLevel1, dense: true, onChanged: (v) {
+                      showDialog(context: context, builder: (ctx) => AlertDialog(
+                        title: const Text('Low Power Warning'),
+                        content: const Text('At the lowest power level, the device\'s range is significantly reduced. If the device stops responding, you may need to move the hub closer to reconnect.\n\nAdjust with care.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                          TextButton(onPressed: () { Navigator.pop(ctx); setState(() => powerLevel1 = v!); saveSettings(); }, child: const Text('Set Low Power')),
+                        ],
+                      ));
+                    }),
                     RadioListTile<int>(title: const Text('Medium-Low'), subtitle: const Text('Good battery, short range'), value: 2, groupValue: powerLevel1, dense: true, onChanged: (v) { setState(() => powerLevel1 = v!); saveSettings(); }),
                     RadioListTile<int>(title: const Text('Medium'), subtitle: const Text('Balanced battery and range'), value: 3, groupValue: powerLevel1, dense: true, onChanged: (v) { setState(() => powerLevel1 = v!); saveSettings(); }),
                     RadioListTile<int>(title: const Text('High'), subtitle: const Text('Longer range, more battery use'), value: 4, groupValue: powerLevel1, dense: true, onChanged: (v) { setState(() => powerLevel1 = v!); saveSettings(); }),
@@ -2114,7 +2156,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text('Outdoor Power Level:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    RadioListTile<int>(title: const Text('Low'), subtitle: const Text('Best battery life, hub must be close'), value: 1, groupValue: powerLevel2, dense: true, onChanged: (v) { setState(() => powerLevel2 = v!); saveSettings(); }),
+                    RadioListTile<int>(title: const Text('Low'), subtitle: const Text('Best battery life, hub must be close'), value: 1, groupValue: powerLevel2, dense: true, onChanged: (v) {
+                      showDialog(context: context, builder: (ctx) => AlertDialog(
+                        title: const Text('Low Power Warning'),
+                        content: const Text('At the lowest power level, the device\'s range is significantly reduced. If the device stops responding, you may need to move the hub closer to reconnect.\n\nAdjust with care.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                          TextButton(onPressed: () { Navigator.pop(ctx); setState(() => powerLevel2 = v!); saveSettings(); }, child: const Text('Set Low Power')),
+                        ],
+                      ));
+                    }),
                     RadioListTile<int>(title: const Text('Medium-Low'), subtitle: const Text('Good battery, short range'), value: 2, groupValue: powerLevel2, dense: true, onChanged: (v) { setState(() => powerLevel2 = v!); saveSettings(); }),
                     RadioListTile<int>(title: const Text('Medium'), subtitle: const Text('Balanced battery and range'), value: 3, groupValue: powerLevel2, dense: true, onChanged: (v) { setState(() => powerLevel2 = v!); saveSettings(); }),
                     RadioListTile<int>(title: const Text('High'), subtitle: const Text('Longer range, more battery use'), value: 4, groupValue: powerLevel2, dense: true, onChanged: (v) { setState(() => powerLevel2 = v!); saveSettings(); }),
