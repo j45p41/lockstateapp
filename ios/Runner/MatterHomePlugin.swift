@@ -946,10 +946,66 @@ extension MatterHomePlugin: HMHomeManagerDelegate {
         isHomeManagerReady = true
         print("[MatterHome] HomeKit ready — \(manager.homes.count) home(s)")
 
+        for home in manager.homes {
+            home.delegate = self
+        }
+
         if let pending = pendingDiscoverResult {
             let devices = findLocksureAccessories(in: manager)
             pending(devices)
             pendingDiscoverResult = nil
+        }
+    }
+}
+
+// MARK: - HMHomeDelegate (accessory reachability)
+
+extension MatterHomePlugin: HMHomeDelegate {
+    func home(_ home: HMHome, didUpdateAccessoryReachability accessory: HMAccessory) {
+        let uniqueId = accessory.uniqueIdentifier.uuidString
+        print("[MatterHome] Reachability changed: \(accessory.name) reachable=\(accessory.isReachable)")
+
+        guard accessory.isReachable, subscribedAccessories[uniqueId] != nil else { return }
+
+        print("[MatterHome] Re-subscribing to \(uniqueId) after reachability restored")
+        accessory.delegate = self
+        subscribedAccessories[uniqueId] = accessory
+
+        for service in accessory.services {
+            switch service.serviceType {
+            case HMServiceTypeLockMechanism:
+                for c in service.characteristics
+                    where c.characteristicType == HMCharacteristicTypeCurrentLockMechanismState
+                        || c.characteristicType == HMCharacteristicTypeLockMechanismLastKnownAction {
+                    c.enableNotification(true) { error in
+                        if let error = error {
+                            print("[MatterHome] Re-sub lock notification error: \(error.localizedDescription)")
+                        }
+                    }
+                    c.readValue { _ in }
+                }
+                for c in service.characteristics
+                    where c.characteristicType == HMCharacteristicTypeCurrentDoorState
+                        || c.characteristicType == HMCharacteristicTypeContactState {
+                    c.enableNotification(true) { _ in }
+                    c.readValue { _ in }
+                }
+            case HMServiceTypeDoor, HMServiceTypeContactSensor:
+                for c in service.characteristics
+                    where c.characteristicType == HMCharacteristicTypeCurrentDoorState
+                        || c.characteristicType == HMCharacteristicTypeContactState {
+                    c.enableNotification(true) { _ in }
+                    c.readValue { _ in }
+                }
+            case HMServiceTypeBattery:
+                for c in service.characteristics
+                    where c.characteristicType == HMCharacteristicTypeBatteryLevel {
+                    c.enableNotification(true) { _ in }
+                    c.readValue { _ in }
+                }
+            default:
+                break
+            }
         }
     }
 }
