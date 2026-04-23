@@ -837,32 +837,25 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
     /// defines (button hold, etc.). Once the device advertises mcuboot on
     /// `0xFE59` the existing BLE DFU flow takes over.
     private func triggerDfuMode(uniqueId: String, result: @escaping FlutterResult) {
+        if homeManager == nil {
+            homeManager = HMHomeManager()
+            homeManager?.delegate = self
+        }
         guard let manager = homeManager else {
             result(["success": false, "fallbackToBle": true, "error": "HomeKit not initialised"])
+            return
+        }
+        if !isHomeManagerReady {
+            // HMHomeManager needs a moment to enumerate homes. Retry after 2s.
+            print("[MatterHome] triggerDfuMode: waiting for HomeKit to initialize...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                self?.triggerDfuMode(uniqueId: uniqueId, result: result)
+            }
             return
         }
         guard let accessory = findAccessory(uniqueId: uniqueId, in: manager) else {
             result(["success": false, "fallbackToBle": true, "error": "Accessory not found"])
             return
-        }
-
-        // Find the Identify cluster's IdentifyTime characteristic.
-        // Matter Identify cluster ID = 0x0003, IdentifyTime attr = 0x0000.
-        // HomeKit maps unknown services with raw UUIDs. Walk all services
-        // looking for a writable characteristic that matches.
-        var identifyTimeChar: HMCharacteristic?
-        for service in accessory.services {
-            for c in service.characteristics {
-                let uuid = c.characteristicType.lowercased()
-                // HomeKit maps Matter attribute IDs into characteristic UUIDs.
-                // The Identify cluster IdentifyTime shows up as a writable int.
-                // Check for the raw UUID pattern or try Apple's mapped version.
-                if uuid.contains("0003") && c.properties.contains(HMCharacteristicPropertyWritable) {
-                    identifyTimeChar = c
-                    break
-                }
-            }
-            if identifyTimeChar != nil { break }
         }
 
         // Use HomeKit's built-in identify API — sends Identify command to the
