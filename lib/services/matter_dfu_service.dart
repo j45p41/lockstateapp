@@ -370,7 +370,7 @@ class MatterDfuService {
       }
 
       // Stream chunks with 5ms delay — matching hub DFU speed.
-      const chunkDelay = Duration(milliseconds: 5);
+      const chunkDelay = Duration(milliseconds: 2);
       final total = firmwareData.length;
       final totalChunks = (total / _chunkSize).ceil();
       _log('Streaming $total bytes in $totalChunks chunks (5ms delay)');
