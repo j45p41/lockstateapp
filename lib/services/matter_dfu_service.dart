@@ -369,11 +369,11 @@ class MatterDfuService {
         return false;
       }
 
-      // Stream chunks with 5ms delay — matching hub DFU speed.
-      const chunkDelay = Duration(milliseconds: 1);
+      // Stream chunks with no delay — device-side K_FOREVER backpressure
+      // throttles via BLE flow control. Max throughput ~20-30 KB/s.
       final total = firmwareData.length;
       final totalChunks = (total / _chunkSize).ceil();
-      _log('Streaming $total bytes in $totalChunks chunks (5ms delay)');
+      _log('Streaming $total bytes in $totalChunks chunks (no delay)');
       final stopwatch = Stopwatch()..start();
       int sent = 0;
 
@@ -394,8 +394,6 @@ class MatterDfuService {
         if (sent % (_chunkSize * 100) == 0) {
           _log('Progress: ${(chunkProgress * 100).toStringAsFixed(1)}% ($sent/$total)');
         }
-
-        await Future.delayed(chunkDelay);
       }
 
       stopwatch.stop();
