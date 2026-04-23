@@ -865,27 +865,17 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
             if identifyTimeChar != nil { break }
         }
 
-        if let char = identifyTimeChar {
-            // Write magic value 0xDFDF (57311) — firmware reboots into loader
-            print("[MatterHome] triggerDfuMode: writing 0xDFDF to IdentifyTime for \(uniqueId)")
-            char.writeValue(NSNumber(value: 0xDFDF)) { error in
-                if let error = error {
-                    print("[MatterHome] triggerDfuMode: write failed: \(error)")
-                    result(["success": false, "fallbackToBle": true, "error": error.localizedDescription])
-                } else {
-                    print("[MatterHome] triggerDfuMode: 0xDFDF written — device should reboot to DFU")
-                    result(["success": true, "fallbackToBle": false])
-                }
+        // Use HomeKit's built-in identify API — sends Identify command to the
+        // Matter device over Thread. Firmware treats any identify as DFU trigger.
+        print("[MatterHome] triggerDfuMode: calling accessory.identify() for \(uniqueId)")
+        accessory.identify { error in
+            if let error = error {
+                print("[MatterHome] triggerDfuMode: identify failed: \(error)")
+                result(["success": false, "fallbackToBle": true, "error": error.localizedDescription])
+            } else {
+                print("[MatterHome] triggerDfuMode: identify sent — device should reboot to DFU")
+                result(["success": true, "fallbackToBle": false])
             }
-        } else {
-            // Fallback: use accessory.identify() — sends IdentifyTime=15.
-            // Firmware will blink LED (not trigger DFU) since value != 0xDFDF.
-            print("[MatterHome] triggerDfuMode: IdentifyTime characteristic not found, falling back to manual")
-            result([
-                "success": false,
-                "fallbackToBle": true,
-                "error": "IdentifyTime not accessible via HomeKit — put device in DFU mode manually (long-press button)"
-            ])
         }
     }
 
