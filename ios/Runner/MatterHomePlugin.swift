@@ -857,7 +857,7 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
                 // HomeKit maps Matter attribute IDs into characteristic UUIDs.
                 // The Identify cluster IdentifyTime shows up as a writable int.
                 // Check for the raw UUID pattern or try Apple's mapped version.
-                if uuid.contains("0003") && c.properties.contains(.writable) {
+                if uuid.contains("0003") && c.properties.contains(HMCharacteristicPropertyWritable) {
                     identifyTimeChar = c
                     break
                 }
