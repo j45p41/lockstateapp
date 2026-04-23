@@ -524,8 +524,22 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
                     }
                 }
 
-                // Read door state (from DoorLock's door position sensor or contact sensor)
-                if let doorService = accessory.services.first(where: {
+                // Read door state — check LockMechanism service first (Matter
+                // DoorLock puts DoorState on the lock service), then standalone
+                var foundDoor = false
+                if let lockSvc = accessory.services.first(where: { $0.serviceType == HMServiceTypeLockMechanism }) {
+                    if let c = lockSvc.characteristics.first(where: { $0.characteristicType == HMCharacteristicTypeCurrentDoorState }),
+                       let v = c.value as? Int {
+                        deviceMap["doorState"] = mapHomeKitDoorState(v)
+                        foundDoor = true
+                    } else if let c = lockSvc.characteristics.first(where: { $0.characteristicType == HMCharacteristicTypeContactState }),
+                              let v = c.value as? Int {
+                        deviceMap["doorState"] = mapHomeKitContactState(v)
+                        foundDoor = true
+                    }
+                }
+                if !foundDoor,
+                   let doorService = accessory.services.first(where: {
                     $0.serviceType == HMServiceTypeDoor
                 }) ?? accessory.services.first(where: {
                     $0.serviceType == HMServiceTypeContactSensor
@@ -625,6 +639,12 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
                         || c.characteristicType == HMCharacteristicTypeLockMechanismLastKnownAction {
                     enableAndRead(c, label: "Lock")
                 }
+                // DoorLock cluster's DoorState lives on the lock service itself
+                for c in service.characteristics
+                    where c.characteristicType == HMCharacteristicTypeCurrentDoorState
+                        || c.characteristicType == HMCharacteristicTypeContactState {
+                    enableAndRead(c, label: "Door (on LockMechanism)")
+                }
             case HMServiceTypeDoor, HMServiceTypeContactSensor:
                 for c in service.characteristics
                     where c.characteristicType == HMCharacteristicTypeCurrentDoorState
@@ -712,7 +732,23 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
             }
         }
 
-        // Read door state
+        // Read door state — check LockMechanism service first (Matter DoorLock
+        // puts DoorState on the lock service), then standalone Door/ContactSensor
+        var foundDoorState = false
+        if let lockService = accessory.services.first(where: { $0.serviceType == HMServiceTypeLockMechanism }) {
+            if let doorChar = lockService.characteristics.first(where: {
+                $0.characteristicType == HMCharacteristicTypeCurrentDoorState
+            }), let value = doorChar.value as? Int {
+                stateMap["doorState"] = mapHomeKitDoorState(value)
+                foundDoorState = true
+            } else if let contactChar = lockService.characteristics.first(where: {
+                $0.characteristicType == HMCharacteristicTypeContactState
+            }), let value = contactChar.value as? Int {
+                stateMap["doorState"] = mapHomeKitContactState(value)
+                foundDoorState = true
+            }
+        }
+        if !foundDoorState {
         for service in accessory.services {
             if service.serviceType == HMServiceTypeDoor || service.serviceType == HMServiceTypeContactSensor {
                 if let doorChar = service.characteristics.first(where: {
@@ -726,6 +762,7 @@ class MatterHomePlugin: NSObject, FlutterPlugin {
                 }
                 break
             }
+        }
         }
 
         result(stateMap)
