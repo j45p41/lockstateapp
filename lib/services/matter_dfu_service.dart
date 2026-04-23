@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
+import 'package:lockstate/services/matter_home_service.dart';
 
 void _log(String msg) => debugPrint('[MATTER-DFU] $msg');
 
@@ -217,25 +218,46 @@ class MatterDfuService {
 
   // ==================== DFU TRANSFER ====================
 
-  /// Perform DFU transfer to Matter device via BLE
-  /// The device must be in DFU/mcuboot mode (advertising mcuboot SMP service)
+  /// Perform DFU transfer to Matter device via BLE.
+  /// If [matterUniqueId] is provided, tries to trigger DFU mode remotely
+  /// via HomeKit Identify (magic value 0xDFDF) before scanning.
   Future<bool> performDfu({
     required Uint8List firmwareData,
     required int targetVersion,
     String? deviceName,
+    String? matterUniqueId,
   }) async {
     state.value = MatterDfuState.scanningForDevice;
-    statusMessage.value = 'Scanning for Matter device in DFU mode...';
     progress.value = 0.10;
 
     try {
-      // Scan for device advertising mcuboot SMP service. Longer window
-      // (30s) to give the user time to manually put the device in DFU mode —
-      // HomeKit doesn't expose a programmatic DFU trigger.
-      statusMessage.value = 'Put the device in DFU mode now (long-press the button). Scanning…';
+      // Try remote DFU trigger via HomeKit Identify (0xDFDF magic value).
+      // If it works, the device reboots into firmware_loader within ~2s
+      // and starts advertising "LocksureDoor-DFU" over BLE.
+      bool remoteTriggerSent = false;
+      if (matterUniqueId != null) {
+        statusMessage.value = 'Sending DFU command to device...';
+        _log('Attempting remote DFU trigger via Identify for $matterUniqueId');
+        final triggerResult = await MatterHomeService().triggerDfuMode(matterUniqueId);
+        remoteTriggerSent = triggerResult['success'] == true;
+        if (remoteTriggerSent) {
+          _log('Remote DFU trigger sent — waiting for device to reboot');
+          statusMessage.value = 'Device rebooting into DFU mode...';
+          await Future.delayed(const Duration(seconds: 3));
+        } else {
+          _log('Remote trigger failed: ${triggerResult['error']} — falling back to manual');
+        }
+      }
+
+      if (!remoteTriggerSent) {
+        statusMessage.value = 'Put the device in DFU mode now (long-press the button). Scanning…';
+      } else {
+        statusMessage.value = 'Scanning for device in DFU mode...';
+      }
+
       final device = await _scanForDfuDevice(
         deviceName: deviceName ?? 'LocksureDoor',
-        timeout: const Duration(seconds: 30),
+        timeout: Duration(seconds: remoteTriggerSent ? 15 : 30),
       );
 
       if (device == null) {

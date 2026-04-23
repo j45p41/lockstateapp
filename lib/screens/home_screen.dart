@@ -576,9 +576,8 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Update Firmware', style: TextStyle(color: Colors.white)),
         content: Text(
           'Download v${fwInfo.version} and flash this Matter device?\n\n'
-          'After you tap Update, put the device in DFU mode (long-press '
-          'the button on the device). The app will scan for 30 seconds and '
-          'start the update once it finds the device.',
+          'The app will send a DFU command to the device. If the device '
+          'doesn\'t respond, long-press the button to enter DFU mode manually.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -599,12 +598,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _matterDfuInProgress = true);
 
     try {
-      // No programmatic DFU trigger — user puts the device in DFU mode
-      // manually after confirming the dialog. Scanner runs for 30s to give
-      // them time to hold the button down. See MatterHomePlugin.triggerDfuMode
-      // for why: HomeKit's Matter bridge doesn't expose any safe writable
-      // characteristic we could use to flip the device into DFU.
-
       // 2. Download firmware binary (validates size + checksums).
       final fwData = await _matterDfuService.downloadFirmware(fwInfo);
       if (fwData == null) {
@@ -616,10 +609,12 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      // 3. Perform the DFU transfer.
+      // 3. Perform the DFU transfer. Pass matterUniqueId so the service
+      //    can try remote DFU trigger via HomeKit Identify before scanning.
       final ok = await _matterDfuService.performDfu(
         firmwareData: fwData,
         targetVersion: fwInfo.version,
+        matterUniqueId: matterUniqueId,
       );
 
       if (ok) {
